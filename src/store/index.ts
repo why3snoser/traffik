@@ -73,6 +73,7 @@ export const useStore = create<AppState>()((set, get) => ({
 
   // ── Load all data from Supabase ──────────────────────────────────────
   initialize: async () => {
+    try {
     const [
       { data: workers },
       { data: anketas },
@@ -119,6 +120,10 @@ export const useStore = create<AppState>()((set, get) => ({
       })),
       profile,
     })
+    } catch (e) {
+      console.error('Supabase init error:', e)
+      set({ initialized: true })
+    }
   },
 
   // ── Workers ─────────────────────────────────────────────────────────

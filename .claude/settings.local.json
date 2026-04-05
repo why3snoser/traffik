@@ -29,7 +29,9 @@
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm install pg 2>&1\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; node setup-db.mjs 2>&1\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; Remove-Item setup-db.mjs -ErrorAction SilentlyContinue; npm uninstall pg 2>&1\")",
-      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: add Supabase sync'; git push 2>&1\")"
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: add Supabase sync'; git push 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | tail -5\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'fix: handle supabase init error gracefully'; git push 2>&1\")"
     ]
   }
 }
