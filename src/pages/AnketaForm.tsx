@@ -151,17 +151,23 @@ export default function AnketaForm() {
         {/* Dates */}
         <div>
           <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Даты рождения</label>
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
+          <div className="relative mb-2">
+            <textarea
               value={dateInput}
               onChange={e => setDateInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addDate()}
-              placeholder="ДД.ММ.ГГГГ"
-              className="flex-1 bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono"
+              placeholder={'07.03.2000\n11.18.2000\n01.27.2001\n...можно вставить сразу несколько'}
+              rows={3}
+              className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono resize-none text-sm"
             />
-            <button onClick={addDate} className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center flex-shrink-0">
-              <Plus size={18} className="text-white" />
+            <button
+              onClick={() => {
+                const lines = dateInput.split('\n').map(l => l.trim()).filter(l => l && !birthDates.includes(l))
+                if (lines.length) setBirthDates([...birthDates, ...lines])
+                setDateInput('')
+              }}
+              className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0"
+            >
+              <Plus size={16} className="text-white" />
             </button>
           </div>
           {birthDates.length > 0 && (

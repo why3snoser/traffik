@@ -60,14 +60,15 @@ export default function AnketaDetail() {
             <span className="text-2xl font-bold gradient-text">{anketa.name.charAt(0)}</span>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-text">
-              {anketa.name}{anketa.age ? `, ${anketa.age}` : ''}
-            </h2>
+            <button onClick={() => copy(`${anketa.name}${anketa.age ? `, ${anketa.age}` : ''}`, 'name')}
+              className="text-left">
+              <h2 className="text-xl font-bold text-text">
+                {anketa.name}{anketa.age ? `, ${anketa.age}` : ''}
+                <span className="text-xs text-text-muted ml-2 font-normal">{copied === 'name' ? '✓' : ''}</span>
+              </h2>
+            </button>
             {anketa.telegram && (
-              <button
-                onClick={() => copy(anketa.telegram!, 'tg')}
-                className="text-accent-light text-sm font-mono mt-0.5"
-              >
+              <button onClick={() => copy(anketa.telegram!, 'tg')} className="text-accent-light text-sm font-mono mt-0.5">
                 {anketa.telegram} {copied === 'tg' ? '✓' : ''}
               </button>
             )}
@@ -98,14 +99,18 @@ export default function AnketaDetail() {
               {anketa.cities.map((city, i) => (
                 <div key={city.id} className="bg-card border border-border rounded-2xl overflow-hidden">
                   {/* City header */}
-                  <div className={`flex items-center gap-2.5 px-4 py-3 border-b border-border ${city.status === 'blocked' ? 'opacity-60' : ''}`}>
+                  <button
+                    onClick={() => copy(city.city, `city-${city.id}`)}
+                    className={`w-full flex items-center gap-2.5 px-4 py-3 border-b border-border text-left ${city.status === 'blocked' ? 'opacity-60' : ''}`}
+                  >
                     <span className="text-text-muted text-sm font-mono">{i + 1}</span>
                     <span className="font-semibold text-text flex-1">{city.city}</span>
+                    <span className="text-xs text-text-muted">{copied === `city-${city.id}` ? '✓' : ''}</span>
                     {city.status === 'blocked'
                       ? <WifiOff size={14} className="text-danger" />
                       : <Wifi size={14} className="text-success" />
                     }
-                  </div>
+                  </button>
 
                   {/* VK account */}
                   {city.vk ? (
@@ -155,10 +160,15 @@ export default function AnketaDetail() {
             <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">Даты</h3>
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap gap-2">
               {anketa.birthDates.map(d => (
-                <span key={d} className="flex items-center gap-1.5 bg-bg text-text text-sm px-3 py-1.5 rounded-xl font-mono">
+                <button
+                  key={d}
+                  onClick={() => copy(d, `date-${d}`)}
+                  className="flex items-center gap-1.5 bg-bg text-text text-sm px-3 py-1.5 rounded-xl font-mono active:scale-95 transition-transform"
+                >
                   <Calendar size={12} className="text-text-muted" />
                   {d}
-                </span>
+                  {copied === `date-${d}` && <span className="text-success text-xs">✓</span>}
+                </button>
               ))}
             </div>
           </div>
