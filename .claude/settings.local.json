@@ -21,7 +21,15 @@
       "Bash(powershell -ExecutionPolicy Bypass -Command \"Get-Content 'C:\\\\Users\\\\ELIZAB~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Elizabeth-Crowley-Documents-traffik\\\\802080f3-7a07-4671-9127-5844a86462f8\\\\tasks\\\\bed6qgzeb.output'\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"Remove-Item 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\Cards.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\CardDetail.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\CardForm.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\components\\\\AddModal.tsx' -ErrorAction SilentlyContinue\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"git --version\")",
-      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git init; git add .; git commit -m 'init'\")"
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git init; git add .; git commit -m 'init'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git config user.email 'why3snoser@github.com'; git config user.name 'why3snoser'; git commit -m 'init'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git remote add origin https://github.com/why3snoser/traffik.git; git branch -M main; git push -u origin main 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add public/_redirects; git commit -m 'fix: add netlify redirects for SPA routing'; git push\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm install @supabase/supabase-js 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm install pg 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; node setup-db.mjs 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; Remove-Item setup-db.mjs -ErrorAction SilentlyContinue; npm uninstall pg 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: add Supabase sync'; git push 2>&1\")"
     ]
   }
 }

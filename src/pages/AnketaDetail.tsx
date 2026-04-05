@@ -28,8 +28,8 @@ export default function AnketaDetail() {
     }
   }
 
-  const handleVkAssign = () => {
-    const msg = assignVkToAnketa(anketa.id, vkRaw)
+  const handleVkAssign = async () => {
+    const msg = await assignVkToAnketa(anketa.id, vkRaw)
     setVkMsg(msg)
     setVkRaw('')
     setTimeout(() => { setVkMsg(''); setShowVkImport(false) }, 2000)

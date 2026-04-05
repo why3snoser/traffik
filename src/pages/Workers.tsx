@@ -14,9 +14,9 @@ export default function Workers() {
   const [emoji, setEmoji] = useState('👤')
   const { rubToUsd: rub2usd, usdToUah: usd2uah } = profile.settings
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!name.trim()) return
-    const w = addWorker(name.trim(), emoji)
+    const w = await addWorker(name.trim(), emoji)
     setName(''); setEmoji('👤'); setShowAdd(false)
     navigate(`/workers/${w.id}`)
   }
