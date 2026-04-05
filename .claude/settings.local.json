@@ -36,7 +36,9 @@
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'fix: hardcode supabase credentials'; git push 2>&1 | Select-String 'main'\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'; git add -A; git commit -m 'fix: correct supabase project URL'; git push 2>&1 | Select-String 'main'\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'; git add -A; git commit -m 'feat: bulk date paste + copy on tap'; git push 2>&1 | Select-String 'main'\")",
-      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'; git add -A; git commit -m 'fix: remove unused addDate'; git push 2>&1 | Select-String 'main'\")"
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'; git add -A; git commit -m 'fix: remove unused addDate'; git push 2>&1 | Select-String 'main'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: bulk city paste'; git push 2>&1 | Select-String 'main'\")"
     ]
   }
 }

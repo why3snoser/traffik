@@ -21,6 +21,8 @@ export default function AnketaForm() {
   const [cities, setCities] = useState<CityEntry[]>(
     existing?.cities ?? [{ id: uid(), city: '', status: 'active' }]
   )
+  const [cityBulk, setCityBulk] = useState('')
+  const [showCityBulk, setShowCityBulk] = useState(false)
   const [birthDates, setBirthDates] = useState<string[]>(existing?.birthDates ?? [])
   const [dateInput, setDateInput] = useState('')
   const [notes, setNotes] = useState(existing?.notes ?? '')
@@ -106,7 +108,45 @@ export default function AnketaForm() {
 
         {/* Cities */}
         <div>
-          <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Города</label>
+          <div className="flex items-center justify-between mb-2 px-1">
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Города</label>
+            <button
+              onClick={() => setShowCityBulk(!showCityBulk)}
+              className="text-xs text-accent-light font-medium"
+            >
+              {showCityBulk ? 'По одному' : 'Вставить списком'}
+            </button>
+          </div>
+
+          {showCityBulk ? (
+            <div className="relative">
+              <textarea
+                autoFocus
+                value={cityBulk}
+                onChange={e => setCityBulk(e.target.value)}
+                placeholder={'Москва\nСанкт-Петербург\nНовосибирск\n...по одному городу на строку'}
+                rows={5}
+                className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none text-sm"
+              />
+              <button
+                onClick={() => {
+                  const newCities = cityBulk
+                    .split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l)
+                    .map(name => ({ id: uid(), city: name, status: 'active' as const }))
+                  if (newCities.length) {
+                    setCities([...cities.filter(c => c.city), ...newCities])
+                    setCityBulk('')
+                    setShowCityBulk(false)
+                  }
+                }}
+                className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center"
+              >
+                <Plus size={16} className="text-white" />
+              </button>
+            </div>
+          ) : (
           <div className="flex flex-col gap-2">
             {cities.map((city, i) => (
               <div key={city.id} className="flex items-center gap-2">
@@ -140,6 +180,7 @@ export default function AnketaForm() {
               Добавить город
             </button>
           </div>
+          )}
         </div>
 
         {/* Dates */}
