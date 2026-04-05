@@ -32,12 +32,6 @@ export default function AnketaForm() {
   const toggleStatus = (cid: string) =>
     setCities(cities.map(c => c.id === cid ? { ...c, status: c.status === 'active' ? 'blocked' : 'active' } : c))
 
-  const addDate = () => {
-    const v = dateInput.trim()
-    if (v && !birthDates.includes(v)) setBirthDates([...birthDates, v])
-    setDateInput('')
-  }
-
   const handleSave = () => {
     if (!name.trim() || !wId) return
     const data = {
