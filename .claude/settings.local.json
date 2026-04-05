@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(where node:*)",
+      "Bash(npm --version)",
+      "Bash(cmd /c \"node --version && npm --version\")",
+      "Bash(cmd /c node --version)",
+      "Bash(cmd /c npm --version)",
+      "Bash(cmd /c \"cd \\\\\"C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\\" && npm create vite@latest . -- --template react-ts --yes 2>&1\")",
+      "Bash(cmd /c \"node -e \\\\\"const {execSync} = require\\('child_process'\\); console.log\\(execSync\\('npm create vite@latest \\\\\"C:/Users/Elizabeth Crowley/Documents/traffik\\\\\" -- --template react-ts', {cwd: 'C:/Users/Elizabeth Crowley/Documents/traffik'}\\).toString\\(\\)\\)\\\\\"\")",
+      "Bash(powershell -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm create vite@latest . -- --template react-ts\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm create vite@latest . -- --template react-ts\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; echo y | npm create vite@latest . -- --template react-ts\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm install 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run dev 2>&1 &\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"Get-Content 'C:\\\\Users\\\\ELIZAB~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Elizabeth-Crowley-Documents-traffik\\\\802080f3-7a07-4671-9127-5844a86462f8\\\\tasks\\\\b3f69ledw.output'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"Start-Process -FilePath 'npm' -ArgumentList 'run','dev' -WorkingDirectory 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik' -NoNewWindow\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run dev\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"Get-Content 'C:\\\\Users\\\\ELIZAB~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Elizabeth-Crowley-Documents-traffik\\\\802080f3-7a07-4671-9127-5844a86462f8\\\\tasks\\\\bed6qgzeb.output'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"Remove-Item 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\Cards.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\CardDetail.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\pages\\\\CardForm.tsx', 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik\\\\src\\\\components\\\\AddModal.tsx' -ErrorAction SilentlyContinue\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"git --version\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git init; git add .; git commit -m 'init'\")"
+    ]
+  }
+}
