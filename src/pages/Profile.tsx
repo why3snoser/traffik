@@ -26,7 +26,6 @@ export default function Profile() {
   const xpForLevel = 1000
   const xpProgress = (profile.xp % xpForLevel) / xpForLevel * 100
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
-  const totalUah = usdToUah(totalUsd, u2ua)
   const goalsUsd = profile.goals.reduce((sum, g) => sum + g.savedAmount, 0)
   const availableUsd = totalUsd + goalsUsd
 
