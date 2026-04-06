@@ -145,6 +145,18 @@ export const useStore = create<AppState>()((set, get) => ({
     } else if (profile.goals.length === 0) {
       profile.goals = DEFAULT_GOALS
       await saveProfile(profile)
+    } else {
+      // Patch default goals that have updated imageUrls
+      let patched = false
+      profile.goals = profile.goals.map(g => {
+        const def = DEFAULT_GOALS.find(d => d.id === g.id)
+        if (def && def.imageUrl && !g.imageUrl) {
+          patched = true
+          return { ...g, imageUrl: def.imageUrl }
+        }
+        return g
+      })
+      if (patched) await saveProfile(profile)
     }
 
     set({
