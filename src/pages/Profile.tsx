@@ -105,14 +105,15 @@ export default function Profile() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {profile.goals.map(goal => {
+        {profile.goals.map((goal, idx) => {
           const pct = Math.min(100, (goal.savedAmount / goal.targetAmount) * 100)
           const remaining = goal.targetAmount - goal.savedAmount
+          const isLast = idx === profile.goals.length - 1
           return (
             <div key={goal.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               {goal.imageUrl && (
-                <div className="relative h-36 overflow-hidden">
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover object-top" />
+                <div className={`relative overflow-hidden ${isLast ? 'h-64' : 'h-36'}`}>
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover object-center" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
