@@ -3,6 +3,8 @@ export type ProfitType = 'oplata' | 'perevod' | 'iks' | 'vozvrat' | 'vozvrat_yur
 export interface VKAccount {
   login: string
   password: string
+  token?: string
+  userAgent?: string
 }
 
 export interface CityEntry {
@@ -119,7 +121,12 @@ export function parseVkList(raw: string): VKAccount[] {
     .filter(line => line.includes(':'))
     .map(line => {
       const parts = line.split(':')
-      return { login: parts[0].trim(), password: parts[1].trim() }
+      return {
+        login: parts[0].trim(),
+        password: parts[1].trim(),
+        token: parts[2]?.trim() || undefined,
+        userAgent: parts.length > 3 ? parts.slice(3).join(':').trim() : undefined,
+      }
     })
     .filter(a => a.login && a.password)
 }

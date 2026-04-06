@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor } from 'lucide-react'
 import { useStore } from '@/store'
 import { useState } from 'react'
 
@@ -157,6 +157,18 @@ export default function AnketaDetail() {
                           {copied === `pass-${city.id}` ? '✓' : 'copy'}
                         </span>
                       </button>
+                      {city.vk!.userAgent && (
+                        <button
+                          onClick={() => copy(city.vk!.userAgent!, `ua-${city.id}`)}
+                          className="flex items-center gap-2.5 bg-bg rounded-xl px-3 py-2.5 text-left group"
+                        >
+                          <Monitor size={12} className="text-text-muted flex-shrink-0" />
+                          <span className="text-xs text-text-muted font-mono flex-1 truncate">{city.vk!.userAgent}</span>
+                          <span className="text-xs text-text-muted group-active:text-success">
+                            {copied === `ua-${city.id}` ? '✓' : 'copy'}
+                          </span>
+                        </button>
+                      )}
                       <button
                         onClick={() => removeVkFromCity(anketa.id, city.id)}
                         className="text-xs text-danger text-right"
