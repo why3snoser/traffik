@@ -81,6 +81,7 @@ interface AppState {
   deleteAnketa: (id: string) => Promise<void>
 
   assignVkToAnketa: (anketaId: string, rawList: string) => Promise<string>
+  setVkForCity: (anketaId: string, cityId: string, login: string, password: string) => Promise<void>
   removeVkFromCity: (anketaId: string, cityId: string) => Promise<void>
 
   addProfit: (workerId: string, amount: number, type: ProfitType, note?: string, anketaId?: string) => Promise<void>
@@ -268,6 +269,15 @@ export const useStore = create<AppState>()((set, get) => ({
     await get().updateAnketa(anketaId, { cities: updatedCities })
     const assigned = updatedCities.filter(c => c.vk).length - anketa.cities.filter(c => c.vk).length
     return `Привязано ${assigned} аккаунтов`
+  },
+
+  setVkForCity: async (anketaId, cityId, login, password) => {
+    const anketa = get().anketas.find(a => a.id === anketaId)
+    if (!anketa) return
+    const updatedCities = anketa.cities.map(c =>
+      c.id === cityId ? { ...c, vk: { login, password } } : c
+    )
+    await get().updateAnketa(anketaId, { cities: updatedCities })
   },
 
   removeVkFromCity: async (anketaId, cityId) => {

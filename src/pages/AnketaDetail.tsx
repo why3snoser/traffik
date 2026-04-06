@@ -6,11 +6,13 @@ import { useState } from 'react'
 export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { anketas, deleteAnketa, assignVkToAnketa, removeVkFromCity } = useStore()
+  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
   const [vkRaw, setVkRaw] = useState('')
   const [vkMsg, setVkMsg] = useState('')
+  const [manualCityId, setManualCityId] = useState<string | null>(null)
+  const [manualVkText, setManualVkText] = useState('')
 
   const anketa = anketas.find(a => a.id === id)
   if (!anketa) return <div className="p-8 text-text-muted">Не найдено</div>
@@ -33,6 +35,14 @@ export default function AnketaDetail() {
     setVkMsg(msg)
     setVkRaw('')
     setTimeout(() => { setVkMsg(''); setShowVkImport(false) }, 2000)
+  }
+
+  const handleManualVk = async (cityId: string) => {
+    const lines = manualVkText.trim().split('\n').map(l => l.trim()).filter(Boolean)
+    if (lines.length < 2) return
+    await setVkForCity(anketa.id, cityId, lines[0], lines[1])
+    setManualCityId(null)
+    setManualVkText('')
   }
 
   const citiesWithVk = anketa.cities.filter(c => c.vk).length
@@ -60,13 +70,25 @@ export default function AnketaDetail() {
             <span className="text-2xl font-bold gradient-text">{anketa.name.charAt(0)}</span>
           </div>
           <div>
-            <button onClick={() => copy(`${anketa.name}${anketa.age ? `, ${anketa.age}` : ''}`, 'name')}
-              className="text-left">
-              <h2 className="text-xl font-bold text-text">
-                {anketa.name}{anketa.age ? `, ${anketa.age}` : ''}
-                <span className="text-xs text-text-muted ml-2 font-normal">{copied === 'name' ? '✓' : ''}</span>
-              </h2>
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={() => copy(anketa.name, 'name')} className="text-left">
+                <h2 className="text-xl font-bold text-text">
+                  {anketa.name}
+                  {copied === 'name' && <span className="text-xs text-success ml-1">✓</span>}
+                </h2>
+              </button>
+              {anketa.age && (
+                <>
+                  <span className="text-text-muted text-xl">,</span>
+                  <button onClick={() => copy(String(anketa.age), 'age')}>
+                    <h2 className="text-xl font-bold text-text">
+                      {anketa.age}
+                      {copied === 'age' && <span className="text-xs text-success ml-1">✓</span>}
+                    </h2>
+                  </button>
+                </>
+              )}
+            </div>
             {anketa.telegram && (
               <button onClick={() => copy(anketa.telegram!, 'tg')} className="text-accent-light text-sm font-mono mt-0.5">
                 {anketa.telegram} {copied === 'tg' ? '✓' : ''}
@@ -143,9 +165,47 @@ export default function AnketaDetail() {
                       </button>
                     </div>
                   ) : (
-                    <div className="px-4 py-3 flex items-center gap-2">
-                      <Tag size={12} className="text-text-muted" />
-                      <span className="text-xs text-text-muted">ВК не привязан</span>
+                    <div className="px-4 py-3 flex flex-col gap-2">
+                      {manualCityId === city.id ? (
+                        <>
+                          <textarea
+                            autoFocus
+                            value={manualVkText}
+                            onChange={e => setManualVkText(e.target.value)}
+                            placeholder={"48699529403\nWplYqoE56WfNii5N"}
+                            rows={2}
+                            className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-text text-xs font-mono placeholder:text-text-muted focus:outline-none focus:border-accent resize-none"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleManualVk(city.id)}
+                              disabled={manualVkText.trim().split('\n').filter(Boolean).length < 2}
+                              className="flex-1 bg-accent rounded-xl py-2 text-white text-xs font-semibold disabled:opacity-40"
+                            >
+                              Привязать
+                            </button>
+                            <button
+                              onClick={() => { setManualCityId(null); setManualVkText('') }}
+                              className="px-3 py-2 text-text-muted text-xs"
+                            >
+                              Отмена
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Tag size={12} className="text-text-muted" />
+                            <span className="text-xs text-text-muted">ВК не привязан</span>
+                          </div>
+                          <button
+                            onClick={() => { setManualCityId(city.id); setManualVkText('') }}
+                            className="text-xs text-accent-light font-medium"
+                          >
+                            Вручную
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
