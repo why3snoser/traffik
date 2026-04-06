@@ -49,7 +49,7 @@ const DEFAULT_GOALS = [
     targetAmount: 10000,
     savedAmount: 0,
     color: '#f472b6',
-    imageUrl: 'https://i.imgur.com/yhPO87v.jpeg',
+    imageUrl: 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
     description: 'Цель мечты',
   },
 ]
