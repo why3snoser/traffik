@@ -113,7 +113,7 @@ export default function Profile() {
             <div key={goal.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-64' : 'h-36'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover object-center" />
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover object-[center_60%]" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
