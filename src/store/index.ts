@@ -11,12 +11,55 @@ function uid() {
 
 const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70 }
 
+const DEFAULT_GOALS = [
+  {
+    id: 'goal-iphone',
+    title: 'iPhone 17 Pro Max',
+    emoji: '📱',
+    targetAmount: 1300,
+    savedAmount: 0,
+    color: '#7c5cfc',
+    imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80',
+    description: 'iPhone 17 Pro Max · 256GB',
+  },
+  {
+    id: 'goal-bmw',
+    title: 'BMW 328 Xi 2015',
+    emoji: '🚗',
+    targetAmount: 5500,
+    savedAmount: 0,
+    color: '#60a5fa',
+    imageUrl: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80',
+    description: '2015 · 67 093 км · 2.0л · $5,500',
+  },
+  {
+    id: 'goal-apt',
+    title: '2-комн. квартира',
+    emoji: '🏠',
+    targetAmount: 45000,
+    savedAmount: 0,
+    color: '#22d3a5',
+    imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
+    description: 'Ивано-Франковск · 2 комнаты',
+  },
+  {
+    id: 'goal-angelina',
+    title: 'Ангелина 💕',
+    emoji: '💕',
+    targetAmount: 10000,
+    savedAmount: 0,
+    color: '#f472b6',
+    imageUrl: '',
+    description: 'Цель мечты',
+  },
+]
+
 const DEFAULT_PROFILE: UserProfile = {
   name: 'Crowley',
   level: 1,
   xp: 0,
   totalEarned: 0,
-  goals: [],
+  goals: DEFAULT_GOALS,
   settings: DEFAULT_SETTINGS,
 }
 
@@ -96,8 +139,13 @@ export const useStore = create<AppState>()((set, get) => ({
       settings: p.settings ?? DEFAULT_SETTINGS,
     } : DEFAULT_PROFILE
 
-    // If no profile row yet, create it
-    if (!p) await saveProfile(DEFAULT_PROFILE)
+    // If no profile row yet, create it. If goals empty, seed defaults.
+    if (!p) {
+      await saveProfile(DEFAULT_PROFILE)
+    } else if (profile.goals.length === 0) {
+      profile.goals = DEFAULT_GOALS
+      await saveProfile(profile)
+    }
 
     set({
       initialized: true,

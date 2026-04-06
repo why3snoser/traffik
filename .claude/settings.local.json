@@ -40,7 +40,8 @@
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: bulk city paste'; git push 2>&1 | Select-String 'main'\")",
       "WebSearch",
-      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: goals with photo and description'; git push 2>&1 | Select-String 'main'\")"
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; git add -A; git commit -m 'feat: goals with photo and description'; git push 2>&1 | Select-String 'main'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"cd 'C:\\\\Users\\\\Elizabeth Crowley\\\\Documents\\\\traffik'; npm run build 2>&1 | Select-String 'built|error'; git add -A; git commit -m 'feat: default goals with photos'; git push 2>&1 | Select-String 'main'\")"
     ]
   }
 }
