@@ -27,6 +27,8 @@ export default function Profile() {
   const xpProgress = (profile.xp % xpForLevel) / xpForLevel * 100
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
   const totalUah = usdToUah(totalUsd, u2ua)
+  const goalsUsd = profile.goals.reduce((sum, g) => sum + g.savedAmount, 0)
+  const availableUsd = totalUsd + goalsUsd
 
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
@@ -80,8 +82,14 @@ export default function Profile() {
 
         <div className="pt-4 border-t border-white/10">
           <p className="text-text-muted text-xs">Всего заработано</p>
-          <p className="text-2xl font-bold gradient-text">{fmtUsd(totalUsd)}</p>
-          <p className="text-text-muted text-sm">{fmtUah(totalUah)}</p>
+          <p className="text-2xl font-bold gradient-text">{fmtUsd(availableUsd)}</p>
+          <p className="text-text-muted text-sm">{fmtUah(usdToUah(availableUsd, u2ua))}</p>
+          {goalsUsd > 0 && (
+            <p className="text-text-muted text-xs mt-1">
+              Доступно: <span className="text-accent-light font-semibold">{fmtUsd(totalUsd)}</span>
+              <span className="ml-1.5">· В целях: {fmtUsd(goalsUsd)}</span>
+            </p>
+          )}
         </div>
       </div>
 

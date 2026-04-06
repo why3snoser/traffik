@@ -49,7 +49,7 @@ const DEFAULT_GOALS = [
     targetAmount: 10000,
     savedAmount: 0,
     color: '#f472b6',
-    imageUrl: '',
+    imageUrl: 'https://i.imgur.com/yhPO87v.jpeg',
     description: 'Цель мечты',
   },
 ]
@@ -335,8 +335,10 @@ export const useStore = create<AppState>()((set, get) => ({
 
   addToGoal: async (id, amount) => {
     set(s => {
+      const rubCost = amount * s.profile.settings.rubToUsd
       const newProfile = {
         ...s.profile,
+        totalEarned: Math.max(0, s.profile.totalEarned - rubCost),
         goals: s.profile.goals.map(g => g.id === id ? { ...g, savedAmount: Math.min(g.targetAmount, g.savedAmount + amount) } : g),
       }
       saveProfile(newProfile)
