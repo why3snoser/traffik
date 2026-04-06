@@ -288,7 +288,16 @@ export const useStore = create<AppState>()((set, get) => ({
       const xpGain = Math.floor(myShare / 100)
       const newXp = s.profile.xp + xpGain
       const newLevel = Math.floor(newXp / 1000) + 1
-      const newProfile = { ...s.profile, totalEarned: s.profile.totalEarned + myShare, xp: newXp, level: newLevel }
+      // Auto-distribute earned USD equally across incomplete goals
+      const usdEarned = myShare / s.profile.settings.rubToUsd
+      const incompleteGoals = s.profile.goals.filter(g => g.savedAmount < g.targetAmount)
+      const perGoal = incompleteGoals.length > 0 ? usdEarned / incompleteGoals.length : 0
+      const newGoals = s.profile.goals.map(g =>
+        g.savedAmount < g.targetAmount
+          ? { ...g, savedAmount: Math.min(g.targetAmount, g.savedAmount + perGoal) }
+          : g
+      )
+      const newProfile = { ...s.profile, totalEarned: s.profile.totalEarned + myShare, xp: newXp, level: newLevel, goals: newGoals }
       saveProfile(newProfile)
       return {
         profits: [entry, ...s.profits],
@@ -347,10 +356,8 @@ export const useStore = create<AppState>()((set, get) => ({
 
   addToGoal: async (id, amount) => {
     set(s => {
-      const rubCost = amount * s.profile.settings.rubToUsd
       const newProfile = {
         ...s.profile,
-        totalEarned: Math.max(0, s.profile.totalEarned - rubCost),
         goals: s.profile.goals.map(g => g.id === id ? { ...g, savedAmount: Math.min(g.targetAmount, g.savedAmount + amount) } : g),
       }
       saveProfile(newProfile)
