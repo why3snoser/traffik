@@ -53,6 +53,8 @@ export interface Goal {
   targetAmount: number  // USD
   savedAmount: number   // USD
   color: string
+  imageUrl?: string
+  description?: string
 }
 
 export interface Settings {

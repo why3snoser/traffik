@@ -15,6 +15,8 @@ export default function Profile() {
   const [goalAmount, setGoalAmount] = useState('')
   const [goalEmoji, setGoalEmoji] = useState('📱')
   const [goalColor, setGoalColor] = useState('#7c5cfc')
+  const [goalImageUrl, setGoalImageUrl] = useState('')
+  const [goalDesc, setGoalDesc] = useState('')
   const [addingToGoal, setAddingToGoal] = useState<string | null>(null)
   const [addAmount, setAddAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -29,8 +31,8 @@ export default function Profile() {
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
     if (!goalTitle.trim() || !target) return
-    addGoal({ title: goalTitle.trim(), emoji: goalEmoji, targetAmount: target, savedAmount: 0, color: goalColor })
-    setGoalTitle(''); setGoalAmount(''); setShowAddGoal(false)
+    addGoal({ title: goalTitle.trim(), emoji: goalEmoji, targetAmount: target, savedAmount: 0, color: goalColor, imageUrl: goalImageUrl.trim() || undefined, description: goalDesc.trim() || undefined })
+    setGoalTitle(''); setGoalAmount(''); setGoalImageUrl(''); setGoalDesc(''); setShowAddGoal(false)
   }
 
   const handleAddToGoal = (id: string) => {
@@ -100,7 +102,24 @@ export default function Profile() {
           const pct = Math.min(100, (goal.savedAmount / goal.targetAmount) * 100)
           const remaining = goal.targetAmount - goal.savedAmount
           return (
-            <div key={goal.id} className="bg-card border border-border rounded-2xl p-4">
+            <div key={goal.id} className="bg-card border border-border rounded-2xl overflow-hidden">
+              {goal.imageUrl && (
+                <div className="relative h-36 overflow-hidden">
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                    <div>
+                      <p className="font-bold text-white text-lg">{goal.title}</p>
+                      {goal.description && <p className="text-white/70 text-xs">{goal.description}</p>}
+                    </div>
+                    <button onClick={() => deleteGoal(goal.id)} className="text-white/60 hover:text-danger">
+                      <X size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="p-4">
+              {!goal.imageUrl && (
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-2xl">{goal.emoji}</span>
                 <div className="flex-1">
@@ -110,6 +129,7 @@ export default function Profile() {
                       <X size={14} />
                     </button>
                   </div>
+                  {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
                   <div className="flex items-baseline gap-2 mt-0.5">
                     <span className="text-sm font-bold" style={{ color: goal.color }}>
                       {fmtUsd(goal.savedAmount)}
@@ -118,6 +138,13 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+              )}
+              {goal.imageUrl && (
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
+                  <span className="text-xs text-text-muted">из {fmtUsd(goal.targetAmount)}</span>
+                </div>
+              )}
 
               <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
                 <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: goal.color }} />
@@ -155,6 +182,7 @@ export default function Profile() {
                 )}
               </div>
             </div>
+            </div>
           )
         })}
       </div>
@@ -173,6 +201,8 @@ export default function Profile() {
                 ))}
               </div>
               <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder="Название цели" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
+              <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder="Описание (необязательно)" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+              <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder="Ссылка на фото (необязательно)" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
               <div className="relative">
                 <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="Сумма" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>
