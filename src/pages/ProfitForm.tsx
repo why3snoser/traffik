@@ -8,7 +8,7 @@ const TYPES: ProfitType[] = ['oplata', 'perevod', 'iks', 'vozvrat', 'vozvrat_yur
 
 export default function ProfitForm() {
   const navigate = useNavigate()
-  const { workerId } = useParams<{ workerId: string }>()
+  const { id: workerId } = useParams<{ id: string }>()
   const { addProfit, workers, anketas, profile } = useStore()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
