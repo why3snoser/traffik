@@ -1,10 +1,13 @@
 import { NavLink } from 'react-router-dom'
 import { Users, DollarSign, User } from 'lucide-react'
+import { useT } from '@/i18n'
 
 export default function BottomNav() {
+  const t = useT()
+
   const navItems = [
-    { to: '/', icon: Users, label: 'Воркеры', exact: true },
-    { to: '/finance', icon: DollarSign, label: 'Финансы', exact: false },
+    { to: '/', icon: Users, label: t('nav_workers'), exact: true },
+    { to: '/finance', icon: DollarSign, label: t('nav_finance'), exact: false },
     {
       to: '/stats',
       icon: () => (
@@ -12,10 +15,10 @@ export default function BottomNav() {
           <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
         </svg>
       ),
-      label: 'Статистика',
+      label: t('nav_stats'),
       exact: false,
     },
-    { to: '/profile', icon: User, label: 'Профиль', exact: false },
+    { to: '/profile', icon: User, label: t('nav_profile'), exact: false },
   ]
 
   return (

@@ -62,6 +62,7 @@ export interface Goal {
 export interface Settings {
   rubToUsd: number      // e.g. 90
   usdToUah: number      // e.g. 43.70
+  language: 'en' | 'uk'
 }
 
 export interface UserProfile {

@@ -9,7 +9,7 @@ function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70 }
+const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70, language: 'en' as const }
 
 const DEFAULT_GOALS = [
   {

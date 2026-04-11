@@ -2,10 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor } from 'lucide-react'
 import { useStore } from '@/store'
 import { useState } from 'react'
+import { useT } from '@/i18n'
 
 export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const t = useT()
   const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
@@ -24,7 +26,7 @@ export default function AnketaDetail() {
   }
 
   const handleDelete = () => {
-    if (confirm(`Удалить анкету ${anketa.name}?`)) {
+    if (confirm(t('delete_anketa_confirm')(anketa.name))) {
       deleteAnketa(anketa.id)
       navigate(`/workers/${anketa.workerId}`)
     }
@@ -106,17 +108,17 @@ export default function AnketaDetail() {
         >
           <div className="flex items-center gap-2.5">
             <ClipboardList size={16} className="text-accent-light" />
-            <span className="text-sm font-medium text-text">Привязать ВК аккаунты</span>
+            <span className="text-sm font-medium text-text">{t('assign_vk')}</span>
           </div>
           <span className="text-xs text-text-muted bg-bg px-2 py-1 rounded-lg">
-            {citiesWithVk}/{anketa.cities.length} городов
+            {citiesWithVk}/{anketa.cities.length}
           </span>
         </button>
 
         {/* Cities */}
         {anketa.cities.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">Города</h3>
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">{t('cities_header')}</h3>
             <div className="flex flex-col gap-2">
               {anketa.cities.map((city, i) => (
                 <div key={city.id} className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -173,7 +175,7 @@ export default function AnketaDetail() {
                         onClick={() => removeVkFromCity(anketa.id, city.id)}
                         className="text-xs text-danger text-right"
                       >
-                        Открепить ВК
+                        {t('vk_detach')}
                       </button>
                     </div>
                   ) : (
@@ -194,13 +196,13 @@ export default function AnketaDetail() {
                               disabled={manualVkText.trim().split('\n').filter(Boolean).length < 2}
                               className="flex-1 bg-accent rounded-xl py-2 text-white text-xs font-semibold disabled:opacity-40"
                             >
-                              Привязать
+                              {t('vk_attach_btn')}
                             </button>
                             <button
                               onClick={() => { setManualCityId(null); setManualVkText('') }}
                               className="px-3 py-2 text-text-muted text-xs"
                             >
-                              Отмена
+                              {t('cancel')}
                             </button>
                           </div>
                         </>
@@ -208,13 +210,13 @@ export default function AnketaDetail() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Tag size={12} className="text-text-muted" />
-                            <span className="text-xs text-text-muted">ВК не привязан</span>
+                            <span className="text-xs text-text-muted">{t('vk_not_assigned')}</span>
                           </div>
                           <button
                             onClick={() => { setManualCityId(city.id); setManualVkText('') }}
                             className="text-xs text-accent-light font-medium"
                           >
-                            Вручную
+                            {t('vk_manual')}
                           </button>
                         </div>
                       )}
@@ -229,7 +231,7 @@ export default function AnketaDetail() {
         {/* Birth dates */}
         {anketa.birthDates.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">Даты</h3>
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">{t('dates_header')}</h3>
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap gap-2">
               {anketa.birthDates.map(d => (
                 <button
@@ -249,7 +251,7 @@ export default function AnketaDetail() {
         {/* Notes */}
         {anketa.notes && (
           <div>
-            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">Заметки</h3>
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">{t('notes_header')}</h3>
             <div className="bg-card border border-border rounded-2xl p-4">
               <p className="text-text text-sm whitespace-pre-wrap">{anketa.notes}</p>
             </div>
@@ -267,13 +269,13 @@ export default function AnketaDetail() {
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-text">Вставить ВК аккаунты</h3>
+              <h3 className="text-lg font-bold text-text">{t('vk_attach_title')}</h3>
               <button onClick={() => setShowVkImport(false)} className="text-text-muted">
                 <X size={18} />
               </button>
             </div>
             <p className="text-text-muted text-sm mb-4">
-              Формат: <span className="font-mono text-xs bg-bg px-1.5 py-0.5 rounded">ID:пароль:токен:юзерагент</span> — по одному на строку
+              {t('vk_format_hint')} <span className="font-mono text-xs bg-bg px-1.5 py-0.5 rounded">ID:password:token:useragent</span> — one per line
             </p>
             <textarea
               autoFocus
@@ -293,7 +295,7 @@ export default function AnketaDetail() {
               disabled={!vkRaw.trim()}
               className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40"
             >
-              Привязать рандомно
+              {t('vk_assign_random')}
             </button>
           </div>
         </div>

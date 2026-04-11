@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import { useStore } from '@/store'
 import { CityEntry } from '@/types'
+import { useT } from '@/i18n'
 
 function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -10,6 +11,7 @@ function uid() {
 
 export default function AnketaForm() {
   const navigate = useNavigate()
+  const t = useT()
   const { workerId, id } = useParams<{ workerId?: string; id?: string }>()
   const { anketas, addAnketa, updateAnketa } = useStore()
   const existing = id ? anketas.find(a => a.id === id) : null
@@ -62,146 +64,96 @@ export default function AnketaForm() {
             <ArrowLeft size={18} />
           </button>
           <h1 className="text-xl font-bold text-text flex-1">
-            {existing ? 'Редактировать' : 'Новая анкета'}
+            {existing ? t('form_edit_profile') : t('form_new_profile')}
           </h1>
         </div>
       </div>
 
       <div className="px-4 flex flex-col gap-5">
-        {/* Name + Age */}
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Имя</label>
-            <input
-              autoFocus
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Анна"
-              className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
-            />
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">{t('form_name')}</label>
+            <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)}
+              placeholder="Anna"
+              className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
           </div>
           <div className="w-24">
-            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Возраст</label>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={age}
-              onChange={e => setAge(e.target.value)}
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">{t('form_age')}</label>
+            <input type="number" inputMode="numeric" value={age} onChange={e => setAge(e.target.value)}
               placeholder="25"
-              className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
-            />
+              className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
           </div>
         </div>
 
-        {/* Telegram */}
         <div>
           <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Telegram</label>
-          <input
-            type="text"
-            value={telegram}
-            onChange={e => setTelegram(e.target.value)}
+          <input type="text" value={telegram} onChange={e => setTelegram(e.target.value)}
             placeholder="@username"
-            className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono"
-          />
+            className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono" />
         </div>
 
-        {/* Cities */}
         <div>
           <div className="flex items-center justify-between mb-2 px-1">
-            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Города</label>
-            <button
-              onClick={() => setShowCityBulk(!showCityBulk)}
-              className="text-xs text-accent-light font-medium"
-            >
-              {showCityBulk ? 'По одному' : 'Вставить списком'}
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('form_cities')}</label>
+            <button onClick={() => setShowCityBulk(!showCityBulk)} className="text-xs text-accent-light font-medium">
+              {showCityBulk ? t('form_one_by_one') : t('form_bulk_list')}
             </button>
           </div>
 
           {showCityBulk ? (
             <div className="relative">
-              <textarea
-                autoFocus
-                value={cityBulk}
-                onChange={e => setCityBulk(e.target.value)}
-                placeholder={'Москва\nСанкт-Петербург\nНовосибирск\n...по одному городу на строку'}
+              <textarea autoFocus value={cityBulk} onChange={e => setCityBulk(e.target.value)}
+                placeholder={'Moscow\nSaint Petersburg\nNovosibirsk\n...one city per line'}
                 rows={5}
-                className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none text-sm"
-              />
+                className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none text-sm" />
               <button
                 onClick={() => {
-                  const newCities = cityBulk
-                    .split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l)
+                  const newCities = cityBulk.split('\n').map(l => l.trim()).filter(l => l)
                     .map(name => ({ id: uid(), city: name, status: 'active' as const }))
-                  if (newCities.length) {
-                    setCities([...cities.filter(c => c.city), ...newCities])
-                    setCityBulk('')
-                    setShowCityBulk(false)
-                  }
+                  if (newCities.length) { setCities([...cities.filter(c => c.city), ...newCities]); setCityBulk(''); setShowCityBulk(false) }
                 }}
-                className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center"
-              >
+                className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
                 <Plus size={16} className="text-white" />
               </button>
             </div>
           ) : (
-          <div className="flex flex-col gap-2">
-            {cities.map((city, i) => (
-              <div key={city.id} className="flex items-center gap-2">
-                <span className="text-text-muted text-sm w-5 text-center flex-shrink-0">{i + 1}</span>
-                <input
-                  type="text"
-                  value={city.city}
-                  onChange={e => updateCity(city.id, e.target.value)}
-                  placeholder="Город"
-                  className="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
-                />
-                <button
-                  onClick={() => toggleStatus(city.id)}
-                  className={`text-base flex-shrink-0 ${city.status === 'blocked' ? 'opacity-100' : 'opacity-30'}`}
-                  title={city.status === 'blocked' ? 'Заблокирован' : 'Активный'}
-                >
-                  ✖️
-                </button>
-                {cities.length > 1 && (
-                  <button onClick={() => removeCity(city.id)} className="text-text-muted flex-shrink-0">
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              onClick={addCity}
-              className="flex items-center justify-center gap-2 border border-dashed border-border rounded-xl py-2.5 text-text-muted text-sm hover:border-accent hover:text-accent transition-colors"
-            >
-              <Plus size={14} />
-              Добавить город
-            </button>
-          </div>
+            <div className="flex flex-col gap-2">
+              {cities.map((city, i) => (
+                <div key={city.id} className="flex items-center gap-2">
+                  <span className="text-text-muted text-sm w-5 text-center flex-shrink-0">{i + 1}</span>
+                  <input type="text" value={city.city} onChange={e => updateCity(city.id, e.target.value)}
+                    placeholder={t('form_city_placeholder')}
+                    className="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
+                  <button onClick={() => toggleStatus(city.id)}
+                    className={`text-base flex-shrink-0 ${city.status === 'blocked' ? 'opacity-100' : 'opacity-30'}`}>✖️</button>
+                  {cities.length > 1 && (
+                    <button onClick={() => removeCity(city.id)} className="text-text-muted flex-shrink-0"><X size={14} /></button>
+                  )}
+                </div>
+              ))}
+              <button onClick={addCity}
+                className="flex items-center justify-center gap-2 border border-dashed border-border rounded-xl py-2.5 text-text-muted text-sm hover:border-accent hover:text-accent transition-colors">
+                <Plus size={14} />
+                {t('form_add_city')}
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Dates */}
         <div>
-          <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Даты рождения</label>
+          <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">{t('form_dates')}</label>
           <div className="relative mb-2">
-            <textarea
-              value={dateInput}
-              onChange={e => setDateInput(e.target.value)}
-              placeholder={'07.03.2000\n11.18.2000\n01.27.2001\n...можно вставить сразу несколько'}
+            <textarea value={dateInput} onChange={e => setDateInput(e.target.value)}
+              placeholder={'07.03.2000\n11.18.2000\n01.27.2001\n...paste multiple at once'}
               rows={3}
-              className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono resize-none text-sm"
-            />
+              className="w-full bg-card border border-border rounded-2xl px-4 py-3 pr-14 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors font-mono resize-none text-sm" />
             <button
               onClick={() => {
                 const lines = dateInput.split('\n').map(l => l.trim()).filter(l => l && !birthDates.includes(l))
                 if (lines.length) setBirthDates([...birthDates, ...lines])
                 setDateInput('')
               }}
-              className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0"
-            >
+              className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
               <Plus size={16} className="text-white" />
             </button>
           </div>
@@ -210,33 +162,24 @@ export default function AnketaForm() {
               {birthDates.map(d => (
                 <span key={d} className="flex items-center gap-1.5 bg-card border border-border text-text text-sm px-3 py-1.5 rounded-xl font-mono">
                   {d}
-                  <button onClick={() => setBirthDates(birthDates.filter(x => x !== d))}>
-                    <X size={12} className="text-text-muted" />
-                  </button>
+                  <button onClick={() => setBirthDates(birthDates.filter(x => x !== d))}><X size={12} className="text-text-muted" /></button>
                 </span>
               ))}
             </div>
           )}
         </div>
 
-        {/* Notes */}
         <div>
-          <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">Заметки</label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Доп. информация..."
+          <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2 px-1">{t('form_notes')}</label>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)}
+            placeholder={t('form_notes_placeholder')}
             rows={3}
-            className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none"
-          />
+            className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none" />
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={!name.trim()}
-          className="w-full bg-accent rounded-2xl py-4 text-white font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform shadow-glow"
-        >
-          {existing ? 'Сохранить' : 'Создать анкету'}
+        <button onClick={handleSave} disabled={!name.trim()}
+          className="w-full bg-accent rounded-2xl py-4 text-white font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform shadow-glow">
+          {existing ? t('form_save') : t('form_create')}
         </button>
       </div>
     </div>

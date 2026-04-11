@@ -25,7 +25,7 @@ export default function App() {
           <div className="w-12 h-12 rounded-2xl bg-accent-glow border border-accent/20 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
           </div>
-          <p className="text-text-muted text-sm">Загрузка...</p>
+          <p className="text-text-muted text-sm">Loading...</p>
         </div>
       </div>
     )

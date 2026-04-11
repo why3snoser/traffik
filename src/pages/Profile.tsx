@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Plus, Target, Zap, X, Settings } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
+import { useT } from '@/i18n'
 
 const GOAL_EMOJIS = ['📱', '💻', '🚗', '✈️', '👟', '⌚', '🏠', '🎮', '💎', '🔥']
 const GOAL_COLORS = ['#7c5cfc', '#22d3a5', '#fbbf24', '#ff5f7e', '#60a5fa', '#f472b6']
 
 export default function Profile() {
-  const { profile, addGoal, deleteGoal, addToGoal, updateSettings } = useStore()
+  const t = useT()
+  const { profile, addGoal, deleteGoal, updateSettings } = useStore()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
   const [showAddGoal, setShowAddGoal] = useState(false)
@@ -17,8 +19,6 @@ export default function Profile() {
   const [goalColor, setGoalColor] = useState('#7c5cfc')
   const [goalImageUrl, setGoalImageUrl] = useState('')
   const [goalDesc, setGoalDesc] = useState('')
-  const [addingToGoal, setAddingToGoal] = useState<string | null>(null)
-  const [addAmount, setAddAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [rubRate, setRubRate] = useState(String(r2u))
   const [uahRate, setUahRate] = useState(String(u2ua))
@@ -34,13 +34,6 @@ export default function Profile() {
     if (!goalTitle.trim() || !target) return
     addGoal({ title: goalTitle.trim(), emoji: goalEmoji, targetAmount: target, savedAmount: 0, color: goalColor, imageUrl: goalImageUrl.trim() || undefined, description: goalDesc.trim() || undefined })
     setGoalTitle(''); setGoalAmount(''); setGoalImageUrl(''); setGoalDesc(''); setShowAddGoal(false)
-  }
-
-  const handleAddToGoal = (id: string) => {
-    const a = parseFloat(addAmount.replace(',', '.'))
-    if (!a) return
-    addToGoal(id, a)
-    setAddingToGoal(null); setAddAmount('')
   }
 
   const handleSaveSettings = () => {
@@ -63,7 +56,7 @@ export default function Profile() {
             <h2 className="text-xl font-bold text-text">{profile.name}</h2>
             <div className="flex items-center gap-1.5 text-accent-light text-sm">
               <Zap size={12} />
-              <span>Уровень {profile.level}</span>
+              <span>{t('level_label')} {profile.level}</span>
             </div>
           </div>
           <button onClick={() => setShowSettings(true)} className="text-text-muted">
@@ -80,13 +73,13 @@ export default function Profile() {
         </div>
 
         <div className="pt-4 border-t border-white/10">
-          <p className="text-text-muted text-xs">Всего заработано</p>
+          <p className="text-text-muted text-xs">{t('total_earned')}</p>
           <p className="text-2xl font-bold gradient-text">{fmtUsd(availableUsd)}</p>
           <p className="text-text-muted text-sm">{fmtUah(usdToUah(availableUsd, u2ua))}</p>
           {goalsUsd > 0 && (
             <p className="text-text-muted text-xs mt-1">
-              Доступно: <span className="text-accent-light font-semibold">{fmtUsd(totalUsd)}</span>
-              <span className="ml-1.5">· В целях: {fmtUsd(goalsUsd)}</span>
+              {t('available_label')}: <span className="text-accent-light font-semibold">{fmtUsd(totalUsd)}</span>
+              <span className="ml-1.5">· {t('in_goals_label')}: {fmtUsd(goalsUsd)}</span>
             </p>
           )}
         </div>
@@ -96,11 +89,11 @@ export default function Profile() {
       <div className="flex items-center justify-between mb-4 px-1">
         <h3 className="text-base font-bold text-text flex items-center gap-2">
           <Target size={16} className="text-accent-light" />
-          Цели
+          {t('goals_header')}
         </h3>
         <button onClick={() => setShowAddGoal(true)} className="flex items-center gap-1.5 text-accent-light text-sm font-medium">
           <Plus size={14} />
-          Добавить
+          {t('goals_add')}
         </button>
       </div>
 
@@ -112,8 +105,8 @@ export default function Profile() {
           return (
             <div key={goal.id} className="bg-card border border-border rounded-2xl overflow-hidden">
               {goal.imageUrl && (
-                <div className={`relative overflow-hidden ${isLast ? 'h-64' : 'h-36'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover object-[center_60%]" />
+                <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: 'center 30%' }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
@@ -127,69 +120,43 @@ export default function Profile() {
                 </div>
               )}
               <div className="p-4">
-              {!goal.imageUrl && (
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-2xl">{goal.emoji}</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-text">{goal.title}</span>
-                    <button onClick={() => deleteGoal(goal.id)} className="text-text-muted hover:text-danger">
-                      <X size={14} />
-                    </button>
+                {!goal.imageUrl && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-2xl">{goal.emoji}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-text">{goal.title}</span>
+                        <button onClick={() => deleteGoal(goal.id)} className="text-text-muted hover:text-danger">
+                          <X size={14} />
+                        </button>
+                      </div>
+                      {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
+                      <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
+                        <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
+                      </div>
+                    </div>
                   </div>
-                  {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-sm font-bold" style={{ color: goal.color }}>
-                      {fmtUsd(goal.savedAmount)}
-                    </span>
-                    <span className="text-xs text-text-muted">из {fmtUsd(goal.targetAmount)}</span>
-                  </div>
-                </div>
-              </div>
-              )}
-              {goal.imageUrl && (
-                <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
-                  <span className="text-xs text-text-muted">из {fmtUsd(goal.targetAmount)}</span>
-                </div>
-              )}
-
-              <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: goal.color }} />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs text-text-muted">{pct.toFixed(0)}%</span>
-                  {remaining > 0 && (
-                    <span className="text-xs text-text-muted ml-2">осталось {fmtUsd(remaining)}</span>
-                  )}
-                </div>
-                {addingToGoal === goal.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      autoFocus
-                      type="number"
-                      inputMode="decimal"
-                      value={addAmount}
-                      onChange={e => setAddAmount(e.target.value)}
-                      placeholder="$ сумма"
-                      className="w-24 bg-bg border border-border rounded-xl px-3 py-1.5 text-sm text-text focus:outline-none focus:border-accent"
-                    />
-                    <button onClick={() => handleAddToGoal(goal.id)} className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white" style={{ backgroundColor: goal.color }}>+</button>
-                    <button onClick={() => setAddingToGoal(null)} className="text-text-muted"><X size={14} /></button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setAddingToGoal(goal.id); setAddAmount('') }}
-                    className="text-xs font-medium px-3 py-1.5 rounded-xl border"
-                    style={{ color: goal.color, borderColor: `${goal.color}40` }}
-                  >
-                    Пополнить
-                  </button>
                 )}
+                {goal.imageUrl && (
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
+                    <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
+                  </div>
+                )}
+
+                <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: goal.color }} />
+                </div>
+
+                <div className="flex items-center">
+                  <span className="text-xs text-text-muted">{pct.toFixed(0)}%</span>
+                  {remaining > 0
+                    ? <span className="text-xs text-text-muted ml-2">remaining {fmtUsd(remaining)}</span>
+                    : <span className="text-xs text-success ml-2">{t('goal_completed')}</span>
+                  }
+                </div>
               </div>
-            </div>
             </div>
           )
         })}
@@ -201,18 +168,18 @@ export default function Profile() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-text mb-5">Новая цель</h3>
+            <h3 className="text-lg font-bold text-text mb-5">{t('new_goal')}</h3>
             <div className="flex flex-col gap-4">
               <div className="flex gap-2 flex-wrap">
                 {GOAL_EMOJIS.map(e => (
                   <button key={e} onClick={() => setGoalEmoji(e)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${goalEmoji === e ? 'bg-accent-glow border border-accent/40 scale-110' : 'bg-card border border-border'}`}>{e}</button>
                 ))}
               </div>
-              <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder="Название цели" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
-              <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder="Описание (необязательно)" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
-              <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder="Ссылка на фото (необязательно)" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+              <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder={t('goal_name_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
+              <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder={t('goal_desc_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+              <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder={t('goal_image_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
               <div className="relative">
-                <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder="Сумма" className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
+                <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder={t('goal_amount_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>
               </div>
               <div className="flex gap-2">
@@ -220,7 +187,7 @@ export default function Profile() {
                   <button key={c} onClick={() => setGoalColor(c)} className={`w-8 h-8 rounded-full transition-all ${goalColor === c ? 'scale-125 ring-2 ring-white/30' : ''}`} style={{ backgroundColor: c }} />
                 ))}
               </div>
-              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40">Добавить</button>
+              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40">{t('goal_add_btn')}</button>
             </div>
           </div>
         </div>
@@ -232,17 +199,28 @@ export default function Profile() {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-text mb-5">Курс валют</h3>
+            <h3 className="text-lg font-bold text-text mb-5">{t('settings_title')}</h3>
             <div className="flex flex-col gap-4">
               <div>
-                <label className="text-xs text-text-muted mb-2 block">1 USD = ? RUB</label>
+                <label className="text-xs text-text-muted mb-2 block">{t('settings_rub_usd')}</label>
                 <input type="number" value={rubRate} onChange={e => setRubRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
               </div>
               <div>
-                <label className="text-xs text-text-muted mb-2 block">1 USD = ? UAH</label>
+                <label className="text-xs text-text-muted mb-2 block">{t('settings_usd_uah')}</label>
                 <input type="number" value={uahRate} onChange={e => setUahRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
               </div>
-              <button onClick={handleSaveSettings} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold">Сохранить</button>
+              <div>
+                <label className="text-xs text-text-muted mb-2 block">{t('settings_language')}</label>
+                <div className="flex gap-2">
+                  {(['en', 'uk'] as const).map(lang => (
+                    <button key={lang} onClick={() => updateSettings({ language: lang })}
+                      className={`flex-1 py-3 rounded-2xl text-sm font-semibold border transition-all ${profile.settings.language === lang ? 'bg-accent border-accent/40 text-white' : 'bg-card border-border text-text-muted'}`}>
+                      {lang === 'en' ? '🇬🇧 English' : '🇺🇦 Українська'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button onClick={handleSaveSettings} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold">{t('settings_save')}</button>
             </div>
           </div>
         </div>
