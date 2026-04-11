@@ -44,41 +44,42 @@ export default function Profile() {
   }
 
   return (
-    <div className="px-4 pt-6 pb-28">
+    <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
       {/* Profile card */}
-      <div className="bg-gradient-to-br from-accent/20 to-surface border border-accent/20 rounded-3xl p-5 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-accent/5 -translate-y-1/2 translate-x-1/2" />
+      <div className="card-gradient rounded-3xl p-5 mb-6 relative overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
+        <div className="absolute -bottom-10 left-0 w-32 h-32 rounded-full bg-black/10" />
         <div className="flex items-center gap-4 mb-5">
           <div className="w-14 h-14 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center">
             <span className="text-2xl">👑</span>
           </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-text">{profile.name}</h2>
-            <div className="flex items-center gap-1.5 text-accent-light text-sm">
+          <div className="flex-1 relative">
+            <h2 className="text-xl font-bold text-white">{profile.name}</h2>
+            <div className="flex items-center gap-1.5 text-white/70 text-sm">
               <Zap size={12} />
               <span>{t('level_label')} {profile.level}</span>
             </div>
           </div>
-          <button onClick={() => setShowSettings(true)} className="text-text-muted">
+          <button onClick={() => setShowSettings(true)} className="text-white/60 hover:text-white relative">
             <Settings size={18} />
           </button>
         </div>
 
-        <div className="mb-1.5 flex justify-between text-xs text-text-muted">
+        <div className="mb-1.5 flex justify-between text-xs text-white/60 relative">
           <span>{profile.xp % xpForLevel} XP</span>
           <span>{xpForLevel} XP</span>
         </div>
-        <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-4">
-          <div className="h-full bg-gradient-to-r from-accent to-accent-light rounded-full transition-all duration-700" style={{ width: `${xpProgress}%` }} />
+        <div className="h-1.5 bg-black/20 rounded-full overflow-hidden mb-4 relative">
+          <div className="h-full bg-white/80 rounded-full transition-all duration-700" style={{ width: `${xpProgress}%` }} />
         </div>
 
-        <div className="pt-4 border-t border-white/10">
-          <p className="text-text-muted text-xs">{t('total_earned')}</p>
-          <p className="text-2xl font-bold gradient-text">{fmtUsd(availableUsd)}</p>
-          <p className="text-text-muted text-sm">{fmtUah(usdToUah(availableUsd, u2ua))}</p>
+        <div className="pt-4 border-t border-white/15 relative">
+          <p className="text-white/60 text-xs">{t('total_earned')}</p>
+          <p className="text-3xl font-bold text-white">{fmtUsd(availableUsd)}</p>
+          <p className="text-white/60 text-sm">{fmtUah(usdToUah(availableUsd, u2ua))}</p>
           {goalsUsd > 0 && (
-            <p className="text-text-muted text-xs mt-1">
-              {t('available_label')}: <span className="text-accent-light font-semibold">{fmtUsd(totalUsd)}</span>
+            <p className="text-white/50 text-xs mt-1">
+              {t('available_label')}: <span className="text-white/80 font-semibold">{fmtUsd(totalUsd)}</span>
               <span className="ml-1.5">· {t('in_goals_label')}: {fmtUsd(goalsUsd)}</span>
             </p>
           )}
@@ -103,7 +104,7 @@ export default function Profile() {
           const remaining = goal.targetAmount - goal.savedAmount
           const isLast = idx === profile.goals.length - 1
           return (
-            <div key={goal.id} className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
                   <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: 'center 30%' }} />
@@ -166,9 +167,9 @@ export default function Profile() {
       {showAddGoal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddGoal(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-text mb-5">{t('new_goal')}</h3>
+          <div className="relative w-full max-w-lg glass rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
+            <h3 className="text-lg font-bold text-white mb-5">{t('new_goal')}</h3>
             <div className="flex flex-col gap-4">
               <div className="flex gap-2 flex-wrap">
                 {GOAL_EMOJIS.map(e => (
@@ -187,7 +188,7 @@ export default function Profile() {
                   <button key={c} onClick={() => setGoalColor(c)} className={`w-8 h-8 rounded-full transition-all ${goalColor === c ? 'scale-125 ring-2 ring-white/30' : ''}`} style={{ backgroundColor: c }} />
                 ))}
               </div>
-              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40">{t('goal_add_btn')}</button>
+              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full btn-gradient rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40 shadow-glow">{t('goal_add_btn')}</button>
             </div>
           </div>
         </div>
@@ -197,9 +198,9 @@ export default function Profile() {
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowSettings(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-text mb-5">{t('settings_title')}</h3>
+          <div className="relative w-full max-w-lg glass rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
+            <h3 className="text-lg font-bold text-white mb-5">{t('settings_title')}</h3>
             <div className="flex flex-col gap-4">
               <div>
                 <label className="text-xs text-text-muted mb-2 block">{t('settings_rub_usd')}</label>
@@ -220,7 +221,7 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-              <button onClick={handleSaveSettings} className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold">{t('settings_save')}</button>
+              <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 text-white font-semibold shadow-glow">{t('settings_save')}</button>
             </div>
           </div>
         </div>
