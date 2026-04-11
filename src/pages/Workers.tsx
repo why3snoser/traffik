@@ -56,7 +56,7 @@ export default function Workers() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {workers.map((worker) => {
             const usd = rubToUsd(worker.totalProfit, rub2usd)
             const uah = usdToUah(usd, usd2uah)

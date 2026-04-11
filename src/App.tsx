@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import BottomNav from '@/components/BottomNav'
+import Sidebar from '@/components/Sidebar'
 import Workers from '@/pages/Workers'
 import WorkerDetail from '@/pages/WorkerDetail'
 import AnketaDetail from '@/pages/AnketaDetail'
@@ -32,22 +33,31 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg max-w-lg mx-auto relative">
-      <main className="animate-fade-in">
-        <Routes>
-          <Route path="/" element={<Workers />} />
-          <Route path="/workers/:id" element={<WorkerDetail />} />
-          <Route path="/workers/:id/edit" element={<Workers />} />
-          <Route path="/workers/:workerId/anketas/new" element={<AnketaForm />} />
-          <Route path="/workers/:id/profit/new" element={<ProfitForm />} />
-          <Route path="/anketas/:id" element={<AnketaDetail />} />
-          <Route path="/anketas/:id/edit" element={<AnketaForm />} />
-          <Route path="/finance" element={<Finance />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/stats" element={<Stats />} />
-        </Routes>
-      </main>
-      <BottomNav />
+    <div className="min-h-screen bg-bg flex">
+      <Sidebar />
+      {/* Main content — offset by sidebar on desktop */}
+      <div className="flex-1 md:ml-56 min-w-0">
+        <div className="max-w-lg mx-auto md:max-w-2xl md:mx-0 relative">
+          <main className="animate-fade-in">
+            <Routes>
+              <Route path="/" element={<Workers />} />
+              <Route path="/workers/:id" element={<WorkerDetail />} />
+              <Route path="/workers/:id/edit" element={<Workers />} />
+              <Route path="/workers/:workerId/anketas/new" element={<AnketaForm />} />
+              <Route path="/workers/:id/profit/new" element={<ProfitForm />} />
+              <Route path="/anketas/:id" element={<AnketaDetail />} />
+              <Route path="/anketas/:id/edit" element={<AnketaForm />} />
+              <Route path="/finance" element={<Finance />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/stats" element={<Stats />} />
+            </Routes>
+          </main>
+          {/* Bottom nav only on mobile */}
+          <div className="md:hidden">
+            <BottomNav />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
