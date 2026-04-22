@@ -67,8 +67,8 @@ export default function Profile() {
           <span>{levelInfo.currentXp.toLocaleString()} ₴</span>
           <span>{levelInfo.neededXp.toLocaleString()} ₴ to lvl {levelInfo.level + 1}</span>
         </div>
-        <div className="h-1.5 bg-black/20 rounded-full overflow-hidden mb-4 relative">
-          <div className="h-full bg-white/80 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%` }} />
+        <div className="h-1.5 bg-black/30 rounded-full overflow-hidden mb-4 relative">
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#00e676', boxShadow: '0 0 8px rgba(0,230,118,0.6)' }} />
         </div>
 
         <div className="pt-4 border-t border-white/15 relative">
@@ -180,7 +180,7 @@ export default function Profile() {
                   <button key={c} onClick={() => setGoalColor(c)} className={`w-8 h-8 rounded-full transition-all ${goalColor === c ? 'scale-125 ring-2 ring-white/30' : ''}`} style={{ backgroundColor: c }} />
                 ))}
               </div>
-              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full btn-gradient rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40 shadow-glow">{t('goal_add_btn')}</button>
+              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">{t('goal_add_btn')}</button>
             </div>
           </div>
         </div>
@@ -213,7 +213,7 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-              <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 text-white font-semibold shadow-glow">{t('settings_save')}</button>
+              <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">{t('settings_save')}</button>
             </div>
           </div>
         </div>

@@ -37,7 +37,7 @@ export default function Workers() {
         </div>
         <button onClick={() => setShowAdd(true)}
           className="btn-gradient w-10 h-10 rounded-xl flex items-center justify-center shadow-glow-sm active:scale-95 transition-transform">
-          <Plus size={20} className="text-white" />
+          <Plus size={20} />
         </button>
       </div>
 
@@ -117,7 +117,7 @@ export default function Workers() {
               placeholder={t('workers_name_placeholder')}
               className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4" />
             <button onClick={handleAdd} disabled={!name.trim()}
-              className="w-full btn-gradient rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40 shadow-glow">
+              className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">
               {t('workers_create')}
             </button>
           </div>

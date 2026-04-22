@@ -13,21 +13,26 @@ export default function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 safe-bottom"
-      style={{ background: 'rgba(8,6,23,0.85)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 safe-bottom"
+      style={{ background: 'rgba(6,12,8,0.92)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(0,230,118,0.08)' }}
+    >
       <div className="flex items-center justify-around px-2 pt-2 pb-2 max-w-lg mx-auto">
         {navItems.map(({ to, icon: Icon, label, exact }) => (
           <NavLink key={to} to={to} end={exact}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all ${isActive ? 'text-accent-light' : 'text-text-muted'}`
+              `flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all ${isActive ? '' : 'text-text-muted'}`
             }
           >
             {({ isActive }) => (
               <>
-                <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-accent-glow' : ''}`}>
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+                <div
+                  className={`p-1.5 rounded-xl transition-all ${isActive ? '' : ''}`}
+                  style={isActive ? { background: 'rgba(0,230,118,0.15)' } : {}}
+                >
+                  <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} style={isActive ? { color: '#00e676' } : {}} />
                 </div>
-                <span className="text-[10px] font-medium">{label}</span>
+                <span className="text-[10px] font-medium" style={isActive ? { color: '#00e676' } : {}}>{label}</span>
               </>
             )}
           </NavLink>

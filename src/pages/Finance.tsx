@@ -57,7 +57,7 @@ export default function Finance() {
           { label: 'Месяц', usd: stats.month },
           { label: 'Всего', usd: stats.total },
         ].map(({ label, usd }) => (
-          <div key={label} className="bg-card border border-border rounded-2xl p-4">
+          <div key={label} className="glass-light rounded-2xl p-4">
             <p className="text-text-muted text-xs mb-1">{label}</p>
             <p className="text-xl font-bold text-text">{fmtUsd(usd)}</p>
             <p className="text-text-muted text-xs">{fmtUah(usdToUah(usd, u2ua))}</p>
@@ -72,7 +72,7 @@ export default function Finance() {
             <button
               key={w.id}
               onClick={() => navigate(`/workers/${w.id}`)}
-              className="flex-shrink-0 bg-card border border-border rounded-2xl px-4 py-3 text-left"
+              className="flex-shrink-0 glass-light rounded-2xl px-4 py-3 text-left hover:bg-white/[0.06] transition-colors"
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-base">{w.emoji}</span>
@@ -107,7 +107,7 @@ export default function Finance() {
                   const usd = rubToUsd(entry.myShare, r2u)
                   const uah = usdToUah(usd, u2ua)
                   return (
-                    <div key={entry.id} className="bg-card border border-border rounded-2xl px-4 py-3">
+                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {w && <span className="text-sm">{w.emoji}</span>}

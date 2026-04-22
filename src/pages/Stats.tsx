@@ -47,12 +47,12 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
       >
         <defs>
           <linearGradient id={`${chartId}-area`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#00e676" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#00e676" stopOpacity="0.02" />
           </linearGradient>
           <linearGradient id={`${chartId}-line`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#ec4899" />
+            <stop offset="0%" stopColor="#00e676" />
+            <stop offset="100%" stopColor="#00c853" />
           </linearGradient>
         </defs>
 
@@ -63,7 +63,7 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
         {/* Static dots for non-zero days */}
         {pts.map((p, i) =>
           p.usd > 0 && hover !== i ? (
-            <circle key={i} cx={p.x} cy={p.y} r="2" fill="rgba(124,92,252,0.7)" style={{ pointerEvents: 'none' }} />
+            <circle key={i} cx={p.x} cy={p.y} r="2" fill="rgba(0,230,118,0.7)" style={{ pointerEvents: 'none' }} />
           ) : null
         )}
 
@@ -71,8 +71,8 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
         {hover !== null && (
           <g style={{ pointerEvents: 'none' }}>
             <line x1={pts[hover].x} y1={0} x2={pts[hover].x} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
-            <circle cx={pts[hover].x} cy={pts[hover].y} r="5.5" fill="#080617" stroke="#ec4899" strokeWidth="2" />
-            <circle cx={pts[hover].x} cy={pts[hover].y} r="2.5" fill="#ec4899" />
+            <circle cx={pts[hover].x} cy={pts[hover].y} r="5.5" fill="#080617" stroke="#00c853" strokeWidth="2" />
+            <circle cx={pts[hover].x} cy={pts[hover].y} r="2.5" fill="#00c853" />
           </g>
         )}
       </svg>
@@ -85,7 +85,7 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
             left: `${((hover + 0.5) / data.length) * 100}%`,
             transform: tooltipTransform,
             background: 'rgba(20,16,48,0.92)',
-            border: '1px solid rgba(124,92,252,0.4)',
+            border: '1px solid rgba(0,230,118,0.4)',
             backdropFilter: 'blur(8px)',
           }}
         >
@@ -122,11 +122,11 @@ function BarChart({ data }: { data: { label: string; usd: number; pct: number }[
             style={{
               height: `${Math.max(d.pct, d.usd > 0 ? 6 : 2)}%`,
               background: hover === i
-                ? 'linear-gradient(180deg,#ec4899 0%,#7c3aed 100%)'
+                ? 'linear-gradient(180deg,#00c853 0%,#00e676 100%)'
                 : d.usd > 0
-                  ? `linear-gradient(180deg,rgba(124,92,252,${0.35 + d.pct / 100 * 0.65}) 0%,rgba(236,72,153,${0.15 + d.pct / 100 * 0.35}) 100%)`
+                  ? `linear-gradient(180deg,rgba(0,230,118,${0.35 + d.pct / 100 * 0.65}) 0%,rgba(0,200,83,${0.15 + d.pct / 100 * 0.35}) 100%)`
                   : 'rgba(255,255,255,0.05)',
-              boxShadow: hover === i ? '0 0 12px rgba(236,72,153,0.4)' : 'none',
+              boxShadow: hover === i ? '0 0 12px rgba(0,200,83,0.4)' : 'none',
             }}
           />
           <span className="text-[10px] text-text-muted">{d.label}</span>
@@ -249,7 +249,7 @@ export default function Stats() {
           <span className="text-xs text-text-muted">{levelInfo.currentXp.toLocaleString()} / {levelInfo.neededXp.toLocaleString()} ₴</span>
         </div>
         <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: 'linear-gradient(90deg,#7c3aed,#ec4899)' }} />
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: 'linear-gradient(90deg,#00e676,#00c853)' }} />
         </div>
         <p className="text-text-muted text-xs">{Math.round(levelInfo.neededXp - levelInfo.currentXp).toLocaleString()} ₴ to level {levelInfo.level + 1}</p>
       </div>
@@ -262,7 +262,7 @@ export default function Stats() {
           <p className="text-text-muted text-xs">{fmtUah(usdToUah(rubToUsd(thisRub, r2u), u2ua))}</p>
         </div>
         {monthChange !== null ? (
-          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold ${monthChange > 0 ? 'bg-emerald-500/20 text-emerald-400' : monthChange < 0 ? 'bg-red-500/20 text-red-400' : 'bg-white/5 text-text-muted'}`}>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold ${monthChange > 0 ? 'bg-accent/15 text-accent' : monthChange < 0 ? 'bg-danger/20 text-danger' : 'bg-white/5 text-text-muted'}`}>
             {monthChange > 0 ? <TrendingUp size={14} /> : monthChange < 0 ? <TrendingDown size={14} /> : <Minus size={14} />}
             {monthChange > 0 ? '+' : ''}{monthChange.toFixed(0)}%
           </div>
@@ -309,7 +309,7 @@ export default function Stats() {
                   </div>
                 </div>
                 <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500 group-hover:opacity-70" style={{ width: `${barPct}%`, background: 'linear-gradient(90deg,#7c3aed,#ec4899)' }} />
+                  <div className="h-full rounded-full transition-all duration-500 group-hover:opacity-70" style={{ width: `${barPct}%`, background: 'linear-gradient(90deg,#00e676,#00c853)' }} />
                 </div>
               </div>
             ))}
@@ -364,7 +364,7 @@ export default function Stats() {
                       </div>
                     </div>
                     <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#7c3aed,#ec4899)' : 'rgba(124,92,252,0.45)' }} />
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#00e676,#00c853)' : 'rgba(0,230,118,0.45)' }} />
                     </div>
                   </div>
                 </button>
