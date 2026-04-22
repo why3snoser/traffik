@@ -32,7 +32,7 @@ export default function Finance() {
   const grouped = useMemo(() => {
     const map = new Map<string, typeof profits>()
     profits.forEach(p => {
-      const date = new Date(p.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
+      const date = new Date(p.createdAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })
       if (!map.has(date)) map.set(date, [])
       map.get(date)!.push(p)
     })
@@ -108,20 +108,22 @@ export default function Finance() {
                   const uah = usdToUah(usd, u2ua)
                   return (
                     <div key={entry.id} className="bg-card border border-border rounded-2xl px-4 py-3">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {w && <span className="text-sm">{w.emoji}</span>}
                           <span className="text-xs text-text-muted">{PROFIT_LABELS[entry.type]}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-success font-bold">{fmtUsd(usd)}</span>
+                          <span className="text-success font-bold text-sm">{fmtUsd(usd)}</span>
+                          <span className="text-text-muted text-xs ml-1.5">({fmtUah(uah)})</span>
                         </div>
                       </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-text-muted text-xs">{fmtUah(uah)}</span>
-                        <span className="text-text-muted text-xs">· {entry.amount.toLocaleString('ru-RU')} ₽</span>
-                        {entry.note && <span className="text-text-muted text-xs">· {entry.note}</span>}
-                      </div>
+                      {(entry.note || entry.amount) && (
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span className="text-text-muted text-[10px]">{entry.amount.toLocaleString('uk-UA')} ₽</span>
+                          {entry.note && <span className="text-text-muted text-[10px]">· {entry.note}</span>}
+                        </div>
+                      )}
                     </div>
                   )
                 })}

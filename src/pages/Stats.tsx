@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
 import { useNavigate } from 'react-router-dom'
 
 // ── SVG Line Chart ───────────────────────────────────────────────────────────
-function LineChart({ data, chartId }: { data: { usd: number; label: string }[]; chartId: string }) {
+function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string }[]; chartId: string; u2ua: number }) {
   const [hover, setHover] = useState<number | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
   const W = 500, H = 90, PAD_TOP = 10, PAD_X = 6
   const max = Math.max(...data.map(d => d.usd), 0.01)
 
@@ -22,13 +23,28 @@ function LineChart({ data, chartId }: { data: { usd: number; label: string }[]; 
     const cx = (prev.x + p.x) / 2
     return `C ${cx} ${prev.y} ${cx} ${p.y} ${p.x} ${p.y}`
   }).join(' ')
-
   const area = `${smooth} L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`
-  const slotW = W / data.length
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return
+    const rect = svgRef.current.getBoundingClientRect()
+    const pct = (e.clientX - rect.left) / rect.width
+    setHover(Math.min(Math.max(Math.floor(pct * data.length), 0), data.length - 1))
+  }
+
+  const tooltipTransform = hover === null ? '' : hover <= 1 ? 'translateX(0%)' : hover >= data.length - 2 ? 'translateX(-100%)' : 'translateX(-50%)'
 
   return (
     <div className="relative" style={{ height: H }}>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="w-full h-full">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="w-full h-full"
+        style={{ cursor: 'crosshair' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHover(null)}
+      >
         <defs>
           <linearGradient id={`${chartId}-area`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.4" />
@@ -39,45 +55,47 @@ function LineChart({ data, chartId }: { data: { usd: number; label: string }[]; 
             <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
         </defs>
-        <path d={area} fill={`url(#${chartId}-area)`} />
-        <path d={smooth} fill="none" stroke={`url(#${chartId}-line)`} strokeWidth="1.8" strokeLinecap="round" />
 
-        {pts.map((p, i) => (
-          <g key={i}>
-            <rect
-              x={p.x - slotW / 2} y={0} width={slotW} height={H}
-              fill="transparent"
-              style={{ cursor: 'crosshair' }}
-              onMouseEnter={() => setHover(i)}
-              onMouseLeave={() => setHover(null)}
-            />
-            {hover === i ? (
-              <>
-                <line x1={p.x} y1={0} x2={p.x} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx={p.x} cy={p.y} r="5.5" fill="#080617" stroke="#ec4899" strokeWidth="2" />
-                <circle cx={p.x} cy={p.y} r="2.5" fill="#ec4899" />
-              </>
-            ) : p.usd > 0 ? (
-              <circle cx={p.x} cy={p.y} r="2" fill="rgba(124,92,252,0.7)" />
-            ) : null}
+        {/* Chart paths — pointer-events:none so SVG catches mouse */}
+        <path d={area} fill={`url(#${chartId}-area)`} style={{ pointerEvents: 'none' }} />
+        <path d={smooth} fill="none" stroke={`url(#${chartId}-line)`} strokeWidth="1.8" strokeLinecap="round" style={{ pointerEvents: 'none' }} />
+
+        {/* Static dots for non-zero days */}
+        {pts.map((p, i) =>
+          p.usd > 0 && hover !== i ? (
+            <circle key={i} cx={p.x} cy={p.y} r="2" fill="rgba(124,92,252,0.7)" style={{ pointerEvents: 'none' }} />
+          ) : null
+        )}
+
+        {/* Hover indicator */}
+        {hover !== null && (
+          <g style={{ pointerEvents: 'none' }}>
+            <line x1={pts[hover].x} y1={0} x2={pts[hover].x} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
+            <circle cx={pts[hover].x} cy={pts[hover].y} r="5.5" fill="#080617" stroke="#ec4899" strokeWidth="2" />
+            <circle cx={pts[hover].x} cy={pts[hover].y} r="2.5" fill="#ec4899" />
           </g>
-        ))}
+        )}
       </svg>
 
       {hover !== null && (
         <div
           className="absolute z-10 text-xs font-bold text-white rounded-xl px-2.5 py-1.5 pointer-events-none whitespace-nowrap"
           style={{
-            top: -4,
+            top: -2,
             left: `${((hover + 0.5) / data.length) * 100}%`,
-            transform: 'translateX(-50%)',
-            background: 'rgba(20,16,48,0.9)',
+            transform: tooltipTransform,
+            background: 'rgba(20,16,48,0.92)',
             border: '1px solid rgba(124,92,252,0.4)',
             backdropFilter: 'blur(8px)',
           }}
         >
-          {data[hover].usd > 0 ? fmtUsd(data[hover].usd) : '—'}
-          <div className="text-white/50 font-normal text-[10px]">{data[hover].label}</div>
+          {data[hover].usd > 0 ? (
+            <>
+              {fmtUsd(data[hover].usd)}
+              <span className="text-white/50 font-normal"> ({fmtUah(usdToUah(data[hover].usd, u2ua))})</span>
+            </>
+          ) : '—'}
+          <div className="text-white/50 font-normal text-[10px] mt-0.5">{data[hover].label}</div>
         </div>
       )}
     </div>
@@ -92,23 +110,22 @@ function BarChart({ data }: { data: { label: string; usd: number; pct: number }[
       {data.map((d, i) => (
         <div
           key={d.label}
-          className="flex-1 flex flex-col items-center gap-1 h-full justify-end group cursor-default"
+          className="flex-1 flex flex-col items-center gap-1 h-full justify-end cursor-default"
           onMouseEnter={() => setHover(i)}
           onMouseLeave={() => setHover(null)}
         >
-          <span
-            className="text-[9px] font-semibold transition-all duration-150"
-            style={{ color: '#22d3a5', opacity: hover === i || d.pct > 90 ? 1 : 0 }}
-          >
+          <span className="text-[9px] font-semibold transition-all duration-150" style={{ color: '#22d3a5', opacity: hover === i ? 1 : 0 }}>
             {fmtUsd(d.usd)}
           </span>
           <div
             className="w-full rounded-t-lg transition-all duration-200"
             style={{
-              height: `${Math.max(d.pct, 4)}%`,
+              height: `${Math.max(d.pct, d.usd > 0 ? 6 : 2)}%`,
               background: hover === i
                 ? 'linear-gradient(180deg,#ec4899 0%,#7c3aed 100%)'
-                : `linear-gradient(180deg,rgba(124,92,252,${0.35 + d.pct / 100 * 0.65}) 0%,rgba(236,72,153,${0.15 + d.pct / 100 * 0.35}) 100%)`,
+                : d.usd > 0
+                  ? `linear-gradient(180deg,rgba(124,92,252,${0.35 + d.pct / 100 * 0.65}) 0%,rgba(236,72,153,${0.15 + d.pct / 100 * 0.35}) 100%)`
+                  : 'rgba(255,255,255,0.05)',
               boxShadow: hover === i ? '0 0 12px rgba(236,72,153,0.4)' : 'none',
             }}
           />
@@ -131,7 +148,7 @@ export default function Stats() {
   const avgUsd = profits.length > 0 ? totalUsd / profits.length : 0
   const levelInfo = getLevelInfo(totalUah)
 
-  // Always show last 6 months (filled with 0 if no data)
+  // Always last 6 months (uk-UA locale)
   const monthlyData = useMemo(() => {
     const rows = []
     for (let i = 5; i >= 0; i--) {
@@ -140,13 +157,13 @@ export default function Stats() {
       d.setMonth(d.getMonth() - i)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
-      rows.push({ label: d.toLocaleDateString('ru-RU', { month: 'short' }), usd: rubToUsd(rub, r2u) })
+      rows.push({ label: d.toLocaleDateString('uk-UA', { month: 'short' }), usd: rubToUsd(rub, r2u) })
     }
     const max = Math.max(...rows.map(r => r.usd), 0.01)
     return rows.map(r => ({ ...r, pct: (r.usd / max) * 100 }))
   }, [profits, r2u])
 
-  // This month vs last month
+  // This month vs last
   const now = new Date()
   const thisKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -155,7 +172,7 @@ export default function Stats() {
   const lastRub = profits.filter(p => p.createdAt.startsWith(lastKey)).reduce((s, p) => s + p.myShare, 0)
   const monthChange = lastRub > 0 ? ((thisRub - lastRub) / lastRub) * 100 : null
 
-  // Daily line chart (last 14 days)
+  // Daily line chart (last 14 days, uk-UA)
   const dailyData = useMemo(() => {
     const days = []
     for (let i = 13; i >= 0; i--) {
@@ -163,7 +180,7 @@ export default function Stats() {
       d.setDate(d.getDate() - i)
       const key = d.toISOString().slice(0, 10)
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
-      days.push({ label: d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }), usd: rubToUsd(rub, r2u) })
+      days.push({ label: d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(rub, r2u) })
     }
     return days
   }, [profits, r2u])
@@ -191,7 +208,7 @@ export default function Stats() {
     })
     const entries = Array.from(map.entries()).sort((a, b) => b[1] - a[1])
     return entries[0]
-      ? { date: new Date(entries[0][0]).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }), usd: rubToUsd(entries[0][1], r2u) }
+      ? { date: new Date(entries[0][0]).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(entries[0][1], r2u) }
       : null
   }, [profits, r2u])
 
@@ -269,7 +286,7 @@ export default function Stats() {
           <Zap size={14} className="text-accent-light" />
           <h3 className="text-sm font-semibold text-text">Daily — last 14 days</h3>
         </div>
-        <LineChart data={dailyData} chartId="daily" />
+        <LineChart data={dailyData} chartId="daily" u2ua={u2ua} />
         <div className="flex mt-2">
           <span className="text-[9px] text-text-muted">{dailyData[0]?.label}</span>
           <span className="flex-1" />
@@ -292,10 +309,7 @@ export default function Stats() {
                   </div>
                 </div>
                 <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 group-hover:opacity-80"
-                    style={{ width: `${barPct}%`, background: 'linear-gradient(90deg,#7c3aed,#ec4899)' }}
-                  />
+                  <div className="h-full rounded-full transition-all duration-500 group-hover:opacity-70" style={{ width: `${barPct}%`, background: 'linear-gradient(90deg,#7c3aed,#ec4899)' }} />
                 </div>
               </div>
             ))}
@@ -314,14 +328,16 @@ export default function Stats() {
             {bestDay && (
               <div className="bg-black/20 rounded-xl p-3 hover:bg-black/30 transition-colors">
                 <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">Best day</p>
-                <p className="text-lg font-bold text-white">{fmtUsd(bestDay.usd)}</p>
-                <p className="text-text-muted text-xs">{bestDay.date}</p>
+                <p className="text-base font-bold text-white">{fmtUsd(bestDay.usd)}</p>
+                <p className="text-text-muted text-[10px]">{fmtUah(usdToUah(bestDay.usd, u2ua))}</p>
+                <p className="text-text-muted text-xs mt-0.5">{bestDay.date}</p>
               </div>
             )}
             <div className="bg-black/20 rounded-xl p-3 hover:bg-black/30 transition-colors">
               <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">Avg deal</p>
-              <p className="text-lg font-bold text-white">{fmtUsd(avgUsd)}</p>
-              <p className="text-text-muted text-xs">{profits.length} deals total</p>
+              <p className="text-base font-bold text-white">{fmtUsd(avgUsd)}</p>
+              <p className="text-text-muted text-[10px]">{fmtUah(usdToUah(avgUsd, u2ua))}</p>
+              <p className="text-text-muted text-xs mt-0.5">{profits.length} deals total</p>
             </div>
           </div>
         </div>
@@ -336,23 +352,19 @@ export default function Stats() {
               const usd = rubToUsd(w.totalProfit, r2u)
               const pct = (w.totalProfit / topWorkers[0].totalProfit) * 100
               return (
-                <button
-                  key={w.id}
-                  onClick={() => navigate(`/workers/${w.id}`)}
-                  className="flex items-center gap-3 text-left w-full rounded-xl p-1 hover:bg-white/5 transition-colors"
-                >
+                <button key={w.id} onClick={() => navigate(`/workers/${w.id}`)} className="flex items-center gap-3 text-left w-full rounded-xl p-1 hover:bg-white/5 transition-colors">
                   <span className="text-lg w-7 text-center">{i < 3 ? medals[i] : <span className="text-text-muted text-sm font-bold">{i + 1}</span>}</span>
                   <span className="text-xl">{w.emoji}</span>
                   <div className="flex-1">
                     <div className="flex justify-between items-baseline mb-1">
                       <span className="text-sm text-text font-medium">{w.name}</span>
-                      <span className="text-sm font-bold" style={{ color: '#22d3a5' }}>{fmtUsd(usd)}</span>
+                      <div className="text-right">
+                        <span className="text-sm font-bold" style={{ color: '#22d3a5' }}>{fmtUsd(usd)}</span>
+                        <span className="text-text-muted text-[10px] ml-1.5">({fmtUah(usdToUah(usd, u2ua))})</span>
+                      </div>
                     </div>
                     <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#7c3aed,#ec4899)' : 'rgba(124,92,252,0.45)' }}
-                      />
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#7c3aed,#ec4899)' : 'rgba(124,92,252,0.45)' }} />
                     </div>
                   </div>
                 </button>
