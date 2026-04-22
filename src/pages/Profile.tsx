@@ -26,8 +26,6 @@ export default function Profile() {
   const xpForLevel = 1000
   const xpProgress = (profile.xp % xpForLevel) / xpForLevel * 100
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
-  const goalsUsd = profile.goals.reduce((sum, g) => sum + g.savedAmount, 0)
-  const freeUsd = Math.max(0, totalUsd - goalsUsd)
 
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
@@ -77,12 +75,6 @@ export default function Profile() {
           <p className="text-white/60 text-xs">{t('total_earned')}</p>
           <p className="text-3xl font-bold text-white">{fmtUsd(totalUsd)}</p>
           <p className="text-white/60 text-sm">{fmtUah(usdToUah(totalUsd, u2ua))}</p>
-          {goalsUsd > 0 && (
-            <p className="text-white/50 text-xs mt-1">
-              {t('available_label')}: <span className="text-white/80 font-semibold">{fmtUsd(freeUsd)}</span>
-              <span className="ml-1.5">· {t('in_goals_label')}: {fmtUsd(goalsUsd)}</span>
-            </p>
-          )}
         </div>
       </div>
 
@@ -100,8 +92,8 @@ export default function Profile() {
 
       <div className="flex flex-col gap-3">
         {profile.goals.map((goal, idx) => {
-          const pct = Math.min(100, (goal.savedAmount / goal.targetAmount) * 100)
-          const remaining = goal.targetAmount - goal.savedAmount
+          const pct = Math.min(100, (totalUsd / goal.targetAmount) * 100)
+          const remaining = goal.targetAmount - totalUsd
           const isLast = idx === profile.goals.length - 1
           return (
             <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
@@ -133,7 +125,7 @@ export default function Profile() {
                       </div>
                       {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
                       <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
+                        <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(totalUsd)}</span>
                         <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                       </div>
                     </div>
@@ -141,7 +133,7 @@ export default function Profile() {
                 )}
                 {goal.imageUrl && (
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(goal.savedAmount)}</span>
+                    <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(totalUsd)}</span>
                     <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                   </div>
                 )}
