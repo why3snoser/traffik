@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Plus, Target, Zap, X, Settings } from 'lucide-react'
 import { useStore } from '@/store'
-import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
+import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
 
 const GOAL_EMOJIS = ['📱', '💻', '🚗', '✈️', '👟', '⌚', '🏠', '🎮', '💎', '🔥']
@@ -23,9 +23,9 @@ export default function Profile() {
   const [rubRate, setRubRate] = useState(String(r2u))
   const [uahRate, setUahRate] = useState(String(u2ua))
 
-  const xpForLevel = 1000
-  const xpProgress = (profile.xp % xpForLevel) / xpForLevel * 100
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
+  const totalUah = usdToUah(totalUsd, u2ua)
+  const levelInfo = getLevelInfo(totalUah)
 
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
@@ -55,7 +55,7 @@ export default function Profile() {
             <h2 className="text-xl font-bold text-white">{profile.name}</h2>
             <div className="flex items-center gap-1.5 text-white/70 text-sm">
               <Zap size={12} />
-              <span>{t('level_label')} {profile.level}</span>
+              <span>{t('level_label')} {levelInfo.level}</span>
             </div>
           </div>
           <button onClick={() => setShowSettings(true)} className="text-white/60 hover:text-white relative">
@@ -64,11 +64,11 @@ export default function Profile() {
         </div>
 
         <div className="mb-1.5 flex justify-between text-xs text-white/60 relative">
-          <span>{profile.xp % xpForLevel} XP</span>
-          <span>{xpForLevel} XP</span>
+          <span>{levelInfo.currentXp.toLocaleString()} ₴</span>
+          <span>{levelInfo.neededXp.toLocaleString()} ₴ to lvl {levelInfo.level + 1}</span>
         </div>
         <div className="h-1.5 bg-black/20 rounded-full overflow-hidden mb-4 relative">
-          <div className="h-full bg-white/80 rounded-full transition-all duration-700" style={{ width: `${xpProgress}%` }} />
+          <div className="h-full bg-white/80 rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%` }} />
         </div>
 
         <div className="pt-4 border-t border-white/15 relative">

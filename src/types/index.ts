@@ -114,6 +114,21 @@ export function fmtRub(rub: number): string {
   return rub.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽'
 }
 
+// Level N requires N*1000 UAH to complete (1→2: 1k, 2→3: 2k, etc.)
+export function getLevelInfo(totalUah: number): { level: number; progress: number; currentXp: number; neededXp: number } {
+  let level = 1
+  let cumulative = 0
+  while (true) {
+    const needed = level * 1000
+    if (cumulative + needed > totalUah) {
+      const current = Math.floor(totalUah - cumulative)
+      return { level, progress: current / needed, currentXp: current, neededXp: needed }
+    }
+    cumulative += needed
+    level++
+  }
+}
+
 // Parse VK account list: "ID:password:token:useragent" per line
 export function parseVkList(raw: string): VKAccount[] {
   return raw

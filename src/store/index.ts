@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import {
   Worker, Anketa, ProfitEntry, UserProfile, Goal,
-  CityEntry, VKAccount, calcMyShare, ProfitType, parseVkList
+  CityEntry, VKAccount, calcMyShare, ProfitType, parseVkList,
+  getLevelInfo, rubToUsd, usdToUah,
 } from '@/types'
 
 function uid() {
@@ -139,6 +140,13 @@ export const useStore = create<AppState>()((set, get) => ({
       goals: p.goals ?? [],
       settings: p.settings ?? DEFAULT_SETTINGS,
     } : DEFAULT_PROFILE
+
+    // Recalculate level from UAH earnings
+    if (p) {
+      const uah = usdToUah(rubToUsd(profile.totalEarned, profile.settings.rubToUsd), profile.settings.usdToUah)
+      const { level } = getLevelInfo(uah)
+      profile.level = level
+    }
 
     // If no profile row yet, create it. If goals empty, seed defaults.
     if (!p) {
@@ -295,25 +303,17 @@ export const useStore = create<AppState>()((set, get) => ({
       createdAt: new Date().toISOString(),
     }
     set(s => {
-      const xpGain = Math.floor(myShare / 100)
-      const newXp = s.profile.xp + xpGain
-      const newLevel = Math.floor(newXp / 1000) + 1
-      // Auto-distribute earned USD equally across incomplete goals
-      const usdEarned = myShare / s.profile.settings.rubToUsd
-      const incompleteGoals = s.profile.goals.filter(g => g.savedAmount < g.targetAmount)
-      const perGoal = incompleteGoals.length > 0 ? usdEarned / incompleteGoals.length : 0
-      const newGoals = s.profile.goals.map(g =>
-        g.savedAmount < g.targetAmount
-          ? { ...g, savedAmount: Math.min(g.targetAmount, g.savedAmount + perGoal) }
-          : g
-      )
-      const newProfile = { ...s.profile, totalEarned: s.profile.totalEarned + myShare, xp: newXp, level: newLevel, goals: newGoals }
+      const newTotalEarned = s.profile.totalEarned + myShare
+      const totalUah = usdToUah(rubToUsd(newTotalEarned, s.profile.settings.rubToUsd), s.profile.settings.usdToUah)
+      const { level } = getLevelInfo(totalUah)
+      const newProfile = { ...s.profile, totalEarned: newTotalEarned, xp: Math.floor(totalUah), level }
       saveProfile(newProfile)
       return {
         profits: [entry, ...s.profits],
         workers: s.workers.map(w => w.id === workerId ? { ...w, totalProfit: w.totalProfit + myShare } : w),
         profile: newProfile,
       }
+
     })
     await supabase.from('profits').insert({
       id: entry.id, worker_id: workerId, anketa_id: anketaId ?? null,
