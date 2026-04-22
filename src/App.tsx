@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
 import Workers from '@/pages/Workers'
@@ -14,6 +14,7 @@ import { useStore } from '@/store'
 
 export default function App() {
   const { initialized, initialize } = useStore()
+  const location = useLocation()
 
   useEffect(() => {
     initialize()
@@ -38,7 +39,7 @@ export default function App() {
       {/* Main content — offset by sidebar on desktop */}
       <div className="flex-1 md:ml-56 min-w-0">
         <div className="max-w-lg mx-auto md:max-w-2xl md:mx-0 relative">
-          <main className="animate-fade-in">
+          <main key={location.pathname} className="animate-page-in">
             <Routes>
               <Route path="/" element={<Workers />} />
               <Route path="/workers/:id" element={<WorkerDetail />} />
