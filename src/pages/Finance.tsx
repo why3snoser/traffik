@@ -42,6 +42,15 @@ export default function Finance() {
   const workerMap = useMemo(() =>
     new Map(workers.map(w => [w.id, w])), [workers])
 
+  const entryDelays = useMemo(() => {
+    const delays = new Map<string, number>()
+    let idx = 0
+    grouped.forEach(([, entries]) => {
+      entries.forEach(entry => { delays.set(entry.id, idx++ * 45) })
+    })
+    return delays
+  }, [grouped])
+
   return (
     <div className="px-4 pt-6 pb-28">
       <div className="mb-6">
@@ -107,7 +116,7 @@ export default function Finance() {
                   const usd = rubToUsd(entry.myShare, r2u)
                   const uah = usdToUah(usd, u2ua)
                   return (
-                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3 neon-hover slide-in-left" style={{ borderLeft: '2px solid rgba(0,230,118,0.30)' }}>
+                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3 neon-hover slide-in-left" style={{ borderLeft: '2px solid rgba(0,230,118,0.30)', animationDelay: `${entryDelays.get(entry.id) ?? 0}ms` }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           {w && <span className="text-base">{w.emoji}</span>}

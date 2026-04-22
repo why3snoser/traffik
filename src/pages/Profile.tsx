@@ -99,8 +99,8 @@ export default function Profile() {
             <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: 'center 30%' }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: 'center 30%', filter: 'brightness(0.75) saturate(0.55)' }} />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,18,8,0.85) 0%, rgba(0,230,118,0.06) 60%, transparent 100%)' }} />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
                       <p className="font-bold text-white text-lg">{goal.title}</p>
@@ -125,7 +125,7 @@ export default function Profile() {
                       </div>
                       {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
                       <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(totalUsd)}</span>
+                        <span className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(totalUsd)}</span>
                         <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                       </div>
                     </div>
@@ -133,13 +133,13 @@ export default function Profile() {
                 )}
                 {goal.imageUrl && (
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-sm font-bold" style={{ color: goal.color }}>{fmtUsd(totalUsd)}</span>
+                    <span className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(totalUsd)}</span>
                     <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                   </div>
                 )}
 
                 <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: goal.color }} />
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: '#00e676', boxShadow: '0 0 8px rgba(0,230,118,0.5)' }} />
                 </div>
 
                 <div className="flex items-center">
