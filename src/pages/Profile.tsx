@@ -27,7 +27,7 @@ export default function Profile() {
   const xpProgress = (profile.xp % xpForLevel) / xpForLevel * 100
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
   const goalsUsd = profile.goals.reduce((sum, g) => sum + g.savedAmount, 0)
-  const availableUsd = totalUsd + goalsUsd
+  const freeUsd = Math.max(0, totalUsd - goalsUsd)
 
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
@@ -75,11 +75,11 @@ export default function Profile() {
 
         <div className="pt-4 border-t border-white/15 relative">
           <p className="text-white/60 text-xs">{t('total_earned')}</p>
-          <p className="text-3xl font-bold text-white">{fmtUsd(availableUsd)}</p>
-          <p className="text-white/60 text-sm">{fmtUah(usdToUah(availableUsd, u2ua))}</p>
+          <p className="text-3xl font-bold text-white">{fmtUsd(totalUsd)}</p>
+          <p className="text-white/60 text-sm">{fmtUah(usdToUah(totalUsd, u2ua))}</p>
           {goalsUsd > 0 && (
             <p className="text-white/50 text-xs mt-1">
-              {t('available_label')}: <span className="text-white/80 font-semibold">{fmtUsd(totalUsd)}</span>
+              {t('available_label')}: <span className="text-white/80 font-semibold">{fmtUsd(freeUsd)}</span>
               <span className="ml-1.5">· {t('in_goals_label')}: {fmtUsd(goalsUsd)}</span>
             </p>
           )}
