@@ -50,7 +50,7 @@ export default function Finance() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 stagger">
         {[
           { label: 'Today', usd: stats.today },
           { label: 'Week', usd: stats.week },
@@ -107,7 +107,7 @@ export default function Finance() {
                   const usd = rubToUsd(entry.myShare, r2u)
                   const uah = usdToUah(usd, u2ua)
                   return (
-                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3 neon-hover" style={{ borderLeft: '2px solid rgba(0,230,118,0.30)' }}>
+                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3 neon-hover slide-in-left" style={{ borderLeft: '2px solid rgba(0,230,118,0.30)' }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           {w && <span className="text-base">{w.emoji}</span>}

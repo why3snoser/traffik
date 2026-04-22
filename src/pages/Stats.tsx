@@ -84,9 +84,10 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
             top: -2,
             left: `${((hover + 0.5) / data.length) * 100}%`,
             transform: tooltipTransform,
-            background: 'rgba(20,16,48,0.92)',
-            border: '1px solid rgba(0,230,118,0.4)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(4,12,6,0.97)',
+            border: '1px solid rgba(0,230,118,0.35)',
+            backdropFilter: 'blur(14px)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 16px rgba(0,230,118,0.08)',
           }}
         >
           {data[hover].usd > 0 ? (
@@ -114,7 +115,7 @@ function BarChart({ data }: { data: { label: string; usd: number; pct: number }[
           onMouseEnter={() => setHover(i)}
           onMouseLeave={() => setHover(null)}
         >
-          <span className="text-[9px] font-semibold transition-all duration-150" style={{ color: '#22d3a5', opacity: hover === i ? 1 : 0 }}>
+          <span className="text-[9px] font-semibold transition-all duration-150" style={{ color: '#00e676', opacity: hover === i ? 1 : 0 }}>
             {fmtUsd(d.usd)}
           </span>
           <div
@@ -225,13 +226,13 @@ export default function Stats() {
       </div>
 
       {/* Key stats */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-3 gap-3 mb-5 stagger">
         {[
           { label: 'Earned', value: fmtUsd(totalUsd), sub: fmtUah(totalUah) },
           { label: 'Deals', value: String(profits.length), sub: `~${fmtUsd(avgUsd)}/ea` },
           { label: 'Workers', value: String(workers.length), sub: `${anketas.length} profiles` },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="glass-light rounded-2xl p-3 text-center hover:bg-white/[0.07] transition-colors">
+          <div key={label} className="glass-light rounded-2xl p-3 text-center neon-hover" style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease' }}>
             <p className="text-text font-bold text-sm">{value}</p>
             <p className="text-text-muted text-[10px] mt-0.5">{sub}</p>
             <p className="text-text-muted text-[10px] mt-0.5">{label}</p>
@@ -305,7 +306,7 @@ export default function Stats() {
                   <span className="text-xs text-text">{label}</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-[10px] text-text-muted">{pct.toFixed(0)}%</span>
-                    <span className="text-xs font-bold" style={{ color: '#22d3a5' }}>{fmtUsd(usd)}</span>
+                    <span className="text-xs font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</span>
                   </div>
                 </div>
                 <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
@@ -347,19 +348,19 @@ export default function Stats() {
       {topWorkers.length > 0 && (
         <div className="glass-light rounded-2xl p-4">
           <h3 className="text-sm font-semibold text-text mb-3">Worker ranking</h3>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 stagger">
             {topWorkers.map((w, i) => {
               const usd = rubToUsd(w.totalProfit, r2u)
               const pct = (w.totalProfit / topWorkers[0].totalProfit) * 100
               return (
-                <button key={w.id} onClick={() => navigate(`/workers/${w.id}`)} className="flex items-center gap-3 text-left w-full rounded-xl p-1 hover:bg-white/5 transition-colors">
+                <button key={w.id} onClick={() => navigate(`/workers/${w.id}`)} className="flex items-center gap-3 text-left w-full rounded-xl p-2 hover:bg-white/5 transition-all duration-200 hover:translate-x-1">
                   <span className="text-lg w-7 text-center">{i < 3 ? medals[i] : <span className="text-text-muted text-sm font-bold">{i + 1}</span>}</span>
                   <span className="text-xl">{w.emoji}</span>
                   <div className="flex-1">
                     <div className="flex justify-between items-baseline mb-1">
                       <span className="text-sm text-text font-medium">{w.name}</span>
                       <div className="text-right">
-                        <span className="text-sm font-bold" style={{ color: '#22d3a5' }}>{fmtUsd(usd)}</span>
+                        <span className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</span>
                         <span className="text-text-muted text-[10px] ml-1.5">({fmtUah(usdToUah(usd, u2ua))})</span>
                       </div>
                     </div>
