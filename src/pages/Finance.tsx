@@ -52,15 +52,15 @@ export default function Finance() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         {[
-          { label: 'Сегодня', usd: stats.today },
-          { label: 'Неделя', usd: stats.week },
-          { label: 'Месяц', usd: stats.month },
-          { label: 'Всего', usd: stats.total },
+          { label: 'Today', usd: stats.today },
+          { label: 'Week', usd: stats.week },
+          { label: 'Month', usd: stats.month },
+          { label: 'All time', usd: stats.total },
         ].map(({ label, usd }) => (
-          <div key={label} className="glass-light rounded-2xl p-4">
-            <p className="text-text-muted text-xs mb-1">{label}</p>
-            <p className="text-xl font-bold text-text">{fmtUsd(usd)}</p>
-            <p className="text-text-muted text-xs">{fmtUah(usdToUah(usd, u2ua))}</p>
+          <div key={label} className="glass-light rounded-2xl p-4 neon-hover">
+            <p className="text-text-muted text-[10px] uppercase tracking-widest mb-2">{label}</p>
+            <p className="text-xl font-bold text-white">{fmtUsd(usd)}</p>
+            <p className="text-text-muted text-xs mt-0.5">{fmtUah(usdToUah(usd, u2ua))}</p>
           </div>
         ))}
       </div>
@@ -107,23 +107,22 @@ export default function Finance() {
                   const usd = rubToUsd(entry.myShare, r2u)
                   const uah = usdToUah(usd, u2ua)
                   return (
-                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3">
+                    <div key={entry.id} className="glass-light rounded-2xl px-4 py-3 neon-hover" style={{ borderLeft: '2px solid rgba(0,230,118,0.30)' }}>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {w && <span className="text-sm">{w.emoji}</span>}
-                          <span className="text-xs text-text-muted">{PROFIT_LABELS[entry.type]}</span>
+                        <div className="flex items-center gap-2.5">
+                          {w && <span className="text-base">{w.emoji}</span>}
+                          <div>
+                            <p className="text-xs text-text font-medium">{PROFIT_LABELS[entry.type]}</p>
+                            {(entry.note || entry.amount > 0) && (
+                              <p className="text-text-muted text-[10px] mt-0.5">{entry.amount.toLocaleString('uk-UA')} ₽{entry.note ? ` · ${entry.note}` : ''}</p>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right">
-                          <span className="text-success font-bold text-sm">{fmtUsd(usd)}</span>
-                          <span className="text-text-muted text-xs ml-1.5">({fmtUah(uah)})</span>
+                          <p className="text-accent font-bold text-sm">+{fmtUsd(usd)}</p>
+                          <p className="text-text-muted text-[10px] mt-0.5">{fmtUah(uah)}</p>
                         </div>
                       </div>
-                      {(entry.note || entry.amount) && (
-                        <div className="flex items-baseline gap-1.5 mt-0.5">
-                          <span className="text-text-muted text-[10px]">{entry.amount.toLocaleString('uk-UA')} ₽</span>
-                          {entry.note && <span className="text-text-muted text-[10px]">· {entry.note}</span>}
-                        </div>
-                      )}
                     </div>
                   )
                 })}

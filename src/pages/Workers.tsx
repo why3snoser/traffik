@@ -44,16 +44,19 @@ export default function Workers() {
       {/* Total banner */}
       {totalRub > 0 && (
         <div className="card-gradient rounded-2xl p-5 mb-6 relative overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
-          <div className="absolute -bottom-10 -left-6 w-36 h-36 rounded-full bg-black/10" />
+          <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full" style={{ background: 'radial-gradient(circle,rgba(0,230,118,0.12) 0%,transparent 70%)' }} />
+          <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle,rgba(0,150,60,0.08) 0%,transparent 70%)' }} />
           <div className="relative flex items-center justify-between">
             <div>
-              <p className="text-white/70 text-xs font-medium uppercase tracking-widest mb-1">{t('workers_total')}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="neon-dot neon-pulse" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,230,118,0.7)' }}>{t('workers_total')}</p>
+              </div>
               <p className="text-3xl font-bold text-white">{fmtUsd(totalUsd)}</p>
-              <p className="text-white/60 text-sm mt-0.5">{fmtUah(totalUah)}</p>
+              <p className="text-sm mt-0.5" style={{ color: 'rgba(200,230,201,0.5)' }}>{fmtUah(totalUah)}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center">
-              <TrendingUp size={22} className="text-white" />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(0,230,118,0.15)', border: '1px solid rgba(0,230,118,0.25)' }}>
+              <TrendingUp size={22} style={{ color: '#00e676' }} />
             </div>
           </div>
         </div>
@@ -75,12 +78,15 @@ export default function Workers() {
             const uah = usdToUah(usd, usd2uah)
             return (
               <button key={worker.id} onClick={() => navigate(`/workers/${worker.id}`)}
-                className="glass-light rounded-2xl p-4 text-left active:scale-95 transition-all duration-200 hover:border-accent/30 group">
-                <div className="text-3xl mb-3">{worker.emoji}</div>
+                className="glass-light rounded-2xl p-4 text-left active:scale-95 transition-all duration-200 neon-hover group">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="text-3xl">{worker.emoji}</div>
+                  {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
+                </div>
                 <p className="font-semibold text-text truncate">{worker.name}</p>
                 {worker.totalProfit > 0 ? (
                   <div className="mt-1.5">
-                    <p className="text-sm font-bold gradient-text">{fmtUsd(usd)}</p>
+                    <p className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</p>
                     <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
                   </div>
                 ) : (

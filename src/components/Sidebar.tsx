@@ -63,12 +63,17 @@ export default function Sidebar() {
 
       {/* Balance card at bottom */}
       <div className="p-4">
-        <div className="rounded-2xl p-4 relative overflow-hidden" style={{ background: 'rgba(0,230,118,0.07)', border: '1px solid rgba(0,230,118,0.18)' }}>
-          <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full" style={{ background: 'rgba(0,230,118,0.06)' }} />
-          <p className="text-[10px] font-medium uppercase tracking-widest mb-1 relative" style={{ color: 'rgba(0,230,118,0.6)' }}>Total earned</p>
-          <p className="text-xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
-          <p className="text-xs mt-0.5 relative" style={{ color: 'rgba(200,230,201,0.45)' }}>{workers.length} workers</p>
+        <div className="rounded-2xl p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,rgba(0,230,118,0.08) 0%,rgba(0,150,60,0.05) 100%)', border: '1px solid rgba(0,230,118,0.20)', borderTopColor: 'rgba(0,230,118,0.35)' }}>
+          {/* decorative glow circle */}
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(0,230,118,0.12) 0%,transparent 70%)' }} />
+          <div className="flex items-center gap-1.5 mb-2 relative">
+            <div className="neon-dot neon-pulse" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,230,118,0.7)' }}>Total earned</p>
+          </div>
+          <p className="text-2xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
+          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,230,201,0.45)' }}>{workers.length} workers</p>
         </div>
+        <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(0,230,118,0.25)' }}>TRAFFIK v1.0</p>
       </div>
     </aside>
   )

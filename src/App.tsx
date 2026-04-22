@@ -35,6 +35,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg flex">
+      {/* Ambient background orbs */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '-15%', right: '-8%', width: '520px', height: '520px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,230,118,0.055) 0%, transparent 68%)' }} />
+        <div style={{ position: 'absolute', bottom: '-18%', left: '5%', width: '440px', height: '440px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,180,83,0.04) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '40%', left: '30%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,230,118,0.025) 0%, transparent 70%)' }} />
+      </div>
       <Sidebar />
       {/* Main content — offset by sidebar on desktop */}
       <div className="flex-1 md:ml-56 min-w-0">
