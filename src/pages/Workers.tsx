@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, X, TrendingUp, Flame } from 'lucide-react'
+import { Plus, X, TrendingUp, Flame, Pencil } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useT } from '@/i18n'
@@ -15,6 +15,8 @@ export default function Workers() {
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('👤')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [editAvatarId, setEditAvatarId] = useState<string | null>(null)
+  const [editAvatarUrl, setEditAvatarUrl] = useState('')
   const { rubToUsd: rub2usd, usdToUah: usd2uah } = profile.settings
 
   const handleAdd = async () => {
@@ -106,37 +108,73 @@ export default function Workers() {
             const usd = rubToUsd(worker.totalProfit, rub2usd)
             const uah = usdToUah(usd, usd2uah)
             return (
-              <button key={worker.id} onClick={() => navigate(`/workers/${worker.id}`)}
-                className="glass-light rounded-2xl overflow-hidden text-left active:scale-95 transition-all duration-200 neon-hover group">
-                {/* Avatar image or emoji header */}
-                {worker.avatarUrl ? (
-                  <div className="relative h-24 overflow-hidden">
-                    <img src={worker.avatarUrl} alt={worker.name}
-                      className="w-full h-full object-cover"
-                      style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,14,8,0.9) 0%, transparent 60%)' }} />
-                    {worker.totalProfit > 0 && <div className="absolute top-2 right-2 neon-dot neon-pulse" />}
-                  </div>
-                ) : (
-                  <div className="p-4 pb-0 flex items-start justify-between">
-                    <div className="text-3xl">{worker.emoji}</div>
-                    {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
-                  </div>
-                )}
-                <div className="p-3 pt-2">
-                  <p className="font-semibold text-text truncate text-sm">{worker.name}</p>
-                  {worker.totalProfit > 0 ? (
-                    <div className="mt-1">
-                      <p className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</p>
-                      <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
+              <div key={worker.id} className="glass-light rounded-2xl overflow-hidden transition-all duration-200 neon-hover group relative">
+                {/* Edit avatar button */}
+                <button
+                  onClick={e => { e.stopPropagation(); setEditAvatarId(worker.id); setEditAvatarUrl(worker.avatarUrl ?? '') }}
+                  className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+                  <Pencil size={11} style={{ color: '#00e676' }} />
+                </button>
+
+                <button className="w-full text-left active:scale-95 transition-transform" onClick={() => navigate(`/workers/${worker.id}`)}>
+                  {/* Avatar image or emoji header */}
+                  {worker.avatarUrl ? (
+                    <div className="relative h-24 overflow-hidden">
+                      <img src={worker.avatarUrl} alt={worker.name}
+                        className="w-full h-full object-cover"
+                        style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
+                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,14,8,0.9) 0%, transparent 60%)' }} />
+                      {worker.totalProfit > 0 && <div className="absolute top-2 left-2 neon-dot neon-pulse" />}
                     </div>
                   ) : (
-                    <p className="text-text-muted text-xs mt-1">{t('workers_no_profits')}</p>
+                    <div className="p-4 pb-0 flex items-start justify-between">
+                      <div className="text-3xl">{worker.emoji}</div>
+                      {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
+                    </div>
                   )}
-                </div>
-              </button>
+                  <div className="p-3 pt-2">
+                    <p className="font-semibold text-text truncate text-sm">{worker.name}</p>
+                    {worker.totalProfit > 0 ? (
+                      <div className="mt-1">
+                        <p className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</p>
+                        <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
+                      </div>
+                    ) : (
+                      <p className="text-text-muted text-xs mt-1">{t('workers_no_profits')}</p>
+                    )}
+                  </div>
+                </button>
+              </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Edit avatar modal */}
+      {editAvatarId && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" onClick={() => setEditAvatarId(null)}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative w-full max-w-md glass rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-white">Аватар воркера</h3>
+              <button onClick={() => setEditAvatarId(null)} className="text-text-muted hover:text-text"><X size={18} /></button>
+            </div>
+            {editAvatarUrl && (
+              <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4">
+                <img src={editAvatarUrl} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
+              </div>
+            )}
+            <input type="url" value={editAvatarUrl} onChange={e => setEditAvatarUrl(e.target.value)}
+              placeholder="URL фото (imgbb.com, imgur та ін.)"
+              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
+            <button
+              onClick={async () => { await setWorkerAvatar(editAvatarId, editAvatarUrl.trim()); setEditAvatarId(null) }}
+              className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">
+              Зберегти
+            </button>
+          </div>
         </div>
       )}
 

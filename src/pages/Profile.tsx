@@ -122,10 +122,52 @@ export default function Profile() {
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#00e676', boxShadow: '0 0 8px rgba(0,230,118,0.6)' }} />
         </div>
 
-        <div className="pt-4 border-t border-white/15 relative">
-          <p className="text-white/60 text-xs">{t('total_earned')}</p>
-          <p className="text-3xl font-bold text-white">{fmtUsd(totalUsd)}</p>
-          <p className="text-white/60 text-sm">{fmtUah(usdToUah(totalUsd, u2ua))}</p>
+      </div>
+
+      {/* Balance Card */}
+      <div className="rounded-3xl p-6 mb-6 relative overflow-hidden" style={{
+        background: 'linear-gradient(135deg, #0b2016 0%, #060e08 55%, #0d2818 100%)',
+        border: '1px solid rgba(0,230,118,0.22)',
+        borderTopColor: 'rgba(0,230,118,0.45)',
+        boxShadow: '0 0 50px rgba(0,230,118,0.1), 0 12px 40px rgba(0,0,0,0.7), inset 0 1px 0 rgba(0,230,118,0.12)',
+        minHeight: 178,
+      }}>
+        {/* Decorative rings */}
+        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,230,118,0.16) 0%, transparent 65%)' }} />
+        <div className="absolute right-6 -bottom-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,180,60,0.1) 0%, transparent 70%)' }} />
+        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(0,230,118,0.07)' }} />
+        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(0,230,118,0.04)' }} />
+
+        <div className="relative flex flex-col h-full">
+          {/* Top: chip + logo */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(0,230,118,0.45), rgba(0,150,60,0.3))', border: '1px solid rgba(0,230,118,0.35)' }}>
+              <div className="w-1/2 h-full" style={{ borderRight: '1px solid rgba(0,0,0,0.2)' }} />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="neon-dot neon-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(0,230,118,0.65)' }}>TRAFFIK</span>
+            </div>
+          </div>
+
+          {/* Balance */}
+          <div className="mb-5">
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(0,230,118,0.45)' }}>Загальний баланс</p>
+            <p className="text-4xl font-bold text-white tracking-tight num-pop">{fmtUsd(totalUsd)}</p>
+            <p className="text-sm mt-1" style={{ color: 'rgba(200,230,201,0.45)' }}>{fmtUah(totalUah)}</p>
+          </div>
+
+          {/* Bottom: name + level */}
+          <div className="flex items-end justify-between mt-auto">
+            <div>
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(0,230,118,0.35)' }}>HOLDER</p>
+              <p className="text-sm font-bold text-white uppercase tracking-wide">{profile.name}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(0,230,118,0.35)' }}>LEVEL</p>
+              <p className="text-sm font-bold" style={{ color: '#00e676' }}>LVL {levelInfo.level}</p>
+            </div>
+          </div>
         </div>
       </div>
 
