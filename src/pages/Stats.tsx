@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef } from 'react'
-import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame } from 'lucide-react'
 import { useStore } from '@/store'
-import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
+import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
 import { useNavigate } from 'react-router-dom'
 
 // ── SVG Line Chart ───────────────────────────────────────────────────────────
@@ -137,6 +137,91 @@ function BarChart({ data }: { data: { label: string; usd: number; pct: number }[
   )
 }
 
+// ── Heatmap Calendar ────────────────────────────────────────────────────────
+function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number }) {
+  const dayMap = useMemo(() => {
+    const m = new Map<string, number>()
+    profits.forEach(p => {
+      const k = p.createdAt.slice(0, 10)
+      m.set(k, (m.get(k) ?? 0) + p.myShare)
+    })
+    return m
+  }, [profits])
+
+  const weeks = useMemo(() => {
+    const todayD = new Date(); todayD.setHours(0, 0, 0, 0)
+    const dow = todayD.getDay()
+    const start = new Date(todayD)
+    start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1) - 14 * 7)
+    const ws: Array<Array<{ date: Date; key: string; rub: number }>> = []
+    const cur = new Date(start)
+    for (let w = 0; w < 15; w++) {
+      const week: typeof ws[0] = []
+      for (let d = 0; d < 7; d++) {
+        const key = cur.toISOString().slice(0, 10)
+        week.push({ date: new Date(cur), key, rub: dayMap.get(key) ?? 0 })
+        cur.setDate(cur.getDate() + 1)
+      }
+      ws.push(week)
+    }
+    return ws
+  }, [dayMap])
+
+  const maxRub = Math.max(...Array.from(dayMap.values()), 1)
+  const today = new Date(); today.setHours(23, 59, 59, 999)
+
+  const getColor = (rub: number, date: Date) => {
+    if (date > today) return 'rgba(255,255,255,0.02)'
+    if (rub === 0) return 'rgba(0,230,118,0.07)'
+    const t = rub / maxRub
+    return `rgba(0,230,118,${(0.22 + t * 0.78).toFixed(2)})`
+  }
+
+  const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+
+  return (
+    <div className="overflow-x-auto pb-1">
+      <div className="flex gap-1" style={{ minWidth: 'max-content' }}>
+        {/* Day labels */}
+        <div className="flex flex-col gap-1 pr-1.5 pt-5">
+          {DAYS.map(d => (
+            <div key={d} className="h-3.5 flex items-center text-[9px] text-text-muted leading-none">{d}</div>
+          ))}
+        </div>
+        {/* Columns */}
+        <div className="flex flex-col">
+          {/* Month labels */}
+          <div className="flex gap-1 mb-1 h-4">
+            {weeks.map((week, wi) => (
+              <div key={wi} className="w-3.5 text-[9px] text-text-muted text-center leading-none flex items-center justify-center">
+                {week[0].date.getDate() <= 7 ? week[0].date.toLocaleDateString('uk-UA', { month: 'short' }).slice(0, 3) : ''}
+              </div>
+            ))}
+          </div>
+          {/* Grid */}
+          <div className="flex gap-1">
+            {weeks.map((week, wi) => (
+              <div key={wi} className="flex flex-col gap-1">
+                {week.map(({ date, key, rub }) => {
+                  const usd = rubToUsd(rub, r2u)
+                  return (
+                    <div
+                      key={key}
+                      className="w-3.5 h-3.5 rounded-sm cursor-default transition-all duration-100 hover:scale-125"
+                      style={{ backgroundColor: getColor(rub, date) }}
+                      title={`${date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}${rub > 0 ? ` · ${fmtUsd(usd)}` : ''}`}
+                    />
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
   const { profits, workers, anketas, profile } = useStore()
@@ -199,6 +284,16 @@ export default function Stats() {
       barPct: (rub / maxRub) * 100,
     }))
   }, [profits, r2u, totalRub])
+
+  // Streak
+  const streak = useMemo(() => {
+    const daySet = new Set(profits.map(p => p.createdAt.slice(0, 10)))
+    const d = new Date(); d.setHours(0, 0, 0, 0)
+    if (!daySet.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+    let count = 0
+    while (daySet.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
+    return count
+  }, [profits])
 
   // Best day
   const bestDay = useMemo(() => {
@@ -292,6 +387,30 @@ export default function Stats() {
           <span className="text-[9px] text-text-muted">{dailyData[0]?.label}</span>
           <span className="flex-1" />
           <span className="text-[9px] text-text-muted">{dailyData[13]?.label}</span>
+        </div>
+      </div>
+
+      {/* Streak + Heatmap */}
+      <div className="glass-light rounded-2xl p-4 mb-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Flame size={15} style={{ color: '#ffa000' }} />
+            <h3 className="text-sm font-semibold text-text">Активність</h3>
+          </div>
+          {streak > 0 && (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold" style={{ background: 'rgba(255,160,0,0.12)', color: '#ffa000' }}>
+              <Flame size={12} />
+              {streak} {streak === 1 ? 'день' : streak < 5 ? 'дні' : 'днів'}
+            </div>
+          )}
+        </div>
+        <HeatmapCalendar profits={profits} r2u={r2u} />
+        <div className="flex items-center gap-2 mt-3">
+          <span className="text-[10px] text-text-muted">Менше</span>
+          {[0.07, 0.25, 0.5, 0.75, 1].map(o => (
+            <div key={o} className="w-3 h-3 rounded-sm" style={{ background: o === 0.07 ? 'rgba(0,230,118,0.07)' : `rgba(0,230,118,${o})` }} />
+          ))}
+          <span className="text-[10px] text-text-muted">Більше</span>
         </div>
       </div>
 

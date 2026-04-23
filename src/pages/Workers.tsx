@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, X, TrendingUp } from 'lucide-react'
+import { Plus, X, TrendingUp, Flame } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useT } from '@/i18n'
@@ -8,18 +8,20 @@ import { useT } from '@/i18n'
 const WORKER_EMOJIS = ['👤', '👩', '🧑', '👑', '🔥', '⚡', '💫', '🎯', '💎', '🦁']
 
 export default function Workers() {
-  const { workers, addWorker, profile } = useStore()
+  const { workers, addWorker, setWorkerAvatar, profile, profits } = useStore()
   const navigate = useNavigate()
   const t = useT()
   const [showAdd, setShowAdd] = useState(false)
   const [name, setName] = useState('')
   const [emoji, setEmoji] = useState('👤')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const { rubToUsd: rub2usd, usdToUah: usd2uah } = profile.settings
 
   const handleAdd = async () => {
     if (!name.trim()) return
     const w = await addWorker(name.trim(), emoji)
-    setName(''); setEmoji('👤'); setShowAdd(false)
+    if (avatarUrl.trim()) await setWorkerAvatar(w.id, avatarUrl.trim())
+    setName(''); setEmoji('👤'); setAvatarUrl(''); setShowAdd(false)
     navigate(`/workers/${w.id}`)
   }
 
@@ -27,10 +29,24 @@ export default function Workers() {
   const totalUsd = rubToUsd(totalRub, rub2usd)
   const totalUah = usdToUah(totalUsd, usd2uah)
 
+  // Streak: consecutive days with any profit ending today (or yesterday)
+  const streak = useMemo(() => {
+    const daySet = new Set(profits.map(p => p.createdAt.slice(0, 10)))
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    if (!daySet.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+    let count = 0
+    while (daySet.has(d.toISOString().slice(0, 10))) {
+      count++
+      d.setDate(d.getDate() - 1)
+    }
+    return count
+  }, [profits])
+
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">{t('workers_title')}</h1>
           <p className="text-text-muted text-sm mt-0.5">{t('workers_count')(workers.length)}</p>
@@ -40,6 +56,19 @@ export default function Workers() {
           <Plus size={20} />
         </button>
       </div>
+
+      {/* Streak banner */}
+      {streak > 0 && (
+        <div className="glass-light rounded-2xl px-4 py-3 mb-5 flex items-center gap-3" style={{ borderLeft: '2px solid rgba(255,160,0,0.5)' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,160,0,0.12)' }}>
+            <Flame size={18} style={{ color: '#ffa000' }} />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white">{streak} {streak === 1 ? 'день' : streak < 5 ? 'дні' : 'днів'} поспіль 🔥</p>
+            <p className="text-[11px] text-text-muted">Продовжуй — не втрачай серію!</p>
+          </div>
+        </div>
+      )}
 
       {/* Total banner */}
       {totalRub > 0 && (
@@ -78,20 +107,33 @@ export default function Workers() {
             const uah = usdToUah(usd, usd2uah)
             return (
               <button key={worker.id} onClick={() => navigate(`/workers/${worker.id}`)}
-                className="glass-light rounded-2xl p-4 text-left active:scale-95 transition-all duration-200 neon-hover group">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="text-3xl">{worker.emoji}</div>
-                  {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
-                </div>
-                <p className="font-semibold text-text truncate">{worker.name}</p>
-                {worker.totalProfit > 0 ? (
-                  <div className="mt-1.5">
-                    <p className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</p>
-                    <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
+                className="glass-light rounded-2xl overflow-hidden text-left active:scale-95 transition-all duration-200 neon-hover group">
+                {/* Avatar image or emoji header */}
+                {worker.avatarUrl ? (
+                  <div className="relative h-24 overflow-hidden">
+                    <img src={worker.avatarUrl} alt={worker.name}
+                      className="w-full h-full object-cover"
+                      style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,14,8,0.9) 0%, transparent 60%)' }} />
+                    {worker.totalProfit > 0 && <div className="absolute top-2 right-2 neon-dot neon-pulse" />}
                   </div>
                 ) : (
-                  <p className="text-text-muted text-xs mt-1.5">{t('workers_no_profits')}</p>
+                  <div className="p-4 pb-0 flex items-start justify-between">
+                    <div className="text-3xl">{worker.emoji}</div>
+                    {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
+                  </div>
                 )}
+                <div className="p-3 pt-2">
+                  <p className="font-semibold text-text truncate text-sm">{worker.name}</p>
+                  {worker.totalProfit > 0 ? (
+                    <div className="mt-1">
+                      <p className="text-sm font-bold" style={{ color: '#00e676' }}>{fmtUsd(usd)}</p>
+                      <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
+                    </div>
+                  ) : (
+                    <p className="text-text-muted text-xs mt-1">{t('workers_no_profits')}</p>
+                  )}
+                </div>
               </button>
             )
           })}
@@ -121,7 +163,10 @@ export default function Workers() {
             <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
               placeholder={t('workers_name_placeholder')}
-              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4" />
+              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-3" />
+            <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)}
+              placeholder="Аватар (URL фото, необов'язково)"
+              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
             <button onClick={handleAdd} disabled={!name.trim()}
               className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">
               {t('workers_create')}

@@ -33,6 +33,7 @@ export interface Worker {
   id: string
   name: string
   emoji: string
+  avatarUrl?: string
   totalProfit: number   // in RUB
   createdAt: string
 }
@@ -73,6 +74,7 @@ export interface UserProfile {
   totalEarned: number   // RUB
   goals: Goal[]
   settings: Settings
+  workerAvatars?: Record<string, string>  // workerId -> URL
 }
 
 export const PROFIT_LABELS: Record<ProfitType, string> = {

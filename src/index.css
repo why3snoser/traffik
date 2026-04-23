@@ -122,6 +122,13 @@ button.glass-light:hover {
 }
 .glow-active { animation: borderGlow 2.5s ease-in-out infinite; }
 
+/* Confetti particle fall */
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(100vh) rotate(900deg) scale(0.5); opacity: 0; }
+}
+
 /* Fade up for sections */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }

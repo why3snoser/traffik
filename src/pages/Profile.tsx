@@ -1,8 +1,44 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Target, Zap, X, Settings } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
+
+const CONFETTI_COLORS = ['#00e676', '#69f0ae', '#ffd700', '#ff4d6d', '#ffffff', '#00bcd4']
+
+function Confetti({ active }: { active: boolean }) {
+  const particles = useRef(
+    Array.from({ length: 48 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 0.6,
+      duration: 1.2 + Math.random() * 1.2,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      size: 4 + Math.random() * 6,
+      isCircle: Math.random() > 0.5,
+    }))
+  ).current
+
+  if (!active) return null
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[200] overflow-hidden">
+      {particles.map(p => (
+        <div
+          key={p.id}
+          className={p.isCircle ? 'absolute rounded-full' : 'absolute rounded-sm'}
+          style={{
+            left: `${p.left}%`,
+            top: 0,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            animation: `confettiFall ${p.duration}s ${p.delay}s ease-in forwards`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 const GOAL_EMOJIS = ['📱', '💻', '🚗', '✈️', '👟', '⌚', '🏠', '🎮', '💎', '🔥']
 const GOAL_COLORS = ['#7c5cfc', '#22d3a5', '#fbbf24', '#ff5f7e', '#60a5fa', '#f472b6']
@@ -23,10 +59,23 @@ export default function Profile() {
   const [showSettings, setShowSettings] = useState(false)
   const [rubRate, setRubRate] = useState(String(r2u))
   const [uahRate, setUahRate] = useState(String(u2ua))
+  const [showConfetti, setShowConfetti] = useState(false)
+  const celebratedRef = useRef<Set<string>>(new Set())
 
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
   const totalUah = usdToUah(totalUsd, u2ua)
   const levelInfo = getLevelInfo(totalUah)
+
+  useEffect(() => {
+    profile.goals.forEach(goal => {
+      const pct = (totalUsd / goal.targetAmount) * 100
+      if (pct >= 100 && !celebratedRef.current.has(goal.id)) {
+        celebratedRef.current.add(goal.id)
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 3000)
+      }
+    })
+  }, [profile.goals, totalUsd])
 
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
@@ -44,6 +93,7 @@ export default function Profile() {
 
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
+      <Confetti active={showConfetti} />
       {/* Profile card */}
       <div className="card-gradient rounded-3xl p-5 mb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
@@ -97,7 +147,9 @@ export default function Profile() {
           const remaining = goal.targetAmount - totalUsd
           const isLast = idx === profile.goals.length - 1
           return (
-            <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
+            <div key={goal.id} className="glass-light rounded-2xl overflow-hidden transition-all duration-500"
+              style={pct >= 100 ? { borderColor: 'rgba(0,230,118,0.5)', boxShadow: '0 0 24px rgba(0,230,118,0.15)' } : {}}>
+
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
                   <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center top', filter: 'brightness(0.75) saturate(0.55)' }} />
@@ -144,10 +196,10 @@ export default function Profile() {
                 </div>
 
                 <div className="flex items-center">
-                  <span className="text-xs text-text-muted">{pct.toFixed(0)}%</span>
+                  <span className="text-xs text-text-muted">{Math.min(100, pct).toFixed(0)}%</span>
                   {remaining > 0
-                    ? <span className="text-xs text-text-muted ml-2">remaining {fmtUsd(remaining)}</span>
-                    : <span className="text-xs text-success ml-2">{t('goal_completed')}</span>
+                    ? <span className="text-xs text-text-muted ml-2">залишилось {fmtUsd(remaining)}</span>
+                    : <span className="text-xs font-bold ml-2" style={{ color: '#00e676' }}>🎉 Ціль досягнута!</span>
                   }
                 </div>
               </div>

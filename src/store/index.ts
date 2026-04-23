@@ -93,6 +93,8 @@ interface AppState {
   deleteGoal: (id: string) => Promise<void>
   addToGoal: (id: string, amount: number) => Promise<void>
 
+  setWorkerAvatar: (workerId: string, url: string) => Promise<void>
+
   updateSettings: (s: Partial<UserProfile['settings']>) => Promise<void>
 }
 
@@ -106,6 +108,7 @@ async function saveProfile(profile: UserProfile) {
     total_earned: profile.totalEarned,
     goals: profile.goals,
     settings: profile.settings,
+    worker_avatars: profile.workerAvatars ?? {},
   })
 }
 
@@ -139,6 +142,7 @@ export const useStore = create<AppState>()((set, get) => ({
       totalEarned: p.total_earned,
       goals: p.goals ?? [],
       settings: p.settings ?? DEFAULT_SETTINGS,
+      workerAvatars: p.worker_avatars ?? {},
     } : DEFAULT_PROFILE
 
     // Recalculate level from UAH earnings
@@ -172,6 +176,7 @@ export const useStore = create<AppState>()((set, get) => ({
       initialized: true,
       workers: (workers ?? []).map(w => ({
         id: w.id, name: w.name, emoji: w.emoji,
+        avatarUrl: profile.workerAvatars?.[w.id],
         totalProfit: w.total_profit, createdAt: w.created_at,
       })),
       anketas: (anketas ?? []).map(a => ({
@@ -372,6 +377,19 @@ export const useStore = create<AppState>()((set, get) => ({
       }
       saveProfile(newProfile)
       return { profile: newProfile }
+    })
+  },
+
+  // ── Worker avatars ───────────────────────────────────────────────────
+  setWorkerAvatar: async (workerId, url) => {
+    set(s => {
+      const avatars = { ...(s.profile.workerAvatars ?? {}), [workerId]: url }
+      const newProfile = { ...s.profile, workerAvatars: avatars }
+      saveProfile(newProfile)
+      return {
+        profile: newProfile,
+        workers: s.workers.map(w => w.id === workerId ? { ...w, avatarUrl: url } : w),
+      }
     })
   },
 
