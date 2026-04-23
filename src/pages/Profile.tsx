@@ -18,7 +18,7 @@ export default function Profile() {
   const [goalEmoji, setGoalEmoji] = useState('📱')
   const [goalColor, setGoalColor] = useState('#7c5cfc')
   const [goalImageUrl, setGoalImageUrl] = useState('')
-  const [goalImagePos, setGoalImagePos] = useState('center 40%')
+  const [goalImagePos, setGoalImagePos] = useState('center top')
   const [goalDesc, setGoalDesc] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [rubRate, setRubRate] = useState(String(r2u))
@@ -100,7 +100,7 @@ export default function Profile() {
             <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center 40%', filter: 'brightness(0.75) saturate(0.55)' }} />
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center top', filter: 'brightness(0.75) saturate(0.55)' }} />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,18,8,0.85) 0%, rgba(0,230,118,0.06) 60%, transparent 100%)' }} />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
@@ -175,19 +175,24 @@ export default function Profile() {
               {goalImageUrl.trim() && (
                 <div>
                   <p className="text-xs text-text-muted mb-2">Фокус фото</p>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {[
-                      { label: 'Верх', val: 'center 10%' },
-                      { label: 'Центр-верх', val: 'center 30%' },
-                      { label: 'Центр', val: 'center 50%' },
-                      { label: 'Центр-низ', val: 'center 70%' },
-                      { label: 'Низ', val: 'center 90%' },
-                    ].map(({ label, val }) => (
-                      <button key={val} onClick={() => setGoalImagePos(val)}
-                        className={`flex-1 py-1.5 rounded-xl text-xs font-medium transition-all ${goalImagePos === val ? 'btn-gradient' : 'glass-light text-text-muted'}`}>
-                        {label}
-                      </button>
-                    ))}
+                      'left top',    'center top',    'right top',
+                      'left center', 'center center', 'right center',
+                      'left bottom', 'center bottom', 'right bottom',
+                    ].map(val => {
+                      const icons: Record<string, string> = {
+                        'left top': '↖', 'center top': '↑', 'right top': '↗',
+                        'left center': '←', 'center center': '·', 'right center': '→',
+                        'left bottom': '↙', 'center bottom': '↓', 'right bottom': '↘',
+                      }
+                      return (
+                        <button key={val} onClick={() => setGoalImagePos(val)}
+                          className={`py-2 rounded-xl text-base font-bold transition-all ${goalImagePos === val ? 'btn-gradient' : 'glass-light text-text-muted hover:text-text'}`}>
+                          {icons[val]}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
