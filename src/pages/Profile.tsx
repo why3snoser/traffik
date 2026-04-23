@@ -18,6 +18,7 @@ export default function Profile() {
   const [goalEmoji, setGoalEmoji] = useState('📱')
   const [goalColor, setGoalColor] = useState('#7c5cfc')
   const [goalImageUrl, setGoalImageUrl] = useState('')
+  const [goalImagePos, setGoalImagePos] = useState('center 40%')
   const [goalDesc, setGoalDesc] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [rubRate, setRubRate] = useState(String(r2u))
@@ -30,8 +31,8 @@ export default function Profile() {
   const handleAddGoal = () => {
     const target = parseFloat(goalAmount.replace(',', '.'))
     if (!goalTitle.trim() || !target) return
-    addGoal({ title: goalTitle.trim(), emoji: goalEmoji, targetAmount: target, savedAmount: 0, color: goalColor, imageUrl: goalImageUrl.trim() || undefined, description: goalDesc.trim() || undefined })
-    setGoalTitle(''); setGoalAmount(''); setGoalImageUrl(''); setGoalDesc(''); setShowAddGoal(false)
+    addGoal({ title: goalTitle.trim(), emoji: goalEmoji, targetAmount: target, savedAmount: 0, color: goalColor, imageUrl: goalImageUrl.trim() || undefined, imagePosition: goalImageUrl.trim() ? goalImagePos : undefined, description: goalDesc.trim() || undefined })
+    setGoalTitle(''); setGoalAmount(''); setGoalImageUrl(''); setGoalImagePos('center 40%'); setGoalDesc(''); setShowAddGoal(false)
   }
 
   const handleSaveSettings = () => {
@@ -99,7 +100,7 @@ export default function Profile() {
             <div key={goal.id} className="glass-light rounded-2xl overflow-hidden">
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: 'center 30%', filter: 'brightness(0.75) saturate(0.55)' }} />
+                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center 40%', filter: 'brightness(0.75) saturate(0.55)' }} />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,18,8,0.85) 0%, rgba(0,230,118,0.06) 60%, transparent 100%)' }} />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
@@ -171,6 +172,25 @@ export default function Profile() {
               <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder={t('goal_name_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
               <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder={t('goal_desc_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
               <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder={t('goal_image_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+              {goalImageUrl.trim() && (
+                <div>
+                  <p className="text-xs text-text-muted mb-2">Фокус фото</p>
+                  <div className="flex gap-2">
+                    {[
+                      { label: 'Верх', val: 'center 10%' },
+                      { label: 'Центр-верх', val: 'center 30%' },
+                      { label: 'Центр', val: 'center 50%' },
+                      { label: 'Центр-низ', val: 'center 70%' },
+                      { label: 'Низ', val: 'center 90%' },
+                    ].map(({ label, val }) => (
+                      <button key={val} onClick={() => setGoalImagePos(val)}
+                        className={`flex-1 py-1.5 rounded-xl text-xs font-medium transition-all ${goalImagePos === val ? 'btn-gradient' : 'glass-light text-text-muted'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="relative">
                 <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder={t('goal_amount_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>

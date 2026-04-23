@@ -56,6 +56,7 @@ export interface Goal {
   savedAmount: number   // USD
   color: string
   imageUrl?: string
+  imagePosition?: string
   description?: string
 }
 
