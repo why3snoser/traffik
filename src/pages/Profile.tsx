@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Target, Zap, X, Settings } from 'lucide-react'
+import { Plus, Target, Zap, X, Settings, Gift, Trash2 } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
@@ -45,7 +45,7 @@ const GOAL_COLORS = ['#7c5cfc', '#22d3a5', '#fbbf24', '#ff5f7e', '#60a5fa', '#f4
 
 export default function Profile() {
   const t = useT()
-  const { profile, addGoal, deleteGoal, updateSettings } = useStore()
+  const { profile, addGoal, deleteGoal, updateSettings, addAppleId, removeAppleId } = useStore()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
   const [showAddGoal, setShowAddGoal] = useState(false)
@@ -61,6 +61,8 @@ export default function Profile() {
   const [uahRate, setUahRate] = useState(String(u2ua))
   const [showConfetti, setShowConfetti] = useState(false)
   const celebratedRef = useRef<Set<string>>(new Set())
+  const [newAppleEmail, setNewAppleEmail] = useState('')
+  const [newApplePassword, setNewApplePassword] = useState('')
 
   const totalUsd = rubToUsd(profile.totalEarned, r2u)
   const totalUah = usdToUah(totalUsd, u2ua)
@@ -89,6 +91,17 @@ export default function Profile() {
     const u = parseFloat(uahRate)
     if (r > 0 && u > 0) updateSettings({ rubToUsd: r, usdToUah: u })
     setShowSettings(false)
+  }
+
+  const handleAddAppleId = async () => {
+    if (!newAppleEmail.trim() || !newApplePassword.trim()) return
+    await addAppleId(newAppleEmail.trim(), newApplePassword.trim())
+    setNewAppleEmail('')
+    setNewApplePassword('')
+  }
+
+  const handleRemoveAppleId = async (email: string) => {
+    await removeAppleId(email)
   }
 
   return (
@@ -330,6 +343,58 @@ export default function Profile() {
                       {lang === 'en' ? '🇬🇧 English' : '🇺🇦 Українська'}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Apple ID Management */}
+              <div>
+                <label className="text-xs text-text-muted mb-2 block">Apple ID для премиума</label>
+                <div className="bg-card border border-border rounded-2xl p-3 mb-3 max-h-40 overflow-y-auto">
+                  {(profile.appleIds ?? []).length === 0 ? (
+                    <p className="text-xs text-text-muted text-center py-2">Нет сохраненных Apple ID</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(profile.appleIds ?? []).map(appleId => (
+                        <div key={appleId.email} className="flex items-center justify-between bg-bg p-2 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-mono text-text truncate">{appleId.email}</p>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveAppleId(appleId.email)}
+                            className="flex-shrink-0 ml-2 text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Add new Apple ID */}
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    value={newAppleEmail}
+                    onChange={e => setNewAppleEmail(e.target.value)}
+                    placeholder="Email"
+                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                  />
+                  <input
+                    type="password"
+                    value={newApplePassword}
+                    onChange={e => setNewApplePassword(e.target.value)}
+                    placeholder="Пароль"
+                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+                  />
+                  <button
+                    onClick={handleAddAppleId}
+                    disabled={!newAppleEmail.trim() || !newApplePassword.trim()}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
+                  >
+                    <Plus size={12} />
+                    Добавить Apple ID
+                  </button>
                 </div>
               </div>
               <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">{t('settings_save')}</button>

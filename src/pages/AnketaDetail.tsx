@@ -1,20 +1,23 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, Copy, ArrowRight } from 'lucide-react'
 import { useStore } from '@/store'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useT } from '@/i18n'
 
 export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const t = useT()
-  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity } = useStore()
+  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
   const [vkRaw, setVkRaw] = useState('')
   const [vkMsg, setVkMsg] = useState('')
   const [manualCityId, setManualCityId] = useState<string | null>(null)
   const [manualVkText, setManualVkText] = useState('')
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [selectedCityIdForPremium, setSelectedCityIdForPremium] = useState<string | null>(null)
+  const [selectedAppleIdIndex, setSelectedAppleIdIndex] = useState<number | null>(null)
 
   const anketa = anketas.find(a => a.id === id)
   if (!anketa) return <div className="p-8 text-text-muted">Не найдено</div>
@@ -47,7 +50,27 @@ export default function AnketaDetail() {
     setManualVkText('')
   }
 
+  const handleInstalledPremium = async () => {
+    if (!selectedCityIdForPremium || selectedAppleIdIndex === null) return
+    const appleId = availableAppleIds[selectedAppleIdIndex]
+    if (!appleId) return
+    await setAppleIdForCity(anketa.id, selectedCityIdForPremium, appleId.email, appleId.password)
+    setShowPremiumModal(false)
+    setSelectedCityIdForPremium(null)
+    setSelectedAppleIdIndex(null)
+  }
+
   const citiesWithVk = anketa.cities.filter(c => c.vk).length
+
+  const availableAppleIds = useMemo(() => {
+    const usedEmails = new Set<string>()
+    anketas.forEach(a => {
+      a.cities.forEach(city => {
+        if (city.appleId?.email) usedEmails.add(city.appleId.email)
+      })
+    })
+    return (profile.appleIds ?? []).filter(id => !usedEmails.has(id.email))
+  }, [anketas, profile.appleIds])
 
   return (
     <div className="pb-28">
@@ -222,6 +245,33 @@ export default function AnketaDetail() {
                       )}
                     </div>
                   )}
+
+                  {/* Apple ID Premium */}
+                  <div className="px-4 py-3 border-t border-border">
+                    {city.appleId ? (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Gift size={12} className="text-accent-light" />
+                          <span className="text-xs text-text-muted">{city.appleId.email}</span>
+                        </div>
+                        <button
+                          onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
+                          className="text-xs text-danger text-right"
+                        >
+                          {t('vk_detach')}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setSelectedCityIdForPremium(city.id); setShowPremiumModal(true); setSelectedAppleIdIndex(null) }}
+                        disabled={availableAppleIds.length === 0}
+                        className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium disabled:opacity-40"
+                      >
+                        <Gift size={12} />
+                        Поставить премиум
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -297,6 +347,103 @@ export default function AnketaDetail() {
             >
               {t('vk_assign_random')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Apple ID Selection Modal */}
+      {showPremiumModal && selectedAppleIdIndex === null && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-text">Выберите Apple ID</h3>
+              <button onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }} className="text-text-muted">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {availableAppleIds.length === 0 ? (
+                <p className="text-text-muted text-sm text-center py-4">Нет доступных Apple ID</p>
+              ) : (
+                availableAppleIds.map((appleId, idx) => (
+                  <button
+                    key={appleId.email}
+                    onClick={() => setSelectedAppleIdIndex(idx)}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-accent transition-colors text-left"
+                  >
+                    <Gift size={16} className="text-accent-light flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-mono text-text">{appleId.email}</p>
+                      <p className="text-xs text-text-muted">Доступно</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Premium Apple ID Display Overlay */}
+      {showPremiumModal && selectedAppleIdIndex !== null && availableAppleIds[selectedAppleIdIndex] && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setSelectedAppleIdIndex(null)}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div
+            className="relative w-full max-w-lg bg-surface rounded-3xl p-6 animate-slide-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-text">Apple ID</h3>
+              <button onClick={() => setSelectedAppleIdIndex(null)} className="text-text-muted">
+                <X size={18} />
+              </button>
+            </div>
+
+            {(() => {
+              const appleId = availableAppleIds[selectedAppleIdIndex]
+              return (
+                <div className="space-y-4">
+                  <div
+                    onClick={() => copy(appleId.email, 'apple-email')}
+                    className="p-4 bg-card border border-border rounded-2xl cursor-pointer hover:border-accent transition-colors"
+                  >
+                    <p className="text-xs text-text-muted mb-1">Email</p>
+                    <p className="text-sm font-mono text-text break-all">{appleId.email}</p>
+                    {copied === 'apple-email' && <span className="text-xs text-success ml-1">✓ скопировано</span>}
+                  </div>
+
+                  <div
+                    onClick={() => copy(appleId.password, 'apple-password')}
+                    className="p-4 bg-card border border-border rounded-2xl cursor-pointer hover:border-accent transition-colors"
+                  >
+                    <p className="text-xs text-text-muted mb-1">Пароль</p>
+                    <p className="text-sm font-mono text-text break-all">{appleId.password}</p>
+                    {copied === 'apple-password' && <span className="text-xs text-success ml-1">✓ скопировано</span>}
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={handleInstalledPremium}
+                      className="flex-1 bg-accent rounded-2xl py-3 text-white font-semibold"
+                    >
+                      <ArrowRight size={14} className="inline mr-1" />
+                      Установил премиум
+                    </button>
+                    <button
+                      onClick={() => setSelectedAppleIdIndex(null)}
+                      className="px-4 py-3 text-text-muted"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
           </div>
         </div>
       )}

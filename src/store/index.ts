@@ -95,6 +95,12 @@ interface AppState {
 
   setWorkerAvatar: (workerId: string, url: string) => Promise<void>
 
+  setAppleIdForCity: (anketaId: string, cityId: string, email: string, password: string) => Promise<void>
+  removeAppleIdFromCity: (anketaId: string, cityId: string) => Promise<void>
+
+  addAppleId: (email: string, password: string) => Promise<void>
+  removeAppleId: (email: string) => Promise<void>
+
   updateSettings: (s: Partial<UserProfile['settings']>) => Promise<void>
 }
 
@@ -109,6 +115,7 @@ async function saveProfile(profile: UserProfile) {
     goals: profile.goals,
     settings: profile.settings,
     worker_avatars: profile.workerAvatars ?? {},
+    apple_ids: profile.appleIds ?? [],
   })
 }
 
@@ -143,6 +150,7 @@ export const useStore = create<AppState>()((set, get) => ({
       goals: p.goals ?? [],
       settings: p.settings ?? DEFAULT_SETTINGS,
       workerAvatars: p.worker_avatars ?? {},
+      appleIds: p.apple_ids ?? [],
     } : DEFAULT_PROFILE
 
     // Recalculate level from UAH earnings
@@ -390,6 +398,46 @@ export const useStore = create<AppState>()((set, get) => ({
         profile: newProfile,
         workers: s.workers.map(w => w.id === workerId ? { ...w, avatarUrl: url } : w),
       }
+    })
+  },
+
+  // ── Apple ID for premium ───────────────────────────────────────────────
+  setAppleIdForCity: async (anketaId, cityId, email, password) => {
+    const anketa = get().anketas.find(a => a.id === anketaId)
+    if (!anketa) return
+    const updatedCities = anketa.cities.map(c =>
+      c.id === cityId ? { ...c, appleId: { email, password } } : c
+    )
+    await get().updateAnketa(anketaId, { cities: updatedCities })
+  },
+
+  removeAppleIdFromCity: async (anketaId, cityId) => {
+    const anketa = get().anketas.find(a => a.id === anketaId)
+    if (!anketa) return
+    const updatedCities = anketa.cities.map(c => c.id === cityId ? { ...c, appleId: undefined } : c)
+    await get().updateAnketa(anketaId, { cities: updatedCities })
+  },
+
+  // ── Apple ID management ────────────────────────────────────────────────
+  addAppleId: async (email, password) => {
+    set(s => {
+      const newProfile = {
+        ...s.profile,
+        appleIds: [...(s.profile.appleIds ?? []), { email, password }],
+      }
+      saveProfile(newProfile)
+      return { profile: newProfile }
+    })
+  },
+
+  removeAppleId: async (email) => {
+    set(s => {
+      const newProfile = {
+        ...s.profile,
+        appleIds: (s.profile.appleIds ?? []).filter(id => id.email !== email),
+      }
+      saveProfile(newProfile)
+      return { profile: newProfile }
     })
   },
 

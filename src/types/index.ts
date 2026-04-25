@@ -12,6 +12,7 @@ export interface CityEntry {
   city: string
   status: 'active' | 'blocked'
   vk?: VKAccount
+  appleId?: { email: string; password: string }
 }
 
 export interface Anketa {
@@ -75,6 +76,7 @@ export interface UserProfile {
   goals: Goal[]
   settings: Settings
   workerAvatars?: Record<string, string>  // workerId -> URL
+  appleIds?: Array<{ email: string; password: string }>  // Available Apple IDs for premium
 }
 
 export const PROFIT_LABELS: Record<ProfitType, string> = {
