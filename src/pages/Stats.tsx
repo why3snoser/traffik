@@ -195,7 +195,7 @@ export default function Stats() {
   const [dailyRange, setDailyRange] = useState<'7d' | '30d' | '90d'>('30d')
   const dailyDays = { '7d': 7, '30d': 30, '90d': 90 }[dailyRange]
   const dailyData = useMemo(() => {
-    const days = []
+    const days: { date: Date; label: string; usd: number }[] = []
     for (let i = dailyDays - 1; i >= 0; i--) {
       const d = new Date()
       d.setHours(0, 0, 0, 0)
@@ -208,7 +208,14 @@ export default function Stats() {
         usd: rubToUsd(rub, r2u),
       })
     }
-    return days
+    // trailing moving average (7-day) — secondary "wave" layer
+    const win = Math.min(7, days.length)
+    return days.map((d, i) => {
+      const from = Math.max(0, i - win + 1)
+      const slice = days.slice(from, i + 1)
+      const avg = slice.reduce((s, x) => s + x.usd, 0) / slice.length
+      return { ...d, avg: Math.round(avg * 100) / 100 }
+    })
   }, [profits, r2u, dailyDays])
 
   // Profit by type
@@ -372,7 +379,8 @@ export default function Stats() {
           animationDuration={900}
         >
           <Grid horizontal numTicksRows={4} />
-          <Area dataKey="usd" fill="#0A84FF" fillOpacity={0.35} strokeWidth={2} />
+          <Area dataKey="usd" fill="#0A84FF" fillOpacity={0.35} strokeWidth={2} fadeEdges dashFromIndex={dailyData.length - 1} />
+          <Area dataKey="avg" stroke="rgba(160,200,255,0.55)" fill="rgba(120,170,255,0.12)" strokeWidth={1.5} fillOpacity={0.5} fadeEdges={false} showLine />
           <XAxis numTicks={dailyDays <= 7 ? 7 : 5} tickerHalfWidth={40} />
           <ChartTooltip
             showDatePill={false}
