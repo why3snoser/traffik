@@ -264,7 +264,7 @@ export default function AnketaDetail() {
                             onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
                             className="text-xs text-danger text-right"
                           >
-                            {t('vk_detach')}
+                            Отвязать премиум
                           </button>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -397,7 +397,7 @@ export default function AnketaDetail() {
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border"
+            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border flex flex-col max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
@@ -439,7 +439,7 @@ export default function AnketaDetail() {
               </div>
             )}
 
-            <div className="flex flex-col gap-2 max-h-[52vh] overflow-y-auto pr-1">
+            <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
               {(profile.appleIds ?? []).length === 0 ? (
                 <p className="text-text-muted text-sm text-center py-4">Список пуст. Добавь аккаунты выше.</p>
               ) : (
