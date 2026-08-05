@@ -11,22 +11,34 @@ function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-// ── Session timer persistence (local, survives reload) ─────────────────
-const LS_SESSIONS = 'traffik_sessions_v1'
-const LS_TIMER = 'traffik_timer_v1'
+// ── Per-worker session timer persistence (local, survives reload) ──────
+const LS_WS = 'traffik_focus_v1'
 
-function loadSessions(): SessionRecord[] {
-  try { return JSON.parse(localStorage.getItem(LS_SESSIONS) ?? '[]') } catch { return [] }
+interface PersistedWS {
+  sessions: SessionRecord[]
+  workerTime: Record<string, number>
+  workerBaseline: Record<string, number>
+  workerTimers: Record<string, SessionTimer>
 }
-function saveSessions(s: SessionRecord[]) {
-  try { localStorage.setItem(LS_SESSIONS, JSON.stringify(s)) } catch { /* ignore */ }
+
+const EMPTY_WS: PersistedWS = { sessions: [], workerTime: {}, workerBaseline: {}, workerTimers: {} }
+
+function loadWS(): PersistedWS {
+  try {
+    const d = JSON.parse(localStorage.getItem(LS_WS) ?? 'null')
+    if (d && typeof d === 'object') {
+      return {
+        sessions: Array.isArray(d.sessions) ? d.sessions : [],
+        workerTime: d.workerTime ?? {},
+        workerBaseline: d.workerBaseline ?? {},
+        workerTimers: d.workerTimers ?? {},
+      }
+    }
+  } catch { /* ignore */ }
+  return EMPTY_WS
 }
-function loadTimer(): SessionTimer {
-  try { return JSON.parse(localStorage.getItem(LS_TIMER) ?? 'null') ?? { running: false, startedAt: null, profitRubAtStart: 0 } }
-  catch { return { running: false, startedAt: null, profitRubAtStart: 0 } }
-}
-function saveTimer(t: SessionTimer) {
-  try { localStorage.setItem(LS_TIMER, JSON.stringify(t)) } catch { /* ignore */ }
+function saveWS(d: PersistedWS) {
+  try { localStorage.setItem(LS_WS, JSON.stringify(d)) } catch { /* ignore */ }
 }
 
 const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70, language: 'en' as const }
@@ -108,14 +120,16 @@ interface AppState {
   profile: UserProfile
   initialized: boolean
 
-  timer: SessionTimer
   sessions: SessionRecord[]
+  workerTime: Record<string, number>       // accumulated tracked ms per worker
+  workerBaseline: Record<string, number>   // profit RUB at first tracked session per worker
+  workerTimers: Record<string, SessionTimer> // live per-worker stopwatches
 
   initialize: () => Promise<void>
 
-  startSession: () => void
-  stopSession: () => void
-  discardSession: () => void
+  startWorkerSession: (workerId: string) => void
+  stopWorkerSession: (workerId: string) => void
+  discardWorkerSession: (workerId: string) => void
   clearSessions: () => void
 
   addWorker: (name: string, emoji: string) => Promise<Worker>
@@ -171,8 +185,10 @@ export const useStore = create<AppState>()((set, get) => ({
   profits: [],
   profile: DEFAULT_PROFILE,
   initialized: false,
-  timer: loadTimer(),
-  sessions: loadSessions(),
+  sessions: loadWS().sessions,
+  workerTime: loadWS().workerTime,
+  workerBaseline: loadWS().workerBaseline,
+  workerTimers: loadWS().workerTimers,
 
   // ── Load all data from Supabase ──────────────────────────────────────
   initialize: async () => {
@@ -518,38 +534,55 @@ export const useStore = create<AppState>()((set, get) => ({
     })
   },
 
-  // ── Work session timer ────────────────────────────────────────────────
-  startSession: () => {
-    const totalRub = get().profits.reduce((sum, p) => sum + p.myShare, 0)
-    const timer = { running: true, startedAt: Date.now(), profitRubAtStart: totalRub }
-    saveTimer(timer)
-    set({ timer })
+  // ── Per-worker work session timer ────────────────────────────────────
+  startWorkerSession: (workerId) => {
+    const s = get()
+    const worker = s.workers.find(w => w.id === workerId)
+    if (!worker) return
+    set(() => {
+      const baseline = s.workerBaseline[workerId] ?? worker.totalProfit
+      const workerTimers = { ...s.workerTimers, [workerId]: { running: true, startedAt: Date.now() } }
+      const workerBaseline = { ...s.workerBaseline, [workerId]: baseline }
+      saveWS({ sessions: s.sessions, workerTime: s.workerTime, workerBaseline, workerTimers })
+      return { workerTimers, workerBaseline }
+    })
   },
 
-  stopSession: () => {
-    const { timer, sessions, profits } = get()
-    if (!timer.running || !timer.startedAt) return
-    const durationMs = Math.max(0, Date.now() - timer.startedAt)
-    const totalRub = profits.reduce((sum, p) => sum + p.myShare, 0)
+  stopWorkerSession: (workerId) => {
+    const s = get()
+    const t = s.workerTimers[workerId]
+    if (!t?.running || !t.startedAt) return
+    const durationMs = Math.max(0, Date.now() - t.startedAt)
+    const worker = s.workers.find(w => w.id === workerId)
+    const profit = worker?.totalProfit ?? 0
+    const baseline = s.workerBaseline[workerId] ?? profit
     const session: SessionRecord = {
-      id: uid(),
-      endedAt: new Date().toISOString(),
-      durationMs,
-      profitDeltaRub: totalRub - timer.profitRubAtStart,
+      id: uid(), workerId, endedAt: new Date().toISOString(),
+      durationMs, profitDeltaRub: Math.max(0, profit - baseline),
     }
-    const newSessions = [session, ...sessions].slice(0, 60)
-    saveSessions(newSessions)
-    saveTimer({ running: false, startedAt: null, profitRubAtStart: 0 })
-    set({ sessions: newSessions, timer: { running: false, startedAt: null, profitRubAtStart: 0 } })
+    const workerTimers = { ...s.workerTimers, [workerId]: { running: false, startedAt: null } }
+    const workerTime = { ...s.workerTime, [workerId]: (s.workerTime[workerId] ?? 0) + durationMs }
+    const sessions = [session, ...s.sessions].slice(0, 120)
+    saveWS({ sessions, workerTime, workerBaseline: s.workerBaseline, workerTimers })
+    set({ workerTimers, workerTime, sessions })
   },
 
-  discardSession: () => {
-    saveTimer({ running: false, startedAt: null, profitRubAtStart: 0 })
-    set({ timer: { running: false, startedAt: null, profitRubAtStart: 0 } })
+  discardWorkerSession: (workerId) => {
+    const s = get()
+    const workerTimers = { ...s.workerTimers, [workerId]: { running: false, startedAt: null } }
+    saveWS({ sessions: s.sessions, workerTime: s.workerTime, workerBaseline: s.workerBaseline, workerTimers })
+    set({ workerTimers })
   },
 
   clearSessions: () => {
-    saveSessions([])
-    set({ sessions: [] })
+    const s = get()
+    const data: PersistedWS = {
+      sessions: [],
+      workerTime: {},
+      workerBaseline: {},
+      workerTimers: s.workerTimers,
+    }
+    saveWS(data)
+    set({ sessions: [], workerTime: {}, workerBaseline: {} })
   },
 }))

@@ -224,7 +224,7 @@ export default function Profile() {
               style={pct >= 100 ? { borderColor: 'rgba(10,132,255,0.5)', boxShadow: '0 0 24px rgba(10,132,255,0.15)' } : {}}>
 
               {goal.imageUrl && (
-                <div className={`relative overflow-hidden ${isLast ? 'h-72' : 'h-36'}`}>
+                <div className={`relative overflow-hidden ${isLast ? 'h-80 md:h-96' : 'h-44 md:h-56'}`}>
                   <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center top', filter: 'brightness(0.75) saturate(0.55)' }} />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,10,22,0.9) 0%, rgba(10,132,255,0.06) 60%, transparent 100%)' }} />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
@@ -285,7 +285,7 @@ export default function Profile() {
       {showAddGoal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddGoal(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg glass rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('new_goal')}</h3>
             <div className="flex flex-col gap-4">
@@ -340,7 +340,7 @@ export default function Profile() {
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowSettings(false)}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg glass rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('settings_title')}</h3>
             <div className="flex flex-col gap-4">

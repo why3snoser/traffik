@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
 import { useNavigate } from 'react-router-dom'
+import { AnimatedBarChart, AnimatedRing } from '@/components/AnimatedCharts'
 
 // ── SVG Line Chart ───────────────────────────────────────────────────────────
 function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string }[]; chartId: string; u2ua: number }) {
@@ -103,40 +104,6 @@ function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string
   )
 }
 
-// ── Bar Chart with hover ─────────────────────────────────────────────────────
-function BarChart({ data }: { data: { label: string; usd: number; pct: number }[] }) {
-  const [hover, setHover] = useState<number | null>(null)
-  return (
-    <div className="flex items-end gap-2" style={{ height: 120 }}>
-      {data.map((d, i) => (
-        <div
-          key={d.label}
-          className="flex-1 flex flex-col items-center gap-1 h-full justify-end cursor-default"
-          onMouseEnter={() => setHover(i)}
-          onMouseLeave={() => setHover(null)}
-        >
-          <span className="text-[9px] font-semibold transition-all duration-150" style={{ color: '#0A84FF', opacity: hover === i ? 1 : 0 }}>
-            {fmtUsd(d.usd)}
-          </span>
-          <div
-            className="w-full rounded-t-lg transition-all duration-200"
-            style={{
-              height: `${Math.max(d.pct, d.usd > 0 ? 6 : 2)}%`,
-              background: hover === i
-                ? 'linear-gradient(180deg,#007AFF 0%,#0A84FF 100%)'
-                : d.usd > 0
-                  ? `linear-gradient(180deg,rgba(10,132,255,${0.35 + d.pct / 100 * 0.65}) 0%,rgba(0,122,255,${0.15 + d.pct / 100 * 0.35}) 100%)`
-                  : 'rgba(255,255,255,0.05)',
-              boxShadow: hover === i ? '0 0 12px rgba(0,122,255,0.4)' : 'none',
-            }}
-          />
-          <span className="text-[10px] text-text-muted">{d.label}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // ── Heatmap Calendar ────────────────────────────────────────────────────────
 function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number }) {
   const dayMap = useMemo(() => {
@@ -179,6 +146,9 @@ function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number
 
   const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
 
+  // Hover tooltip state — follows the cursor
+  const [tip, setTip] = useState<{ x: number; y: number; date: string; rub: number; usd: number } | null>(null)
+
   return (
     <div className="overflow-x-auto pb-1">
       <div className="flex gap-1" style={{ minWidth: 'max-content' }}>
@@ -199,7 +169,7 @@ function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number
             ))}
           </div>
           {/* Grid */}
-          <div className="flex gap-1">
+          <div className="flex gap-1 relative">
             {weeks.map((week, wi) => (
               <div key={wi} className="flex flex-col gap-1">
                 {week.map(({ date, key, rub }) => {
@@ -207,14 +177,46 @@ function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number
                   return (
                     <div
                       key={key}
-                      className="w-3.5 h-3.5 rounded-sm cursor-default transition-all duration-100 hover:scale-125"
-                      style={{ backgroundColor: getColor(rub, date) }}
-                      title={`${date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}${rub > 0 ? ` · ${fmtUsd(usd)}` : ''}`}
+                      className="w-3.5 h-3.5 rounded-[4px] cursor-pointer transition-all duration-100 hover:scale-150 hover:z-10 relative"
+                      style={{
+                        backgroundColor: getColor(rub, date),
+                        boxShadow: tip && tip.date === key ? '0 0 0 1.5px #fff, 0 0 10px rgba(10,132,255,0.6)' : 'none',
+                      }}
+                      onMouseEnter={e => {
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        setTip({ x: rect.left + rect.width / 2, y: rect.top, date: key, rub, usd })
+                      }}
+                      onMouseLeave={() => setTip(t => (t && t.date === key ? null : t))}
                     />
                   )
                 })}
               </div>
             ))}
+
+            {/* Floating tooltip */}
+            {tip && (
+              <div
+                className="pointer-events-none fixed z-50 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap"
+                style={{
+                  left: tip.x,
+                  top: tip.y - 4,
+                  transform: 'translate(-50%, -100%)',
+                  background: 'rgba(4,12,6,0.97)',
+                  border: '1px solid rgba(10,132,255,0.4)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 12px rgba(10,132,255,0.15)',
+                }}
+              >
+                {tip.date}
+                {tip.rub > 0 ? (
+                  <>
+                    <div className="text-white/90 font-semibold">{fmtUsd(tip.usd)}</div>
+                    <div className="text-white/40 font-normal text-[10px]">{fmtUah(usdToUah(tip.usd, r2u))}</div>
+                  </>
+                ) : (
+                  <div className="text-white/40 font-normal text-[10px]">нет профита</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -222,38 +224,9 @@ function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number
   )
 }
 
-// ── Daily goal ring ─────────────────────────────────────────────────────
-function DailyRing({ pct, label, value, sub }: { pct: number; label: string; value: string; sub: string }) {
-  const R = 40, C = 2 * Math.PI * R
-  return (
-    <div className="relative w-28 h-28">
-      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-        <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-        <circle
-          cx="50" cy="50" r={R} fill="none"
-          stroke="url(#ring-grad)" strokeWidth="8" strokeLinecap="round"
-          strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)}
-          style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)', filter: 'drop-shadow(0 0 6px rgba(10,132,255,0.5))' }}
-        />
-        <defs>
-          <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#64B5FF" />
-            <stop offset="100%" stopColor="#007AFF" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-white">{value}</span>
-        <span className="text-[9px] text-text-muted">{sub}</span>
-      </div>
-      <p className="text-center text-[10px] text-text-muted mt-1">{label}</p>
-    </div>
-  )
-}
-
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
-  const { profits, workers, anketas, profile, sessions, clearSessions } = useStore()
+  const { profits, workers, anketas, profile, sessions, clearSessions, workerTime, workerBaseline } = useStore()
   const navigate = useNavigate()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
@@ -263,9 +236,21 @@ export default function Stats() {
   const avgUsd = profits.length > 0 ? totalUsd / profits.length : 0
   const levelInfo = getLevelInfo(totalUah)
 
-  // ── Session timer insights ───────────────────────────────────────────
-  const sessionTotalMs = sessions.reduce((s, x) => s + x.durationMs, 0)
-  const sessionProfitUsd = sessions.reduce((s, x) => s + rubToUsd(x.profitDeltaRub, r2u), 0)
+  // ── Per-worker time → money insights ─────────────────────────────────
+  const workerEarn = (w: { id: string; totalProfit: number }) => {
+    const t = workerTime[w.id] ?? 0
+    const base = workerBaseline[w.id]
+    const earned = base !== undefined ? Math.max(0, w.totalProfit - base) : 0
+    const rate = t > 0 ? rubToUsd(earned, r2u) / (t / 3600000) : 0
+    return { ms: t, earnedRub: earned, earnedUsd: rubToUsd(earned, r2u), rate }
+  }
+  const trackedWorkers = workers
+    .map(w => ({ w, ...workerEarn(w) }))
+    .filter(x => x.ms > 0 || x.earnedRub > 0)
+    .sort((a, b) => b.earnedUsd - a.earnedUsd)
+
+  const sessionTotalMs = Object.values(workerTime).reduce((s, x) => s + x, 0)
+  const sessionProfitUsd = trackedWorkers.reduce((s, x) => s + x.earnedUsd, 0)
   const sessionRate = sessionTotalMs > 0 ? sessionProfitUsd / (sessionTotalMs / 3600000) : 0
   const fmtClock = (ms: number) => {
     const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000)
@@ -304,10 +289,12 @@ export default function Stats() {
   const lastRub = profits.filter(p => p.createdAt.startsWith(lastKey)).reduce((s, p) => s + p.myShare, 0)
   const monthChange = lastRub > 0 ? ((thisRub - lastRub) / lastRub) * 100 : null
 
-  // Daily line chart (last 14 days, uk-UA)
+  // Daily line chart with range switcher (7 / 30 / 90 days, uk-UA)
+  const [dailyRange, setDailyRange] = useState<'7d' | '30d' | '90d'>('30d')
+  const dailyDays = { '7d': 7, '30d': 30, '90d': 90 }[dailyRange]
   const dailyData = useMemo(() => {
     const days = []
-    for (let i = 13; i >= 0; i--) {
+    for (let i = dailyDays - 1; i >= 0; i--) {
       const d = new Date()
       d.setDate(d.getDate() - i)
       const key = d.toISOString().slice(0, 10)
@@ -315,7 +302,7 @@ export default function Stats() {
       days.push({ label: d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(rub, r2u) })
     }
     return days
-  }, [profits, r2u])
+  }, [profits, r2u, dailyDays])
 
   // Profit by type
   const byType = useMemo(() => {
@@ -399,7 +386,7 @@ export default function Stats() {
       {/* Today ring + live pace */}
       <div className="glass-light rounded-2xl p-4 mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <DailyRing pct={dayPct} label="Дневная цель" value={fmtUsd(todayUsd)} sub={Math.round(dayPct) + '%'} />
+          <AnimatedRing pct={dayPct} label="Дневная цель" value={todayUsd} sub={Math.round(dayPct) + '%'} />
           <div>
             <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">Today</p>
             <p className="text-xl font-bold text-white">{fmtUsd(todayUsd)}</p>
@@ -447,20 +434,34 @@ export default function Stats() {
       {/* Monthly bar chart */}
       <div className="glass-light rounded-2xl p-4 mb-5">
         <h3 className="text-sm font-semibold text-text mb-4">Monthly earnings</h3>
-        <BarChart data={monthlyData} />
+        <AnimatedBarChart data={monthlyData} />
       </div>
 
       {/* Daily line chart */}
       <div className="glass-light rounded-2xl p-4 mb-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap size={14} className="text-accent-light" />
-          <h3 className="text-sm font-semibold text-text">Daily — last 14 days</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Zap size={14} className="text-accent-light" />
+            <h3 className="text-sm font-semibold text-text">Daily earnings</h3>
+          </div>
+          {/* Range switcher */}
+          <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(0,0,0,0.35)' }}>
+            {(['7d', '30d', '90d'] as const).map(r => (
+              <button
+                key={r}
+                onClick={() => setDailyRange(r)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${dailyRange === r ? 'bg-accent text-white' : 'text-text-muted hover:text-text'}`}
+              >
+                {r === '7d' ? '7 д' : r === '30d' ? '30 д' : '90 д'}
+              </button>
+            ))}
+          </div>
         </div>
         <LineChart data={dailyData} chartId="daily" u2ua={u2ua} />
         <div className="flex mt-2">
           <span className="text-[9px] text-text-muted">{dailyData[0]?.label}</span>
           <span className="flex-1" />
-          <span className="text-[9px] text-text-muted">{dailyData[13]?.label}</span>
+          <span className="text-[9px] text-text-muted">{dailyData[dailyData.length - 1]?.label}</span>
         </div>
       </div>
 
@@ -537,6 +538,45 @@ export default function Stats() {
         </div>
       )}
 
+      {/* Time → money per worker */}
+      {trackedWorkers.length > 0 && (
+        <div className="glass-light rounded-2xl p-4 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Timer size={14} className="text-accent-light" />
+            <h3 className="text-sm font-semibold text-text">Время → деньги</h3>
+          </div>
+          <div className="flex flex-col gap-3 stagger">
+            {trackedWorkers.map(({ w, ms, earnedUsd, rate }) => {
+              const pct = totalUsd > 0 ? (earnedUsd / sessionProfitUsd) * 100 : 0
+              return (
+                <button key={w.id} onClick={() => navigate(`/workers/${w.id}`)} className="flex items-center gap-3 text-left w-full rounded-xl p-2 hover:bg-white/5 transition-all duration-200">
+                  <span className="text-xl">{w.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-sm text-text font-medium truncate">{w.name}</span>
+                      <span className="text-xs text-text-muted whitespace-nowrap ml-2">{fmtClock(ms)}</span>
+                    </div>
+                    <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#0A84FF,#007AFF)' }} />
+                    </div>
+                    <div className="flex justify-between items-baseline mt-1">
+                      <span className="text-xs font-bold" style={{ color: '#0A84FF' }}>+{fmtUsd(earnedUsd)}</span>
+                      {rate > 0 && <span className="text-[10px] text-text-muted">{fmtUsd(rate)}/час</span>}
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+            <button
+              onClick={clearSessions}
+              className="text-center text-[10px] text-text-muted hover:text-danger transition-colors"
+            >
+              Очистить всё
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Session history */}
       {sessions.length > 0 && (
         <div className="glass-light rounded-2xl p-4 mb-5">
@@ -555,11 +595,14 @@ export default function Stats() {
           <div className="flex flex-col gap-2">
             {sessions.slice(0, 6).map(s => {
               const usd = rubToUsd(s.profitDeltaRub, r2u)
+              const w = workers.find(x => x.id === s.workerId)
               return (
                 <div key={s.id} className="flex items-center gap-3 bg-black/20 rounded-xl px-3 py-2">
-                  <span className="text-base">⏱️</span>
+                  <span className="text-base">{w ? w.emoji : '⏱️'}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-text">{fmtClock(s.durationMs)}</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-xs font-medium text-text">{w ? w.name : ''}{w ? ' · ' : ''}{fmtClock(s.durationMs)}</p>
+                    </div>
                     <p className="text-[10px] text-text-muted truncate">
                       {new Date(s.endedAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
                       {' · '}{new Date(s.endedAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}

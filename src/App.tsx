@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
-import TimerCapsule from '@/components/TimerCapsule'
+import LiquidChrome from '@/components/LiquidChrome'
 import Workers from '@/pages/Workers'
 import WorkerDetail from '@/pages/WorkerDetail'
 import AnketaDetail from '@/pages/AnketaDetail'
@@ -36,12 +36,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex">
-      {/* iOS Liquid Glass ambient backdrop */}
+      {/* Animated liquid chrome backdrop (WebGL) */}
       <div id="app-backdrop">
-        <div className="aurora-orb" style={{ width: '520px', height: '520px', top: '-12%', right: '-6%', background: 'radial-gradient(circle, rgba(10,132,255,0.30) 0%, transparent 68%)' }} />
-        <div className="aurora-orb" style={{ width: '480px', height: '480px', bottom: '-16%', left: '6%', background: 'radial-gradient(circle, rgba(90,200,250,0.22) 0%, transparent 70%)', animationDelay: '-7s' }} />
-        <div className="aurora-orb" style={{ width: '380px', height: '380px', top: '34%', left: '34%', background: 'radial-gradient(circle, rgba(255,214,10,0.08) 0%, transparent 70%)', animationDelay: '-14s' }} />
-        <div className="aurora-orb" style={{ width: '340px', height: '340px', top: '58%', left: '-5%', background: 'radial-gradient(circle, rgba(0,190,255,0.16) 0%, transparent 70%)', animationDelay: '-3s' }} />
+        <LiquidChrome
+          baseColor={[0.09, 0.12, 0.26]}
+          speed={0.3}
+          amplitude={0.35}
+          frequencyX={3}
+          frequencyY={3}
+          interactive
+        />
+        {/* Readability scrim — dims the chrome so text stays readable, chrome still glows behind glass */}
+        <div className="absolute inset-0"
+          style={{ background: 'radial-gradient(130% 95% at 50% 8%, rgba(6,11,22,0.42) 0%, rgba(6,11,22,0.68) 100%)' }} />
       </div>
       <Sidebar />
       {/* Main content — offset by sidebar on desktop */}
@@ -67,8 +74,6 @@ export default function App() {
           </div>
         </div>
       </div>
-      {/* Floating work-session timer */}
-      <TimerCapsule />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useMemo, useState } from 'react'
 import { useT } from '@/i18n'
+import WorkerTimer from '@/components/WorkerTimer'
 
 function startOf(unit: 'week' | 'month') {
   const d = new Date()
@@ -98,6 +99,9 @@ export default function WorkerDetail() {
             </div>
           ))}
         </div>
+
+        {/* Per-worker session timer */}
+        <WorkerTimer workerId={id!} />
 
         <button onClick={() => navigate(`/workers/${id}/profit/new`)}
           className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold flex items-center justify-center gap-2 mb-1 active:scale-[0.98] transition-transform shadow-glow">
