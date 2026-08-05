@@ -3,13 +3,25 @@ import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
 import { useNavigate } from 'react-router-dom'
-import { AnimatedBarChart, AnimatedRing } from '@/components/AnimatedCharts'
+import { AnimatedRing } from '@/components/AnimatedCharts'
 import {
   AreaChart, Area, Grid, XAxis, ChartTooltip,
   HeatmapChart, HeatmapCells, HeatmapXAxis, HeatmapYAxis, HeatmapTooltip, HeatmapLegend,
   HeatmapInteractionProvider, HeatmapInteractionBoundary,
+  BarChart, Bar, BarXAxis,
 } from '@/components/charts'
 import type { HeatmapColumn } from '@/components/charts/heatmap'
+
+// Vertical blue gradient for the monthly bars (hoisted into the chart <defs>)
+function MonthBarGradient() {
+  return (
+    <linearGradient id="monthBarGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+      <stop offset="0%" stopColor="#3B9BFF" />
+      <stop offset="100%" stopColor="#0A84FF" />
+    </linearGradient>
+  )
+}
+MonthBarGradient.displayName = 'MonthBarGradient'
 
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
@@ -61,10 +73,9 @@ export default function Stats() {
       d.setMonth(d.getMonth() - i)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
-      rows.push({ label: d.toLocaleDateString('uk-UA', { month: 'short' }), usd: rubToUsd(rub, r2u) })
+      rows.push({ name: d.toLocaleDateString('uk-UA', { month: 'short' }), usd: rubToUsd(rub, r2u) })
     }
-    const max = Math.max(...rows.map(r => r.usd), 0.01)
-    return rows.map(r => ({ ...r, pct: (r.usd / max) * 100 }))
+    return rows
   }, [profits, r2u])
 
   // This month vs last
@@ -270,7 +281,18 @@ export default function Stats() {
       {/* Monthly bar chart */}
       <div className="glass-light rounded-2xl p-4 mb-5">
         <h3 className="text-sm font-semibold text-text mb-4">Monthly earnings</h3>
-        <AnimatedBarChart data={monthlyData} />
+        <BarChart
+          data={monthlyData}
+          xDataKey="name"
+          barGap={0.3}
+          margin={{ top: 10, right: 10, bottom: 24, left: 10 }}
+        >
+          <MonthBarGradient />
+          <Grid horizontal />
+          <Bar dataKey="usd" fill="url(#monthBarGradient)" lineCap="round" />
+          <BarXAxis />
+          <ChartTooltip />
+        </BarChart>
       </div>
 
       {/* Daily line chart */}
