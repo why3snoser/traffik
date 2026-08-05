@@ -3,7 +3,8 @@ import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
 import { useNavigate } from 'react-router-dom'
-import { AnimatedBarChart, AnimatedAreaChart, AnimatedRing } from '@/components/AnimatedCharts'
+import { AnimatedBarChart, AnimatedRing } from '@/components/AnimatedCharts'
+import { AreaChart, Area, Grid, XAxis, ChartTooltip } from '@/components/charts'
 
 // ── Heatmap Calendar ────────────────────────────────────────────────────────
 function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number }) {
@@ -197,10 +198,15 @@ export default function Stats() {
     const days = []
     for (let i = dailyDays - 1; i >= 0; i--) {
       const d = new Date()
+      d.setHours(0, 0, 0, 0)
       d.setDate(d.getDate() - i)
       const key = d.toISOString().slice(0, 10)
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
-      days.push({ label: d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(rub, r2u) })
+      days.push({
+        date: d,
+        label: d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }),
+        usd: rubToUsd(rub, r2u),
+      })
     }
     return days
   }, [profits, r2u, dailyDays])
@@ -358,7 +364,27 @@ export default function Stats() {
             ))}
           </div>
         </div>
-        <AnimatedAreaChart data={dailyData} key={dailyRange} u2ua={u2ua} />
+        <AreaChart
+          data={dailyData as unknown as Record<string, unknown>[]}
+          key={dailyRange}
+          margin={{ top: 18, right: 10, bottom: 8, left: 10 }}
+          aspectRatio="7 / 2.8"
+          animationDuration={900}
+        >
+          <Grid horizontal numTicksRows={4} />
+          <Area dataKey="usd" fill="#0A84FF" fillOpacity={0.35} strokeWidth={2} />
+          <XAxis numTicks={dailyDays <= 7 ? 7 : 5} tickerHalfWidth={40} />
+          <ChartTooltip
+            showDatePill={false}
+            rows={point => {
+              const usd = typeof point.usd === 'number' ? point.usd : 0
+              return [
+                { color: '#0A84FF', label: 'Заработок', value: fmtUsd(usd) },
+                { color: 'rgba(255,255,255,0.25)', label: '₴', value: fmtUah(usdToUah(usd, u2ua)) },
+              ]
+            }}
+          />
+        </AreaChart>
         <div className="flex mt-2">
           <span className="text-[9px] text-text-muted">{dailyData[0]?.label}</span>
           <span className="flex-1" />

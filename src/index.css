@@ -4,6 +4,29 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* bklit chart CSS variables — dark palette to match the app */
+:root {
+  --chart-background: transparent;
+  --chart-foreground: rgba(238, 243, 255, 0.9);
+  --chart-foreground-muted: rgba(160, 180, 220, 0.6);
+  --chart-label: rgba(160, 180, 220, 0.5);
+  --chart-line-primary: #0A84FF;
+  --chart-line-secondary: rgba(255, 255, 255, 0.25);
+  --chart-crosshair: #64B5FF;
+  --chart-indicator-color: #0A84FF;
+  --chart-indicator-secondary-color: rgba(255, 255, 255, 0.3);
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-tooltip-background: rgba(6, 11, 22, 0.98);
+  --chart-marker-background: rgba(22, 33, 58, 0.9);
+  --chart-marker-border: rgba(160, 200, 255, 0.3);
+  --chart-marker-foreground: rgba(238, 243, 255, 0.9);
+  --chart-marker-badge-background: #0A84FF;
+  --chart-marker-badge-foreground: #ffffff;
+  --chart-segment-background: rgba(255, 255, 255, 0.06);
+  --chart-segment-line: rgba(255, 255, 255, 0.25);
+  --chart-brush-border: rgba(122, 172, 255, 0.5);
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
