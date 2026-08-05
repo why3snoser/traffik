@@ -1,108 +1,9 @@
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
 import { useNavigate } from 'react-router-dom'
-import { AnimatedBarChart, AnimatedRing } from '@/components/AnimatedCharts'
-
-// ── SVG Line Chart ───────────────────────────────────────────────────────────
-function LineChart({ data, chartId, u2ua }: { data: { usd: number; label: string }[]; chartId: string; u2ua: number }) {
-  const [hover, setHover] = useState<number | null>(null)
-  const svgRef = useRef<SVGSVGElement>(null)
-  const W = 500, H = 90, PAD_TOP = 10, PAD_X = 6
-  const max = Math.max(...data.map(d => d.usd), 0.01)
-
-  const pts = data.map((d, i) => ({
-    x: PAD_X + (i / Math.max(data.length - 1, 1)) * (W - PAD_X * 2),
-    y: PAD_TOP + (1 - d.usd / max) * (H - PAD_TOP - 4),
-    ...d,
-  }))
-
-  const smooth = pts.map((p, i) => {
-    if (i === 0) return `M ${p.x} ${p.y}`
-    const prev = pts[i - 1]
-    const cx = (prev.x + p.x) / 2
-    return `C ${cx} ${prev.y} ${cx} ${p.y} ${p.x} ${p.y}`
-  }).join(' ')
-  const area = `${smooth} L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`
-
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return
-    const rect = svgRef.current.getBoundingClientRect()
-    const pct = (e.clientX - rect.left) / rect.width
-    setHover(Math.min(Math.max(Math.floor(pct * data.length), 0), data.length - 1))
-  }
-
-  const tooltipTransform = hover === null ? '' : hover <= 1 ? 'translateX(0%)' : hover >= data.length - 2 ? 'translateX(-100%)' : 'translateX(-50%)'
-
-  return (
-    <div className="relative" style={{ height: H }}>
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        className="w-full h-full"
-        style={{ cursor: 'crosshair' }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHover(null)}
-      >
-        <defs>
-          <linearGradient id={`${chartId}-area`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0A84FF" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#0A84FF" stopOpacity="0.02" />
-          </linearGradient>
-          <linearGradient id={`${chartId}-line`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#0A84FF" />
-            <stop offset="100%" stopColor="#007AFF" />
-          </linearGradient>
-        </defs>
-
-        {/* Chart paths — pointer-events:none so SVG catches mouse */}
-        <path d={area} fill={`url(#${chartId}-area)`} style={{ pointerEvents: 'none' }} />
-        <path d={smooth} fill="none" stroke={`url(#${chartId}-line)`} strokeWidth="1.8" strokeLinecap="round" style={{ pointerEvents: 'none' }} />
-
-        {/* Static dots for non-zero days */}
-        {pts.map((p, i) =>
-          p.usd > 0 && hover !== i ? (
-            <circle key={i} cx={p.x} cy={p.y} r="2" fill="rgba(10,132,255,0.7)" style={{ pointerEvents: 'none' }} />
-          ) : null
-        )}
-
-        {/* Hover indicator */}
-        {hover !== null && (
-          <g style={{ pointerEvents: 'none' }}>
-            <line x1={pts[hover].x} y1={0} x2={pts[hover].x} y2={H} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
-            <circle cx={pts[hover].x} cy={pts[hover].y} r="5.5" fill="#0A0E1A" stroke="#007AFF" strokeWidth="2" />
-            <circle cx={pts[hover].x} cy={pts[hover].y} r="2.5" fill="#007AFF" />
-          </g>
-        )}
-      </svg>
-
-      {hover !== null && (
-        <div
-          className="absolute z-10 text-xs font-bold text-white rounded-xl px-2.5 py-1.5 pointer-events-none whitespace-nowrap"
-          style={{
-            top: -2,
-            left: `${((hover + 0.5) / data.length) * 100}%`,
-            transform: tooltipTransform,
-            background: 'rgba(4,12,6,0.97)',
-            border: '1px solid rgba(10,132,255,0.35)',
-            backdropFilter: 'blur(14px)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 16px rgba(10,132,255,0.08)',
-          }}
-        >
-          {data[hover].usd > 0 ? (
-            <>
-              {fmtUsd(data[hover].usd)}
-              <span className="text-white/50 font-normal"> ({fmtUah(usdToUah(data[hover].usd, u2ua))})</span>
-            </>
-          ) : '—'}
-          <div className="text-white/50 font-normal text-[10px] mt-0.5">{data[hover].label}</div>
-        </div>
-      )}
-    </div>
-  )
-}
+import { AnimatedBarChart, AnimatedAreaChart, AnimatedRing } from '@/components/AnimatedCharts'
 
 // ── Heatmap Calendar ────────────────────────────────────────────────────────
 function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number }) {
@@ -457,7 +358,7 @@ export default function Stats() {
             ))}
           </div>
         </div>
-        <LineChart data={dailyData} chartId="daily" u2ua={u2ua} />
+        <AnimatedAreaChart data={dailyData} key={dailyRange} u2ua={u2ua} />
         <div className="flex mt-2">
           <span className="text-[9px] text-text-muted">{dailyData[0]?.label}</span>
           <span className="flex-1" />
