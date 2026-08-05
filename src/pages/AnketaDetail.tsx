@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, Copy, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight } from 'lucide-react'
 import { useStore } from '@/store'
 import { useState, useMemo } from 'react'
 import { useT } from '@/i18n'

@@ -153,31 +153,33 @@ export const useStore = create<AppState>()((set, get) => ({
       appleIds: p.apple_ids ?? [],
     } : DEFAULT_PROFILE
 
-    // Recalculate level from UAH earnings
-    if (p) {
-      const uah = usdToUah(rubToUsd(profile.totalEarned, profile.settings.rubToUsd), profile.settings.usdToUah)
-      const { level } = getLevelInfo(uah)
-      profile.level = level
-    }
+    // Recalculate totals from the authoritative profit records so the stored
+    // counter can never drift out of sync with the actual entries.
+    const totalEarnedFromProfits = (profits ?? []).reduce((sum, pr) => sum + (pr.my_share ?? 0), 0)
+    const freshUah = usdToUah(rubToUsd(totalEarnedFromProfits, profile.settings.rubToUsd), profile.settings.usdToUah)
+    const { level } = getLevelInfo(freshUah)
+    profile.totalEarned = totalEarnedFromProfits
+    profile.xp = Math.floor(freshUah)
+    profile.level = level
 
     // If no profile row yet, create it. If goals empty, seed defaults.
     if (!p) {
       await saveProfile(DEFAULT_PROFILE)
-    } else if (profile.goals.length === 0) {
-      profile.goals = DEFAULT_GOALS
-      await saveProfile(profile)
     } else {
-      // Always sync imageUrl/description from DEFAULT_GOALS (in case they were updated)
-      let patched = false
-      profile.goals = profile.goals.map(g => {
-        const def = DEFAULT_GOALS.find(d => d.id === g.id)
-        if (def && g.imageUrl !== def.imageUrl) {
-          patched = true
-          return { ...g, imageUrl: def.imageUrl }
-        }
-        return g
-      })
-      if (patched) await saveProfile(profile)
+      if (profile.goals.length === 0) {
+        profile.goals = DEFAULT_GOALS
+      } else {
+        // Always sync imageUrl/description from DEFAULT_GOALS (in case they were updated)
+        profile.goals = profile.goals.map(g => {
+          const def = DEFAULT_GOALS.find(d => d.id === g.id)
+          if (def && g.imageUrl !== def.imageUrl) {
+            return { ...g, imageUrl: def.imageUrl }
+          }
+          return g
+        })
+      }
+      // Persist healed counter (and any goal patches) back to the DB
+      await saveProfile(profile)
     }
 
     set({

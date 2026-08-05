@@ -21,19 +21,23 @@ export default function Sidebar() {
     <aside
       className="fixed left-0 top-0 bottom-0 w-56 hidden md:flex flex-col z-40"
       style={{
-        background: 'linear-gradient(180deg, #0b1610 0%, #060c08 100%)',
-        borderRight: '1px solid rgba(0,230,118,0.08)',
+        background: 'linear-gradient(180deg, rgba(70,100,160,0.16) 0%, rgba(24,38,66,0.12) 100%)',
+        backdropFilter: 'blur(28px) saturate(170%)',
+        WebkitBackdropFilter: 'blur(28px) saturate(170%)',
+        borderRight: '1px solid rgba(160,200,255,0.14)',
+        borderTopRightRadius: '16px',
+        borderBottomRightRadius: '16px',
       }}
     >
       {/* Brand */}
       <div className="px-5 pt-7 pb-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center" style={{ boxShadow: '0 0 16px rgba(0,230,118,0.4)' }}>
-            <Gem size={16} style={{ color: '#060c08' }} />
+          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center" style={{ boxShadow: '0 0 16px rgba(10,132,255,0.4)' }}>
+            <Gem size={16} style={{ color: '#fff' }} />
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide">TRAFFIK</h1>
-            <p className="text-[10px]" style={{ color: 'rgba(0,230,118,0.5)' }}>Personal CRM</p>
+            <p className="text-[10px]" style={{ color: 'rgba(160,200,255,0.6)' }}>Personal CRM</p>
           </div>
         </div>
       </div>
@@ -45,11 +49,11 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? 'text-[#060c08] font-bold shadow-glow-sm'
+                  ? 'text-white font-bold shadow-glow-sm'
                   : 'text-text-muted hover:text-text hover:bg-white/5'
               }`
             }
-            style={({ isActive }) => isActive ? { background: '#00e676', boxShadow: '0 0 20px rgba(0,230,118,0.3)' } : {}}
+            style={({ isActive }) => isActive ? { background: 'linear-gradient(180deg,#0A84FF,#007AFF)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.35), 0 0 20px rgba(10,132,255,0.35)' } : {}}
           >
             {({ isActive }) => (
               <>
@@ -63,17 +67,16 @@ export default function Sidebar() {
 
       {/* Balance card at bottom */}
       <div className="p-4">
-        <div className="rounded-2xl p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,rgba(0,230,118,0.08) 0%,rgba(0,150,60,0.05) 100%)', border: '1px solid rgba(0,230,118,0.20)', borderTopColor: 'rgba(0,230,118,0.35)' }}>
-          {/* decorative glow circle */}
-          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(0,230,118,0.12) 0%,transparent 70%)' }} />
+        <div className="rounded-2xl p-4 relative overflow-hidden glass-light" style={{ borderTopColor: 'rgba(205,228,255,0.4)' }}>
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(10,132,255,0.18) 0%,transparent 70%)' }} />
           <div className="flex items-center gap-1.5 mb-2 relative">
             <div className="neon-dot neon-pulse" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(0,230,118,0.7)' }}>Total earned</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(160,200,255,0.8)' }}>Total earned</p>
           </div>
           <p className="text-2xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
-          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,230,201,0.45)' }}>{workers.length} workers</p>
+          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{workers.length} workers</p>
         </div>
-        <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(0,230,118,0.25)' }}>TRAFFIK v1.0</p>
+        <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(160,200,255,0.35)' }}>TRAFFIK v1.0</p>
       </div>
     </aside>
   )

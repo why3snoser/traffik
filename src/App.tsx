@@ -22,7 +22,7 @@ export default function App() {
 
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-accent-glow border border-accent/20 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -34,12 +34,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex">
-      {/* Ambient background orbs */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-15%', right: '-8%', width: '520px', height: '520px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,230,118,0.055) 0%, transparent 68%)' }} />
-        <div style={{ position: 'absolute', bottom: '-18%', left: '5%', width: '440px', height: '440px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,180,83,0.04) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '30%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,230,118,0.025) 0%, transparent 70%)' }} />
+    <div className="min-h-screen flex">
+      {/* iOS Liquid Glass ambient backdrop */}
+      <div id="app-backdrop">
+        <div className="aurora-orb" style={{ width: '520px', height: '520px', top: '-12%', right: '-6%', background: 'radial-gradient(circle, rgba(10,132,255,0.30) 0%, transparent 68%)' }} />
+        <div className="aurora-orb" style={{ width: '480px', height: '480px', bottom: '-16%', left: '6%', background: 'radial-gradient(circle, rgba(90,200,250,0.22) 0%, transparent 70%)', animationDelay: '-7s' }} />
+        <div className="aurora-orb" style={{ width: '380px', height: '380px', top: '34%', left: '34%', background: 'radial-gradient(circle, rgba(255,214,10,0.08) 0%, transparent 70%)', animationDelay: '-14s' }} />
+        <div className="aurora-orb" style={{ width: '340px', height: '340px', top: '58%', left: '-5%', background: 'radial-gradient(circle, rgba(0,190,255,0.16) 0%, transparent 70%)', animationDelay: '-3s' }} />
       </div>
       <Sidebar />
       {/* Main content — offset by sidebar on desktop */}
