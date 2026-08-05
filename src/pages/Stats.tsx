@@ -9,6 +9,7 @@ import {
   HeatmapChart, HeatmapCells, HeatmapXAxis, HeatmapYAxis, HeatmapTooltip, HeatmapLegend,
   HeatmapInteractionProvider, HeatmapInteractionBoundary,
   BarChart, Bar, BarXAxis,
+  Legend, LegendItem, LegendMarker, LegendLabel, LegendProgress, useLegendItem,
 } from '@/components/charts'
 import type { HeatmapColumn } from '@/components/charts/heatmap'
 
@@ -22,6 +23,62 @@ function MonthBarGradient() {
   )
 }
 MonthBarGradient.displayName = 'MonthBarGradient'
+
+// One color per profit type for the breakdown legend
+const TYPE_COLORS: Record<ProfitType, string> = {
+  oplata: '#3B9BFF',
+  perevod: '#22d3a5',
+  iks: '#f472b6',
+  vozvrat: '#f59e0b',
+  vozvrat_yurist: '#a78bfa',
+}
+
+// Legend row for "Breakdown by type"
+function BreakdownLegendRow() {
+  const { item, percentage } = useLegendItem()
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <LegendMarker />
+          <LegendLabel className="text-xs text-text" />
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-[10px] font-semibold text-text-muted">{percentage.toFixed(0)}%</span>
+          <span className="text-xs font-bold text-accent-light">{fmtUsd(item.value)}</span>
+        </div>
+      </div>
+      <LegendProgress height="h-1.5" />
+    </div>
+  )
+}
+
+// Legend row for "Worker ranking"
+function WorkerRankLegendRow() {
+  const { item } = useLegendItem()
+  const navigate = useNavigate()
+  return (
+    <button
+      onClick={() => item.id && navigate(`/workers/${item.id}`)}
+      className="flex items-center gap-3 text-left w-full"
+    >
+      <span className="text-lg w-7 text-center shrink-0">
+        {item.isMedal ? item.rank : <span className="text-sm font-bold text-text-muted">{item.rank}</span>}
+      </span>
+      <span className="text-xl shrink-0">{item.emoji}</span>
+      <div className="flex-1">
+        <div className="flex justify-between items-baseline">
+          <span className="text-sm text-text font-medium">{item.label}</span>
+          <div className="text-right">
+            <span className="text-sm font-bold text-accent-light">{fmtUsd(item.value)}</span>
+            {item.subtext && <span className="text-text-muted text-[10px] ml-1.5">({item.subtext})</span>}
+          </div>
+        </div>
+        <LegendProgress height="h-1" trackClassName="mt-1" />
+      </div>
+    </button>
+  )
+}
 
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
@@ -387,23 +444,21 @@ export default function Stats() {
       {/* Breakdown by type */}
       {byType.length > 0 && (
         <div className="glass-light rounded-2xl p-4 mb-5">
-          <h3 className="text-sm font-semibold text-text mb-4">Breakdown by type</h3>
-          <div className="flex flex-col gap-3">
-            {byType.map(({ type, label, usd, pct, barPct }) => (
-              <div key={type} className="group cursor-default">
-                <div className="flex justify-between items-baseline mb-1.5">
-                  <span className="text-xs text-text">{label}</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[10px] text-text-muted">{pct.toFixed(0)}%</span>
-                    <span className="text-xs font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(usd)}</span>
-                  </div>
-                </div>
-                <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-500 group-hover:opacity-70" style={{ width: `${barPct}%`, background: 'linear-gradient(90deg,#0A84FF,#007AFF)' }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <Legend
+            title="Breakdown by type"
+            titleClassName="text-sm font-semibold text-text mb-3"
+            className="gap-1"
+            items={byType.map(t => ({
+              label: t.label,
+              value: t.usd,
+              maxValue: rubToUsd(totalRub, r2u),
+              color: TYPE_COLORS[t.type],
+            }))}
+          >
+            <LegendItem>
+              <BreakdownLegendRow />
+            </LegendItem>
+          </Legend>
         </div>
       )}
 
@@ -518,31 +573,26 @@ export default function Stats() {
       {/* Worker ranking */}
       {topWorkers.length > 0 && (
         <div className="glass-light rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-text mb-3">Worker ranking</h3>
-          <div className="flex flex-col gap-3 stagger">
-            {topWorkers.map((w, i) => {
-              const usd = rubToUsd(w.totalProfit, r2u)
-              const pct = (w.totalProfit / topWorkers[0].totalProfit) * 100
-              return (
-                <button key={w.id} onClick={() => navigate(`/workers/${w.id}`)} className="flex items-center gap-3 text-left w-full rounded-xl p-2 hover:bg-white/5 transition-all duration-200 hover:translate-x-1">
-                  <span className="text-lg w-7 text-center">{i < 3 ? medals[i] : <span className="text-text-muted text-sm font-bold">{i + 1}</span>}</span>
-                  <span className="text-xl">{w.emoji}</span>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="text-sm text-text font-medium">{w.name}</span>
-                      <div className="text-right">
-                        <span className="text-sm font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(usd)}</span>
-                        <span className="text-text-muted text-[10px] ml-1.5">({fmtUah(usdToUah(usd, u2ua))})</span>
-                      </div>
-                    </div>
-                    <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: i === 0 ? 'linear-gradient(90deg,#0A84FF,#007AFF)' : 'rgba(10,132,255,0.45)' }} />
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+          <Legend
+            title="Worker ranking"
+            titleClassName="text-sm font-semibold text-text mb-3"
+            className="gap-1"
+            items={topWorkers.map((w, i) => ({
+              label: w.name,
+              value: rubToUsd(w.totalProfit, r2u),
+              maxValue: rubToUsd(topWorkers[0].totalProfit, r2u),
+              color: i === 0 ? '#3B9BFF' : 'rgba(10,132,255,0.45)',
+              rank: i < 3 ? medals[i] : String(i + 1),
+              isMedal: i < 3,
+              emoji: w.emoji,
+              id: w.id,
+              subtext: fmtUah(usdToUah(rubToUsd(w.totalProfit, r2u), u2ua)),
+            }))}
+          >
+            <LegendItem className="hover:translate-x-1">
+              <WorkerRankLegendRow />
+            </LegendItem>
+          </Legend>
         </div>
       )}
     </div>

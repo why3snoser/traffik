@@ -19,3 +19,14 @@ export { Bar } from "./bar";
 export { BarSquares } from "./bar-squares";
 export { BarXAxis } from "./bar-x-axis";
 export { BarYAxis } from "./bar-y-axis";
+export {
+  Legend,
+  LegendItem,
+  LegendLabel,
+  LegendMarker,
+  LegendProgress,
+  LegendValue,
+  type LegendItemData,
+  useLegend,
+  useLegendItem,
+} from "./legend";
