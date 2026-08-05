@@ -142,12 +142,21 @@ export default function Stats() {
 
   // Heatmap — daily earnings, 26 weeks, Monday-first (GitHub style)
   const heatmapWeeks = 26
-  const heatmapData = useMemo<HeatmapColumn[]>(() => {
-    const dayMap = new Map<string, number>()
+  const heatmapDayRub = useMemo(() => {
+    const map = new Map<string, number>()
     profits.forEach(p => {
       const k = p.createdAt.slice(0, 10)
-      dayMap.set(k, (dayMap.get(k) ?? 0) + p.myShare)
+      map.set(k, (map.get(k) ?? 0) + p.myShare)
     })
+    return map
+  }, [profits])
+
+  const heatmapData = useMemo<HeatmapColumn[]>(() => {
+    const vals = Array.from(heatmapDayRub.values()).filter(v => v > 0).sort((a, b) => a - b)
+    const q = (f: number) => vals.length ? vals[Math.min(vals.length - 1, Math.floor(f * vals.length))] : 0
+    const t1 = q(0.25), t2 = q(0.5), t3 = q(0.75)
+    const level = (rub: number) => rub <= 0 ? 0 : rub <= t1 ? 1 : rub <= t2 ? 2 : rub <= t3 ? 3 : 4
+
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const daysSinceMonday = (today.getDay() + 6) % 7
     const start = new Date(today)
@@ -160,13 +169,13 @@ export default function Stats() {
       for (let d = 0; d < 7; d++) {
         const day = new Date(cur)
         const key = day.toISOString().slice(0, 10)
-        bins.push({ bin: day.getDay(), count: dayMap.get(key) ?? 0, date: day })
+        bins.push({ bin: day.getDay(), count: level(heatmapDayRub.get(key) ?? 0), date: day })
         cur.setDate(cur.getDate() + 1)
       }
       cols.push({ bin: w, bins })
     }
     return cols
-  }, [profits])
+  }, [heatmapDayRub])
 
   const topWorkers = useMemo(() =>
     [...workers].sort((a, b) => b.totalProfit - a.totalProfit).filter(w => w.totalProfit > 0),
@@ -339,11 +348,13 @@ export default function Stats() {
               <HeatmapXAxis />
               <HeatmapYAxis tickFilter="odd" />
               <HeatmapTooltip
-                formatLabel={(count, _date) =>
-                  count > 0
-                    ? `${fmtUsd(rubToUsd(count, r2u))} · ${fmtUah(usdToUah(rubToUsd(count, r2u), u2ua))}`
+                formatLabel={(_count, date) => {
+                  const key = date.toISOString().slice(0, 10)
+                  const rub = heatmapDayRub.get(key) ?? 0
+                  return rub > 0
+                    ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
                     : 'нет профита'
-                }
+                }}
               />
             </HeatmapChart>
             <HeatmapLegend lessLabel="Менше" moreLabel="Більше" />

@@ -25,6 +25,12 @@
   --chart-segment-background: rgba(255, 255, 255, 0.06);
   --chart-segment-line: rgba(255, 255, 255, 0.25);
   --chart-brush-border: rgba(122, 172, 255, 0.5);
+  --chart-scale-01: rgba(255, 255, 255, 0.05);
+  --chart-scale-02: rgba(10, 132, 255, 0.22);
+  --chart-scale-03: rgba(10, 132, 255, 0.45);
+  --chart-scale-04: rgba(10, 132, 255, 0.7);
+  --chart-scale-05: #3B9BFF;
+  --chart-scale-pattern-color: rgba(160, 200, 255, 0.85);
 }
 
 * {
