@@ -3,13 +3,13 @@ import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
 import { useNavigate } from 'react-router-dom'
-import { AnimatedRing } from '@/components/AnimatedCharts'
 import {
   AreaChart, Area, Grid, XAxis, ChartTooltip,
   HeatmapChart, HeatmapCells, HeatmapXAxis, HeatmapYAxis, HeatmapTooltip, HeatmapLegend,
   HeatmapInteractionProvider, HeatmapInteractionBoundary,
   BarChart, Bar, BarXAxis,
   Legend, LegendItem, LegendMarker, LegendLabel, LegendProgress, useLegendItem,
+  RingChart, Ring, RingCenter,
 } from '@/components/charts'
 import type { HeatmapColumn } from '@/components/charts/heatmap'
 
@@ -80,6 +80,23 @@ function WorkerRankLegendRow() {
   )
 }
 
+// Legend row for the daily-goal ring (Today / До цели)
+function RingLegendRow() {
+  const { item, percentage } = useLegendItem()
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <LegendMarker />
+        <LegendLabel className="text-xs text-text" />
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="text-xs font-bold text-white">{fmtUsd(item.value)}</span>
+        <span className="text-[10px] font-semibold text-text-muted">{percentage.toFixed(0)}%</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
   const { profits, workers, anketas, profile, sessions, clearSessions, workerTime, workerBaseline } = useStore()
@@ -91,6 +108,7 @@ export default function Stats() {
   const totalUah = usdToUah(totalUsd, u2ua)
   const avgUsd = profits.length > 0 ? totalUsd / profits.length : 0
   const levelInfo = getLevelInfo(totalUah)
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
   // ── Per-worker time → money insights ─────────────────────────────────
   const workerEarn = (w: { id: string; totalProfit: number }) => {
@@ -120,6 +138,11 @@ export default function Stats() {
   const dailyTarget = Math.max(5, totalRub > 0 ? totalRub / 30 : 10)
   const dailyTargetUsd = rubToUsd(dailyTarget, r2u)
   const dayPct = Math.min(100, (todayUsd / dailyTargetUsd) * 100)
+  const reachUsd = Math.max(0, dailyTargetUsd - todayUsd)
+  const ringData = useMemo(() => [
+    { label: 'Today', value: todayUsd, color: '#0A84FF' },
+    { label: 'До цели', value: reachUsd, color: 'rgba(255,255,255,0.10)' },
+  ], [todayUsd, reachUsd])
 
   // Always last 6 months (uk-UA locale)
   const monthlyData = useMemo(() => {
@@ -288,30 +311,36 @@ export default function Stats() {
       </div>
 
       {/* Today ring + live pace */}
-      <div className="glass-light rounded-2xl p-4 mb-5 flex items-center justify-between gap-4">
+      <div className="glass-light rounded-2xl p-4 mb-5">
         <div className="flex items-center gap-4">
-          <AnimatedRing pct={dayPct} label="Дневная цель" value={todayUsd} sub={Math.round(dayPct) + '%'} />
-          <div>
-            <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">Today</p>
-            <p className="text-xl font-bold text-white">{fmtUsd(todayUsd)}</p>
-            <p className="text-text-muted text-xs mt-0.5">{fmtUah(usdToUah(todayUsd, u2ua))}</p>
-            <div className="flex items-center gap-1 mt-2">
-              <Zap size={11} className="text-accent-light" />
-              <span className="text-xs text-text-muted">
-                цель {fmtUsd(dailyTargetUsd)}/день
-              </span>
-            </div>
+          <div className="shrink-0">
+            <RingChart
+              data={ringData}
+              hoveredIndex={hoverIndex}
+              onHoverChange={setHoverIndex}
+              size={180}
+              thickness={18}
+            >
+              <Ring index={0} />
+              <Ring index={1} />
+              <RingCenter value={fmtUsd(todayUsd)} sub={Math.round(dayPct) + '%'} />
+            </RingChart>
           </div>
+          <Legend
+            hoveredIndex={hoverIndex}
+            onHoverChange={setHoverIndex}
+            items={ringData.map(d => ({ label: d.label, value: d.value, maxValue: dailyTargetUsd, color: d.color }))}
+            className="flex-1 gap-1"
+          >
+            <LegendItem>
+              <RingLegendRow />
+            </LegendItem>
+          </Legend>
         </div>
-        <div className="text-right">
-          <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">Сессии</p>
-          <p className="text-lg font-bold text-white">{fmtClock(sessionTotalMs)}</p>
-          <p className="text-text-muted text-xs mt-0.5">{sessions.length} за всё время</p>
-          {sessionRate > 0 && (
-            <p className="text-xs font-bold mt-1" style={{ color: '#0A84FF' }}>
-              {fmtUsd(sessionRate)}/час
-            </p>
-          )}
+        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-2 text-xs text-text-muted flex-wrap">
+          <span>Сессии: <b className="text-white">{fmtClock(sessionTotalMs)}</b> · {sessions.length} за всё время</span>
+          <span>цель {fmtUsd(dailyTargetUsd)}/день</span>
+          {sessionRate > 0 && <span className="font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(sessionRate)}/час</span>}
         </div>
       </div>
 

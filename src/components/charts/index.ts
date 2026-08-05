@@ -30,3 +30,4 @@ export {
   useLegend,
   useLegendItem,
 } from "./legend";
+export { RingChart, Ring, RingCenter, type RingDataItem } from "./ring-chart";
