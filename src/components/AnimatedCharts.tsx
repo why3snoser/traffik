@@ -18,11 +18,10 @@ export function AnimatedBarChart({ data }: { data: { label: string; usd: number 
     </div>
   )
 }
-
 function Bars({ width, data }: { width: number; data: { label: string; usd: number }[] }) {
   const [hover, setHover] = useState<number | null>(null)
-  const height = 132
-  const margin = { top: 14, left: 2, right: 2, bottom: 26 }
+  const height = 140
+  const margin = { top: 16, left: 2, right: 2, bottom: 22 }
   const xMax = Math.max(width - margin.left - margin.right, 1)
   const yMax = height - margin.top - margin.bottom
 
@@ -75,6 +74,16 @@ function Bars({ width, data }: { width: number; data: { label: string; usd: numb
                     : 'none',
               }}
             />
+            <text
+              x={(x(d.label) ?? 0) + x.bandwidth() / 2}
+              y={height - 7}
+              textAnchor="middle"
+              fontSize={9}
+              fontWeight={600}
+              fill="rgba(255,255,255,0.45)"
+            >
+              {d.label}
+            </text>
           </g>
         )
       })}
