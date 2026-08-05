@@ -4,3 +4,13 @@ export { Area } from "./area";
 export { Grid } from "./grid";
 export { XAxis } from "./x-axis";
 export { ChartTooltip } from "./tooltip";
+export {
+  HeatmapCells,
+  HeatmapChart,
+  HeatmapInteractionBoundary,
+  HeatmapInteractionProvider,
+  HeatmapLegend,
+  HeatmapTooltip,
+  HeatmapXAxis,
+  HeatmapYAxis,
+} from "./heatmap";

@@ -1,130 +1,15 @@
 import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from 'lucide-react'
 import { useStore } from '@/store'
-import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
+import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
 import { useNavigate } from 'react-router-dom'
 import { AnimatedBarChart, AnimatedRing } from '@/components/AnimatedCharts'
-import { AreaChart, Area, Grid, XAxis, ChartTooltip } from '@/components/charts'
-
-// ── Heatmap Calendar ────────────────────────────────────────────────────────
-function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number }) {
-  const dayMap = useMemo(() => {
-    const m = new Map<string, number>()
-    profits.forEach(p => {
-      const k = p.createdAt.slice(0, 10)
-      m.set(k, (m.get(k) ?? 0) + p.myShare)
-    })
-    return m
-  }, [profits])
-
-  const weeks = useMemo(() => {
-    const todayD = new Date(); todayD.setHours(0, 0, 0, 0)
-    const dow = todayD.getDay()
-    const start = new Date(todayD)
-    start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1) - 14 * 7)
-    const ws: Array<Array<{ date: Date; key: string; rub: number }>> = []
-    const cur = new Date(start)
-    for (let w = 0; w < 15; w++) {
-      const week: typeof ws[0] = []
-      for (let d = 0; d < 7; d++) {
-        const key = cur.toISOString().slice(0, 10)
-        week.push({ date: new Date(cur), key, rub: dayMap.get(key) ?? 0 })
-        cur.setDate(cur.getDate() + 1)
-      }
-      ws.push(week)
-    }
-    return ws
-  }, [dayMap])
-
-  const maxRub = Math.max(...Array.from(dayMap.values()), 1)
-  const today = new Date(); today.setHours(23, 59, 59, 999)
-
-  const getColor = (rub: number, date: Date) => {
-    if (date > today) return 'rgba(255,255,255,0.02)'
-    if (rub === 0) return 'rgba(10,132,255,0.07)'
-    const t = rub / maxRub
-    return `rgba(10,132,255,${(0.22 + t * 0.78).toFixed(2)})`
-  }
-
-  const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
-
-  // Hover tooltip state — follows the cursor
-  const [tip, setTip] = useState<{ x: number; y: number; date: string; rub: number; usd: number } | null>(null)
-
-  return (
-    <div className="overflow-x-auto pb-1">
-      <div className="flex gap-1" style={{ minWidth: 'max-content' }}>
-        {/* Day labels */}
-        <div className="flex flex-col gap-1 pr-1.5 pt-5">
-          {DAYS.map(d => (
-            <div key={d} className="h-3.5 flex items-center text-[9px] text-text-muted leading-none">{d}</div>
-          ))}
-        </div>
-        {/* Columns */}
-        <div className="flex flex-col">
-          {/* Month labels */}
-          <div className="flex gap-1 mb-1 h-4">
-            {weeks.map((week, wi) => (
-              <div key={wi} className="w-3.5 text-[9px] text-text-muted text-center leading-none flex items-center justify-center">
-                {week[0].date.getDate() <= 7 ? week[0].date.toLocaleDateString('uk-UA', { month: 'short' }).slice(0, 3) : ''}
-              </div>
-            ))}
-          </div>
-          {/* Grid */}
-          <div className="flex gap-1 relative">
-            {weeks.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-1">
-                {week.map(({ date, key, rub }) => {
-                  const usd = rubToUsd(rub, r2u)
-                  return (
-                    <div
-                      key={key}
-                      className="w-3.5 h-3.5 rounded-[4px] cursor-pointer transition-all duration-100 hover:scale-150 hover:z-10 relative"
-                      style={{
-                        backgroundColor: getColor(rub, date),
-                        boxShadow: tip && tip.date === key ? '0 0 0 1.5px #fff, 0 0 10px rgba(10,132,255,0.6)' : 'none',
-                      }}
-                      onMouseEnter={e => {
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        setTip({ x: rect.left + rect.width / 2, y: rect.top, date: key, rub, usd })
-                      }}
-                      onMouseLeave={() => setTip(t => (t && t.date === key ? null : t))}
-                    />
-                  )
-                })}
-              </div>
-            ))}
-
-            {/* Floating tooltip */}
-            {tip && (
-              <div
-                className="pointer-events-none fixed z-50 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white whitespace-nowrap"
-                style={{
-                  left: tip.x,
-                  top: tip.y - 4,
-                  transform: 'translate(-50%, -100%)',
-                  background: 'rgba(4,12,6,0.97)',
-                  border: '1px solid rgba(10,132,255,0.4)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.6), 0 0 12px rgba(10,132,255,0.15)',
-                }}
-              >
-                {tip.date}
-                {tip.rub > 0 ? (
-                  <>
-                    <div className="text-white/90 font-semibold">{fmtUsd(tip.usd)}</div>
-                    <div className="text-white/40 font-normal text-[10px]">{fmtUah(usdToUah(tip.usd, r2u))}</div>
-                  </>
-                ) : (
-                  <div className="text-white/40 font-normal text-[10px]">нет профита</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+import {
+  AreaChart, Area, Grid, XAxis, ChartTooltip,
+  HeatmapChart, HeatmapCells, HeatmapXAxis, HeatmapYAxis, HeatmapTooltip, HeatmapLegend,
+  HeatmapInteractionProvider, HeatmapInteractionBoundary,
+} from '@/components/charts'
+import type { HeatmapColumn } from '@/components/charts/heatmap'
 
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
@@ -254,6 +139,34 @@ export default function Stats() {
       ? { date: new Date(entries[0][0]).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(entries[0][1], r2u) }
       : null
   }, [profits, r2u])
+
+  // Heatmap — daily earnings, 26 weeks, Monday-first (GitHub style)
+  const heatmapWeeks = 26
+  const heatmapData = useMemo<HeatmapColumn[]>(() => {
+    const dayMap = new Map<string, number>()
+    profits.forEach(p => {
+      const k = p.createdAt.slice(0, 10)
+      dayMap.set(k, (dayMap.get(k) ?? 0) + p.myShare)
+    })
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const daysSinceMonday = (today.getDay() + 6) % 7
+    const start = new Date(today)
+    start.setDate(start.getDate() - daysSinceMonday - (heatmapWeeks - 1) * 7)
+    const cols: HeatmapColumn[] = []
+    const cur = new Date(start)
+    cur.setHours(0, 0, 0, 0)
+    for (let w = 0; w < heatmapWeeks; w++) {
+      const bins = []
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(cur)
+        const key = day.toISOString().slice(0, 10)
+        bins.push({ bin: day.getDay(), count: dayMap.get(key) ?? 0, date: day })
+        cur.setDate(cur.getDate() + 1)
+      }
+      cols.push({ bin: w, bins })
+    }
+    return cols
+  }, [profits])
 
   const topWorkers = useMemo(() =>
     [...workers].sort((a, b) => b.totalProfit - a.totalProfit).filter(w => w.totalProfit > 0),
@@ -414,14 +327,28 @@ export default function Stats() {
             </div>
           )}
         </div>
-        <HeatmapCalendar profits={profits} r2u={r2u} />
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-[10px] text-text-muted">Менше</span>
-          {[0.07, 0.25, 0.5, 0.75, 1].map(o => (
-            <div key={o} className="w-3 h-3 rounded-sm" style={{ background: o === 0.07 ? 'rgba(10,132,255,0.07)' : `rgba(10,132,255,${o})` }} />
-          ))}
-          <span className="text-[10px] text-text-muted">Більше</span>
-        </div>
+        <HeatmapInteractionProvider>
+          <HeatmapInteractionBoundary>
+            <HeatmapChart
+              data={heatmapData}
+              layout="fluid"
+              weekStartDay={1}
+              margin={{ top: 20, right: 4, bottom: 0, left: 26 }}
+            >
+              <HeatmapCells />
+              <HeatmapXAxis />
+              <HeatmapYAxis tickFilter="odd" />
+              <HeatmapTooltip
+                formatLabel={(count, _date) =>
+                  count > 0
+                    ? `${fmtUsd(rubToUsd(count, r2u))} · ${fmtUah(usdToUah(rubToUsd(count, r2u), u2ua))}`
+                    : 'нет профита'
+                }
+              />
+            </HeatmapChart>
+            <HeatmapLegend lessLabel="Менше" moreLabel="Більше" />
+          </HeatmapInteractionBoundary>
+        </HeatmapInteractionProvider>
       </div>
 
       {/* Breakdown by type */}
