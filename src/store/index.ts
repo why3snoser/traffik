@@ -55,6 +55,23 @@ const DEFAULT_GOALS = [
   },
 ]
 
+const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
+  { email: 'vimijadumobi39@gmail.com', password: '3Bq4vmd2' },
+  { email: 'axewawizu139@gmail.com', password: '3Bq4vmd2' },
+  { email: 'tometucahan033@gmail.com', password: '3Bq4vmd2' },
+  {
+    email: 'erironivu13@gmail.com',
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/5/cacgahbebidjfjn2k4qjhjts3fmrb0at',
+  },
+  { email: 'whysnoser@gmail.com', password: 'Weryte321' },
+  {
+    email: 'babinskiyvlad2010@gmail.com',
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/5/cacgahbebjdaceuyl92a6bvbi1ukt49s',
+  },
+]
+
 const DEFAULT_PROFILE: UserProfile = {
   name: 'Crowley',
   level: 1,
@@ -62,6 +79,7 @@ const DEFAULT_PROFILE: UserProfile = {
   totalEarned: 0,
   goals: DEFAULT_GOALS,
   settings: DEFAULT_SETTINGS,
+  appleIds: DEFAULT_APPLE_IDS,
 }
 
 interface AppState {
@@ -151,7 +169,7 @@ export const useStore = create<AppState>()((set, get) => ({
       goals: p.goals ?? [],
       settings: p.settings ?? DEFAULT_SETTINGS,
       workerAvatars: p.worker_avatars ?? {},
-      appleIds: p.apple_ids ?? [],
+      appleIds: (p.apple_ids ?? []).length > 0 ? p.apple_ids : DEFAULT_APPLE_IDS,
     } : DEFAULT_PROFILE
 
     // Recalculate totals from the authoritative profit records so the stored
