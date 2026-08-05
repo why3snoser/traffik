@@ -284,8 +284,8 @@ export default function Profile() {
       {/* Add goal modal */}
       {showAddGoal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddGoal(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('new_goal')}</h3>
             <div className="flex flex-col gap-4">
@@ -339,8 +339,8 @@ export default function Profile() {
       {/* Settings modal */}
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowSettings(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('settings_title')}</h3>
             <div className="flex flex-col gap-4">

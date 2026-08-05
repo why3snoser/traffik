@@ -174,8 +174,8 @@ export default function Workers() {
       {/* Edit avatar modal */}
       {editAvatarId && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" onClick={() => setEditAvatarId(null)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
+          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">Аватар воркера</h3>
@@ -201,8 +201,8 @@ export default function Workers() {
       {/* Add worker modal */}
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" onClick={() => setShowAdd(false)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
+          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">{t('workers_new')}</h3>

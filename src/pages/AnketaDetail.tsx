@@ -353,9 +353,9 @@ export default function AnketaDetail() {
       {/* VK Import Modal */}
       {showVkImport && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowVkImport(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
           <div
-            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border"
+            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-pop border-t border-border"
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
@@ -395,9 +395,9 @@ export default function AnketaDetail() {
       {/* Premium Apple ID Selection Modal */}
       {showPremiumModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
           <div
-            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-slide-up border-t border-border flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-pop border-t border-border flex flex-col max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />

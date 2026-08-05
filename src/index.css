@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* bklit chart CSS variables — dark palette to match the app */
 :root {
@@ -78,6 +78,14 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-up { animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Snappy "pop" for modal sheets — scale + lift with a springy overshoot */
+@keyframes popUp {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.9); }
+  55%  { opacity: 1; transform: translateY(-5px) scale(1.015); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-pop { animation: popUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
