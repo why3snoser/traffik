@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -194,7 +194,7 @@ export function RingCenter({
       {sub ? (
         <text
           y={radius * 0.55}
-          style={{ fontSize: radius * 0.24, fontWeight: 600, fill: "#64B5FF" }}
+          style={{ fontSize: radius * 0.24, fontWeight: 600, fill: "#A596E8" }}
         >
           {sub}
         </text>

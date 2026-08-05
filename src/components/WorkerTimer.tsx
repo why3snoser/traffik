@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Play, Square, RotateCcw, Timer as TimerIcon } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, fmtUsd } from '@/types'
@@ -59,15 +59,15 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
       className={`rounded-2xl p-4 mb-4 border transition-all ${running ? 'border-accent/40' : 'border-border'}`}
       style={{
         background: running
-          ? 'linear-gradient(160deg, rgba(10,132,255,0.16) 0%, rgba(8,16,32,0.55) 100%)'
+          ? 'linear-gradient(160deg, rgba(139,125,204,0.16) 0%, rgba(26,24,34,0.55) 100%)'
           : 'rgba(10,18,34,0.6)',
-        boxShadow: running ? '0 0 24px rgba(10,132,255,0.2)' : 'none',
+        boxShadow: running ? '0 0 24px rgba(139,125,204,0.2)' : 'none',
       }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <TimerIcon size={14} style={{ color: running ? '#64B5FF' : undefined }} className={running ? 'animate-pulse' : ''} />
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: running ? '#64B5FF' : 'rgba(190,210,255,0.6)' }}>
+          <TimerIcon size={14} style={{ color: running ? '#A596E8' : undefined }} className={running ? 'animate-pulse' : ''} />
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: running ? '#A596E8' : 'rgba(164,164,179,0.6)' }}>
             {running ? 'Сессия идёт' : 'Таймер работы'}
           </span>
         </div>
@@ -98,13 +98,13 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
             <span className="text-[11px] text-text-muted">
               {earningsUsd > 0 ? (
                 <>
-                  <span className="font-bold" style={{ color: '#0A84FF' }}>+{fmtUsd(earningsUsd)}</span> за {fmtDur(totalMs)}
+                  <span className="font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earningsUsd)}</span> за {fmtDur(totalMs)}
                 </>
               ) : (
                 <>за {fmtDur(totalMs)} пока без профитов</>
               )}
               {rate > 0 && (
-                <span className="font-bold ml-1.5" style={{ color: '#0A84FF' }}>{fmtUsd(rate)}/час</span>
+                <span className="font-bold ml-1.5" style={{ color: '#8B7DCC' }}>{fmtUsd(rate)}/час</span>
               )}
             </span>
             <button
@@ -125,7 +125,7 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
       )}
 
       {justStopped && !running && (
-        <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#64B5FF' }}>
+        <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#A596E8' }}>
           ✓ Время записано. Добавленные профиты тоже учтутся в $/час.
         </p>
       )}

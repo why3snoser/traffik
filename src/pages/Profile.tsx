@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useMemo } from 'react'
+﻿import { useState, useEffect, useRef, useMemo } from 'react'
 import { Plus, Target, Zap, X, Settings, Trash2, Copy, Key, Mail, Link2, Import } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
 
-const CONFETTI_COLORS = ['#0A84FF', '#64B5FF', '#ffd60a', '#ff453a', '#ffffff', '#5AC8FA']
+const CONFETTI_COLORS = ['#8B7DCC', '#A596E8', '#E8C06A', '#FF5B6E', '#ffffff', '#C3BCEA']
 
 function Confetti({ active }: { active: boolean }) {
   const particles = useRef(
@@ -153,37 +153,37 @@ export default function Profile() {
           <span>{levelInfo.neededXp.toLocaleString()} ₴ to lvl {levelInfo.level + 1}</span>
         </div>
         <div className="h-1.5 bg-black/30 rounded-full overflow-hidden mb-4 relative">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#0A84FF', boxShadow: '0 0 8px rgba(10,132,255,0.6)' }} />
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#8B7DCC', boxShadow: '0 0 8px rgba(139,125,204,0.6)' }} />
         </div>
 
       </div>
 
       {/* Balance Card */}
       <div className="rounded-3xl p-6 mb-6 relative overflow-hidden glass" style={{
-        borderTopColor: 'rgba(210,230,255,0.5)',
+        borderTopColor: 'rgba(216,210,245,0.5)',
         minHeight: 178,
       }}>
         {/* Decorative rings */}
-        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(10,132,255,0.16) 0%, transparent 65%)' }} />
+        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.16) 0%, transparent 65%)' }} />
         <div className="absolute right-6 -bottom-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,190,255,0.10) 0%, transparent 70%)' }} />
-        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(160,200,255,0.10)' }} />
-        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(160,200,255,0.06)' }} />
+        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.10)' }} />
+        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.06)' }} />
 
         <div className="relative flex flex-col h-full">
           {/* Top: chip + logo */}
           <div className="flex items-center justify-between mb-5">
-            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,132,255,0.45), rgba(0,122,255,0.3))', border: '1px solid rgba(10,132,255,0.35)' }}>
+            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(139,125,204,0.45), rgba(124,111,208,0.3))', border: '1px solid rgba(139,125,204,0.35)' }}>
               <div className="w-1/2 h-full" style={{ borderRight: '1px solid rgba(0,0,0,0.2)' }} />
             </div>
             <div className="flex items-center gap-2">
               <div className="neon-dot neon-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(160,200,255,0.8)' }}>TRAFFIK</span>
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>TRAFFIK</span>
             </div>
           </div>
 
           {/* Balance */}
           <div className="mb-5">
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(160,200,255,0.6)' }}>Загальний баланс</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(216,210,245,0.6)' }}>Загальний баланс</p>
             <p className="text-4xl font-bold text-white tracking-tight num-pop">{fmtUsd(totalUsd)}</p>
             <p className="text-sm mt-1" style={{ color: 'rgba(200,220,255,0.5)' }}>{fmtUah(totalUah)}</p>
           </div>
@@ -191,12 +191,12 @@ export default function Profile() {
           {/* Bottom: name + level */}
           <div className="flex items-end justify-between mt-auto">
             <div>
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(160,200,255,0.5)' }}>HOLDER</p>
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.5)' }}>HOLDER</p>
               <p className="text-sm font-bold text-white uppercase tracking-wide">{profile.name}</p>
             </div>
             <div className="text-right">
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(160,200,255,0.5)' }}>LEVEL</p>
-              <p className="text-sm font-bold" style={{ color: '#0A84FF' }}>LVL {levelInfo.level}</p>
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.5)' }}>LEVEL</p>
+              <p className="text-sm font-bold" style={{ color: '#8B7DCC' }}>LVL {levelInfo.level}</p>
             </div>
           </div>
         </div>
@@ -221,12 +221,12 @@ export default function Profile() {
           const isLast = idx === profile.goals.length - 1
           return (
             <div key={goal.id} className="glass-light rounded-2xl overflow-hidden transition-all duration-500"
-              style={pct >= 100 ? { borderColor: 'rgba(10,132,255,0.5)', boxShadow: '0 0 24px rgba(10,132,255,0.15)' } : {}}>
+              style={pct >= 100 ? { borderColor: 'rgba(139,125,204,0.5)', boxShadow: '0 0 24px rgba(139,125,204,0.15)' } : {}}>
 
               {goal.imageUrl && (
                 <div className={`relative overflow-hidden ${isLast ? 'h-80 md:h-96' : 'h-44 md:h-56'}`}>
                   <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center top', filter: 'brightness(0.75) saturate(0.55)' }} />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,10,22,0.9) 0%, rgba(10,132,255,0.06) 60%, transparent 100%)' }} />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,13,17,0.9) 0%, rgba(139,125,204,0.06) 60%, transparent 100%)' }} />
                   <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
                     <div>
                       <p className="font-bold text-white text-lg">{goal.title}</p>
@@ -251,7 +251,7 @@ export default function Profile() {
                       </div>
                       {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
                       <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-sm font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(totalUsd)}</span>
+                        <span className="text-sm font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(totalUsd)}</span>
                         <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                       </div>
                     </div>
@@ -259,20 +259,20 @@ export default function Profile() {
                 )}
                 {goal.imageUrl && (
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-sm font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(totalUsd)}</span>
+                    <span className="text-sm font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(totalUsd)}</span>
                     <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
                   </div>
                 )}
 
                 <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: '#0A84FF', boxShadow: '0 0 8px rgba(10,132,255,0.5)' }} />
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: '#8B7DCC', boxShadow: '0 0 8px rgba(139,125,204,0.5)' }} />
                 </div>
 
                 <div className="flex items-center">
                   <span className="text-xs text-text-muted">{Math.min(100, pct).toFixed(0)}%</span>
                   {remaining > 0
                     ? <span className="text-xs text-text-muted ml-2">залишилось {fmtUsd(remaining)}</span>
-                    : <span className="text-xs font-bold ml-2" style={{ color: '#0A84FF' }}>🎉 Ціль досягнута!</span>
+                    : <span className="text-xs font-bold ml-2" style={{ color: '#8B7DCC' }}>🎉 Ціль досягнута!</span>
                   }
                 </div>
               </div>

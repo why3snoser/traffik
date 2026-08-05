@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+﻿import { NavLink } from 'react-router-dom'
 import { Users, DollarSign, BarChart2, User } from 'lucide-react'
 import { useT } from '@/i18n'
 
@@ -22,11 +22,11 @@ export default function BottomNav() {
           width: 'min(92%, 400px)',
           padding: '6px',
           borderRadius: 26,
-          background: 'linear-gradient(180deg, rgba(120,150,205,0.18) 0%, rgba(40,58,96,0.26) 100%)',
+          background: 'linear-gradient(180deg, rgba(139,125,204,0.18) 0%, rgba(38,34,54,0.32) 100%)',
           backdropFilter: 'blur(34px) saturate(190%)',
           WebkitBackdropFilter: 'blur(34px) saturate(190%)',
-          border: '1px solid rgba(190,215,255,0.22)',
-          borderTopColor: 'rgba(220,238,255,0.45)',
+          border: '1px solid rgba(216,210,245,0.22)',
+          borderTopColor: 'rgba(216,210,245,0.45)',
           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.18), 0 18px 44px rgba(0,0,0,0.55)',
         }}
       >
@@ -50,8 +50,8 @@ export default function BottomNav() {
                       size={22}
                       strokeWidth={isActive ? 2.6 : 1.9}
                       style={{
-                        color: isActive ? '#64B5FF' : undefined,
-                        filter: isActive ? 'drop-shadow(0 0 6px rgba(10,132,255,0.6))' : undefined,
+                        color: isActive ? '#A596E8' : undefined,
+                        filter: isActive ? 'drop-shadow(0 0 6px rgba(139,125,204,0.6))' : undefined,
                         transition: 'color 0.3s',
                       }}
                     />
@@ -59,8 +59,8 @@ export default function BottomNav() {
                       <span
                         className="absolute -inset-x-3 -inset-y-1.5 -z-10 rounded-2xl"
                         style={{
-                          background: 'linear-gradient(180deg, rgba(10,132,255,0.22), rgba(10,132,255,0.08))',
-                          border: '1px solid rgba(120,190,255,0.28)',
+                          background: 'linear-gradient(180deg, rgba(139,125,204,0.22), rgba(139,125,204,0.08))',
+                          border: '1px solid rgba(216,210,245,0.24)',
                           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)',
                         }}
                       />
@@ -68,7 +68,7 @@ export default function BottomNav() {
                   </span>
                   <span
                     className="text-[10px] font-semibold leading-none transition-colors duration-300"
-                    style={{ color: isActive ? '#8FC5FF' : undefined }}
+                    style={{ color: isActive ? '#CBC4F0' : undefined }}
                   >
                     {label}
                   </span>

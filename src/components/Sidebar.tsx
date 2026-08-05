@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+﻿import { NavLink } from 'react-router-dom'
 import { Users, DollarSign, User, BarChart2, Gem } from 'lucide-react'
 import { useT } from '@/i18n'
 import { useStore } from '@/store'
@@ -24,7 +24,7 @@ export default function Sidebar() {
         background: 'linear-gradient(180deg, rgba(70,100,160,0.16) 0%, rgba(24,38,66,0.12) 100%)',
         backdropFilter: 'blur(28px) saturate(170%)',
         WebkitBackdropFilter: 'blur(28px) saturate(170%)',
-        borderRight: '1px solid rgba(160,200,255,0.14)',
+        borderRight: '1px solid rgba(216,210,245,0.14)',
         borderTopRightRadius: '16px',
         borderBottomRightRadius: '16px',
       }}
@@ -32,12 +32,12 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="px-5 pt-7 pb-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center" style={{ boxShadow: '0 0 16px rgba(10,132,255,0.4)' }}>
+          <div className="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center" style={{ boxShadow: '0 0 16px rgba(139,125,204,0.4)' }}>
             <Gem size={16} style={{ color: '#fff' }} />
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide">TRAFFIK</h1>
-            <p className="text-[10px]" style={{ color: 'rgba(160,200,255,0.6)' }}>Personal CRM</p>
+            <p className="text-[10px]" style={{ color: 'rgba(216,210,245,0.6)' }}>Personal CRM</p>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function Sidebar() {
                   : 'text-text-muted hover:text-text hover:bg-white/5'
               }`
             }
-            style={({ isActive }) => isActive ? { background: 'linear-gradient(180deg,#0A84FF,#007AFF)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.35), 0 0 20px rgba(10,132,255,0.35)' } : {}}
+            style={({ isActive }) => isActive ? { background: 'linear-gradient(180deg,#8B7DCC,#7C6FD0)', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.35), 0 0 20px rgba(139,125,204,0.35)' } : {}}
           >
             {({ isActive }) => (
               <>
@@ -68,15 +68,15 @@ export default function Sidebar() {
       {/* Balance card at bottom */}
       <div className="p-4">
         <div className="rounded-2xl p-4 relative overflow-hidden glass-light" style={{ borderTopColor: 'rgba(205,228,255,0.4)' }}>
-          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(10,132,255,0.18) 0%,transparent 70%)' }} />
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(139,125,204,0.18) 0%,transparent 70%)' }} />
           <div className="flex items-center gap-1.5 mb-2 relative">
             <div className="neon-dot neon-pulse" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(160,200,255,0.8)' }}>Total earned</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>Total earned</p>
           </div>
           <p className="text-2xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
           <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{workers.length} workers</p>
         </div>
-        <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(160,200,255,0.35)' }}>TRAFFIK v1.0</p>
+        <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(216,210,245,0.35)' }}>TRAFFIK v1.0</p>
       </div>
     </aside>
   )

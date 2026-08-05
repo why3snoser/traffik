@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+﻿import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
@@ -36,19 +36,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Animated liquid chrome backdrop (WebGL) */}
+      {/* Ambient backdrop (WebGL) */}
       <div id="app-backdrop">
         <LiquidChrome
-          baseColor={[0.09, 0.12, 0.26]}
+          baseColor={[0.10, 0.09, 0.16]}
           speed={0.3}
           amplitude={0.35}
           frequencyX={3}
           frequencyY={3}
           interactive
         />
-        {/* Readability scrim — dims the chrome so text stays readable, chrome still glows behind glass */}
+        {/* Readability scrim — dims the backdrop so text stays readable, light still glows behind glass */}
         <div className="absolute inset-0"
-          style={{ background: 'radial-gradient(130% 95% at 50% 8%, rgba(6,11,22,0.42) 0%, rgba(6,11,22,0.68) 100%)' }} />
+          style={{ background: 'radial-gradient(130% 95% at 50% 8%, rgba(13,13,17,0.42) 0%, rgba(13,13,17,0.70) 100%)' }} />
       </div>
       <Sidebar />
       {/* Main content — offset by sidebar on desktop */}

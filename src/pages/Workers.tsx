@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, X, TrendingUp, Flame, Pencil } from 'lucide-react'
 import { useStore } from '@/store'
@@ -84,23 +84,23 @@ export default function Workers() {
       {/* Total banner */}
       {totalRub > 0 && (
         <div className="card-gradient rounded-2xl p-5 mb-6 relative overflow-hidden">
-          <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full" style={{ background: 'radial-gradient(circle,rgba(10,132,255,0.12) 0%,transparent 70%)' }} />
-          <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle,rgba(0,122,255,0.08) 0%,transparent 70%)' }} />
+          <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full" style={{ background: 'radial-gradient(circle,rgba(139,125,204,0.12) 0%,transparent 70%)' }} />
+          <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full" style={{ background: 'radial-gradient(circle,rgba(124,111,208,0.08) 0%,transparent 70%)' }} />
           <div className="relative flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="neon-dot neon-pulse" />
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(10,132,255,0.7)' }}>{t('workers_total')}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(139,125,204,0.7)' }}>{t('workers_total')}</p>
               </div>
               <p className="text-3xl font-bold text-white">{fmtUsd(totalUsd)}</p>
               <p className="text-sm mt-0.5" style={{ color: 'rgba(200,230,201,0.5)' }}>{fmtUah(totalUah)}</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(10,132,255,0.15)', border: '1px solid rgba(10,132,255,0.25)' }}>
-              <TrendingUp size={22} style={{ color: '#0A84FF' }} />
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(139,125,204,0.15)', border: '1px solid rgba(139,125,204,0.25)' }}>
+              <TrendingUp size={22} style={{ color: '#8B7DCC' }} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-4 relative">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(10,132,255,0.12)', border: '1px solid rgba(10,132,255,0.2)', color: '#64B5FF' }}>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(139,125,204,0.12)', border: '1px solid rgba(139,125,204,0.2)', color: '#A596E8' }}>
               <TrendingUp size={12} />
               Сегодня {fmtUsd(rubToUsd(todayRub, rub2usd))}
             </div>
@@ -134,7 +134,7 @@ export default function Workers() {
                   onClick={e => { e.stopPropagation(); setEditAvatarId(worker.id); setEditAvatarUrl(worker.avatarUrl ?? '') }}
                   className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-                  <Pencil size={11} style={{ color: '#0A84FF' }} />
+                  <Pencil size={11} style={{ color: '#8B7DCC' }} />
                 </button>
 
                 <button className="w-full text-left active:scale-95 transition-transform" onClick={() => navigate(`/workers/${worker.id}`)}>
@@ -144,7 +144,7 @@ export default function Workers() {
                       <img src={worker.avatarUrl} alt={worker.name}
                         className="w-full h-full object-cover"
                         style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
-                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(4,10,22,0.92) 0%, transparent 60%)' }} />
+                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,13,17,0.92) 0%, transparent 60%)' }} />
                       {worker.totalProfit > 0 && <div className="absolute top-2 left-2 neon-dot neon-pulse" />}
                     </div>
                   ) : (
@@ -157,7 +157,7 @@ export default function Workers() {
                     <p className="font-semibold text-text truncate text-sm">{worker.name}</p>
                     {worker.totalProfit > 0 ? (
                       <div className="mt-1">
-                        <p className="text-sm font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(usd)}</p>
+                        <p className="text-sm font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(usd)}</p>
                         <p className="text-text-muted text-xs">{fmtUah(uah)}</p>
                       </div>
                     ) : (

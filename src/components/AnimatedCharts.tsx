@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { scaleBand, scaleLinear, scalePoint } from '@visx/scale'
 import { LinearGradient } from '@visx/gradient'
@@ -95,8 +95,8 @@ export function AnimatedAreaChart({
           style={{ cursor: 'crosshair', touchAction: 'pan-y' }}
         >
           <defs>
-            <LinearGradient id="da-fill" from="#6CC0FF" to="#007AFF" vertical fromOpacity={0.5} toOpacity={0.02} />
-            <LinearGradient id="da-line" from="#8FD0FF" to="#007AFF" />
+            <LinearGradient id="da-fill" from="#B9B0E8" to="#7C6FD0" vertical fromOpacity={0.5} toOpacity={0.02} />
+            <LinearGradient id="da-line" from="#CBC4F0" to="#7C6FD0" />
             <linearGradient id="da-fade" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="#fff" stopOpacity="0" />
               <stop offset="12%" stopColor="#fff" stopOpacity="1" />
@@ -163,7 +163,7 @@ export function AnimatedAreaChart({
               initial={{ pathLength: 0, opacity: 0.4 }}
               animate={{ pathLength: 1, opacity: 1 }}
               transition={{ duration: 1.1, ease: EASE }}
-              style={{ filter: 'drop-shadow(0 0 5px rgba(10,132,255,0.45))', pointerEvents: 'none' }}
+              style={{ filter: 'drop-shadow(0 0 5px rgba(139,125,204,0.45))', pointerEvents: 'none' }}
             />
 
             {/* x labels */}
@@ -217,9 +217,9 @@ export function AnimatedAreaChart({
             top: m.top + h.y,
             transform: 'translate(-50%, -100%)',
             background: 'rgba(4,12,6,0.97)',
-            border: '1px solid rgba(10,132,255,0.4)',
+            border: '1px solid rgba(139,125,204,0.4)',
             backdropFilter: 'blur(14px)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 12px rgba(10,132,255,0.12)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.6), 0 0 12px rgba(139,125,204,0.12)',
             color: '#fff',
           }}
         >
@@ -258,7 +258,7 @@ function Bars({ width, data }: { width: number; data: { label: string; usd: numb
 
   return (
     <svg width={width} height={height} role="img" aria-label="Monthly earnings bar chart">
-      <LinearGradient id="mb-grad" from="#6CC0FF" to="#007AFF" />
+      <LinearGradient id="mb-grad" from="#B9B0E8" to="#7C6FD0" />
       {data.map((d, i) => {
         const bw = Math.min(x.bandwidth(), 42)
         const bx = (x(d.label) ?? 0) + (x.bandwidth() - bw) / 2
@@ -273,7 +273,7 @@ function Bars({ width, data }: { width: number; data: { label: string; usd: numb
               width={x.bandwidth()}
               height={yMax - margin.top}
               rx={8}
-              fill="#0A84FF"
+              fill="#8B7DCC"
               initial={{ opacity: 0 }}
               animate={{ opacity: active ? 0.1 : 0 }}
               transition={{ duration: 0.15 }}
@@ -296,9 +296,9 @@ function Bars({ width, data }: { width: number; data: { label: string; usd: numb
               fill={d.usd > 0 ? 'url(#mb-grad)' : 'rgba(255,255,255,0.05)'}
               style={{
                 filter: active
-                  ? 'drop-shadow(0 0 7px rgba(10,132,255,0.65))'
+                  ? 'drop-shadow(0 0 7px rgba(139,125,204,0.65))'
                   : d.usd > 0
-                    ? 'drop-shadow(0 0 4px rgba(10,132,255,0.25))'
+                    ? 'drop-shadow(0 0 4px rgba(139,125,204,0.25))'
                     : 'none',
               }}
             />
@@ -339,8 +339,8 @@ export function AnimatedRing({
       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
         <defs>
           <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#64B5FF" />
-            <stop offset="100%" stopColor="#007AFF" />
+            <stop offset="0%" stopColor="#A596E8" />
+            <stop offset="100%" stopColor="#7C6FD0" />
           </linearGradient>
         </defs>
         <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
@@ -356,7 +356,7 @@ export function AnimatedRing({
           initial={{ strokeDashoffset: C }}
           animate={{ strokeDashoffset: C * (1 - clamped / 100) }}
           transition={{ duration: 1, ease: EASE }}
-          style={{ filter: 'drop-shadow(0 0 6px rgba(10,132,255,0.5))' }}
+          style={{ filter: 'drop-shadow(0 0 6px rgba(139,125,204,0.5))' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

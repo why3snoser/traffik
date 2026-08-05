@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
@@ -17,8 +17,8 @@ import type { HeatmapColumn } from '@/components/charts/heatmap'
 function MonthBarGradient() {
   return (
     <linearGradient id="monthBarGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-      <stop offset="0%" stopColor="#3B9BFF" />
-      <stop offset="100%" stopColor="#0A84FF" />
+      <stop offset="0%" stopColor="#A596E8" />
+      <stop offset="100%" stopColor="#8B7DCC" />
     </linearGradient>
   )
 }
@@ -26,7 +26,7 @@ MonthBarGradient.displayName = 'MonthBarGradient'
 
 // One color per profit type for the breakdown legend
 const TYPE_COLORS: Record<ProfitType, string> = {
-  oplata: '#3B9BFF',
+  oplata: '#A596E8',
   perevod: '#22d3a5',
   iks: '#f472b6',
   vozvrat: '#f59e0b',
@@ -140,7 +140,7 @@ export default function Stats() {
   const dayPct = Math.min(100, (todayUsd / dailyTargetUsd) * 100)
   const reachUsd = Math.max(0, dailyTargetUsd - todayUsd)
   const ringData = useMemo(() => [
-    { label: 'Today', value: todayUsd, color: '#0A84FF' },
+    { label: 'Today', value: todayUsd, color: '#8B7DCC' },
     { label: 'До цели', value: reachUsd, color: 'rgba(255,255,255,0.10)' },
   ], [todayUsd, reachUsd])
 
@@ -305,7 +305,7 @@ export default function Stats() {
           <span className="text-xs text-text-muted">{levelInfo.currentXp.toLocaleString()} / {levelInfo.neededXp.toLocaleString()} ₴</span>
         </div>
         <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: 'linear-gradient(90deg,#0A84FF,#007AFF)' }} />
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: 'linear-gradient(90deg,#8B7DCC,#7C6FD0)' }} />
         </div>
         <p className="text-text-muted text-xs">{Math.round(levelInfo.neededXp - levelInfo.currentXp).toLocaleString()} ₴ to level {levelInfo.level + 1}</p>
       </div>
@@ -340,7 +340,7 @@ export default function Stats() {
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-2 text-xs text-text-muted flex-wrap">
           <span>Сессии: <b className="text-white">{fmtClock(sessionTotalMs)}</b> · {sessions.length} за всё время</span>
           <span>цель {fmtUsd(dailyTargetUsd)}/день</span>
-          {sessionRate > 0 && <span className="font-bold" style={{ color: '#0A84FF' }}>{fmtUsd(sessionRate)}/час</span>}
+          {sessionRate > 0 && <span className="font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(sessionRate)}/час</span>}
         </div>
       </div>
 
@@ -409,15 +409,15 @@ export default function Stats() {
           animationDuration={900}
         >
           <Grid horizontal numTicksRows={4} />
-          <Area dataKey="usd" fill="#0A84FF" fillOpacity={0.35} strokeWidth={2} fadeEdges dashFromIndex={dailyData.length - 1} />
-          <Area dataKey="avg" stroke="rgba(160,200,255,0.55)" fill="rgba(120,170,255,0.12)" strokeWidth={1.5} fillOpacity={0.5} fadeEdges={false} showLine />
+          <Area dataKey="usd" fill="#8B7DCC" fillOpacity={0.35} strokeWidth={2} fadeEdges dashFromIndex={dailyData.length - 1} />
+          <Area dataKey="avg" stroke="rgba(216,210,245,0.55)" fill="rgba(139,125,204,0.12)" strokeWidth={1.5} fillOpacity={0.5} fadeEdges={false} showLine />
           <XAxis numTicks={dailyDays <= 7 ? 7 : 5} tickerHalfWidth={40} />
           <ChartTooltip
             showDatePill={false}
             rows={point => {
               const usd = typeof point.usd === 'number' ? point.usd : 0
               return [
-                { color: '#0A84FF', label: 'Заработок', value: fmtUsd(usd) },
+                { color: '#8B7DCC', label: 'Заработок', value: fmtUsd(usd) },
                 { color: 'rgba(255,255,255,0.25)', label: '₴', value: fmtUah(usdToUah(usd, u2ua)) },
               ]
             }}
@@ -536,10 +536,10 @@ export default function Stats() {
                       <span className="text-xs text-text-muted whitespace-nowrap ml-2">{fmtClock(ms)}</span>
                     </div>
                     <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#0A84FF,#007AFF)' }} />
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#8B7DCC,#7C6FD0)' }} />
                     </div>
                     <div className="flex justify-between items-baseline mt-1">
-                      <span className="text-xs font-bold" style={{ color: '#0A84FF' }}>+{fmtUsd(earnedUsd)}</span>
+                      <span className="text-xs font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earnedUsd)}</span>
                       {rate > 0 && <span className="text-[10px] text-text-muted">{fmtUsd(rate)}/час</span>}
                     </div>
                   </div>
@@ -588,7 +588,7 @@ export default function Stats() {
                     </p>
                   </div>
                   {usd > 0 ? (
-                    <span className="text-xs font-bold" style={{ color: '#0A84FF' }}>+{fmtUsd(usd)}</span>
+                    <span className="text-xs font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(usd)}</span>
                   ) : (
                     <span className="text-[10px] text-text-muted">—</span>
                   )}
@@ -610,7 +610,7 @@ export default function Stats() {
               label: w.name,
               value: rubToUsd(w.totalProfit, r2u),
               maxValue: rubToUsd(topWorkers[0].totalProfit, r2u),
-              color: i === 0 ? '#3B9BFF' : 'rgba(10,132,255,0.45)',
+              color: i === 0 ? '#A596E8' : 'rgba(139,125,204,0.45)',
               rank: i < 3 ? medals[i] : String(i + 1),
               isMedal: i < 3,
               emoji: w.emoji,
