@@ -15,6 +15,21 @@ export interface AppleIdEntry {
   smsLink?: string      // link to fetch the SMS code
 }
 
+// A tracked work session started/stopped by the user.
+export interface SessionRecord {
+  id: string
+  endedAt: string        // ISO timestamp
+  durationMs: number     // how long the session ran
+  profitDeltaRub: number // profit earned during the session
+}
+
+// Live state of the running stopwatch.
+export interface SessionTimer {
+  running: boolean
+  startedAt: number | null   // epoch ms
+  profitRubAtStart: number   // total profit (RUB) when the session started
+}
+
 export interface CityEntry {
   id: string
   city: string

@@ -8,7 +8,7 @@ import { useT } from '@/i18n'
 const WORKER_EMOJIS = ['👤', '👩', '🧑', '👑', '🔥', '⚡', '💫', '🎯', '💎', '🦁']
 
 export default function Workers() {
-  const { workers, addWorker, setWorkerAvatar, profile, profits } = useStore()
+  const { workers, addWorker, setWorkerAvatar, profile, profits, sessions, timer } = useStore()
   const navigate = useNavigate()
   const t = useT()
   const [showAdd, setShowAdd] = useState(false)
@@ -44,6 +44,12 @@ export default function Workers() {
     }
     return count
   }, [profits])
+
+  // Today + live session pace
+  const todayRub = profits.filter(p => p.createdAt.startsWith(new Date().toISOString().slice(0, 10))).reduce((s, p) => s + p.myShare, 0)
+  const sessionTotalMs = sessions.reduce((s, x) => s + x.durationMs, 0)
+  const sessionProfitUsd = sessions.reduce((s, x) => s + rubToUsd(x.profitDeltaRub, rub2usd), 0)
+  const pace = sessionTotalMs > 0 ? sessionProfitUsd / (sessionTotalMs / 3600000) : 0
 
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
@@ -89,6 +95,22 @@ export default function Workers() {
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(10,132,255,0.15)', border: '1px solid rgba(10,132,255,0.25)' }}>
               <TrendingUp size={22} style={{ color: '#0A84FF' }} />
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4 relative">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(10,132,255,0.12)', border: '1px solid rgba(10,132,255,0.2)', color: '#64B5FF' }}>
+              <TrendingUp size={12} />
+              Сегодня {fmtUsd(rubToUsd(todayRub, rub2usd))}
+            </div>
+            {timer.running && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold animate-pulse" style={{ background: 'rgba(255,160,0,0.12)', border: '1px solid rgba(255,160,0,0.25)', color: '#ffd60a' }}>
+                ● Сессия идёт
+              </div>
+            )}
+            {pace > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(90,200,250,0.10)', border: '1px solid rgba(90,200,250,0.2)', color: '#8fd8ff' }}>
+                ⚡ {fmtUsd(pace)}/час
+              </div>
+            )}
           </div>
         </div>
       )}

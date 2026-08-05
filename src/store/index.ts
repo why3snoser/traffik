@@ -2,12 +2,31 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import {
   Worker, Anketa, ProfitEntry, UserProfile, Goal,
-  CityEntry, VKAccount, AppleIdEntry, calcMyShare, ProfitType, parseVkList, parseAppleIds,
+  CityEntry, VKAccount, AppleIdEntry, SessionRecord, SessionTimer,
+  calcMyShare, ProfitType, parseVkList, parseAppleIds,
   getLevelInfo, rubToUsd, usdToUah,
 } from '@/types'
 
 function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
+}
+
+// ── Session timer persistence (local, survives reload) ─────────────────
+const LS_SESSIONS = 'traffik_sessions_v1'
+const LS_TIMER = 'traffik_timer_v1'
+
+function loadSessions(): SessionRecord[] {
+  try { return JSON.parse(localStorage.getItem(LS_SESSIONS) ?? '[]') } catch { return [] }
+}
+function saveSessions(s: SessionRecord[]) {
+  try { localStorage.setItem(LS_SESSIONS, JSON.stringify(s)) } catch { /* ignore */ }
+}
+function loadTimer(): SessionTimer {
+  try { return JSON.parse(localStorage.getItem(LS_TIMER) ?? 'null') ?? { running: false, startedAt: null, profitRubAtStart: 0 } }
+  catch { return { running: false, startedAt: null, profitRubAtStart: 0 } }
+}
+function saveTimer(t: SessionTimer) {
+  try { localStorage.setItem(LS_TIMER, JSON.stringify(t)) } catch { /* ignore */ }
 }
 
 const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70, language: 'en' as const }
@@ -89,7 +108,15 @@ interface AppState {
   profile: UserProfile
   initialized: boolean
 
+  timer: SessionTimer
+  sessions: SessionRecord[]
+
   initialize: () => Promise<void>
+
+  startSession: () => void
+  stopSession: () => void
+  discardSession: () => void
+  clearSessions: () => void
 
   addWorker: (name: string, emoji: string) => Promise<Worker>
   updateWorker: (id: string, updates: Partial<Pick<Worker, 'name' | 'emoji'>>) => Promise<void>
@@ -144,6 +171,8 @@ export const useStore = create<AppState>()((set, get) => ({
   profits: [],
   profile: DEFAULT_PROFILE,
   initialized: false,
+  timer: loadTimer(),
+  sessions: loadSessions(),
 
   // ── Load all data from Supabase ──────────────────────────────────────
   initialize: async () => {
@@ -487,5 +516,40 @@ export const useStore = create<AppState>()((set, get) => ({
       saveProfile(newProfile)
       return { profile: newProfile }
     })
+  },
+
+  // ── Work session timer ────────────────────────────────────────────────
+  startSession: () => {
+    const totalRub = get().profits.reduce((sum, p) => sum + p.myShare, 0)
+    const timer = { running: true, startedAt: Date.now(), profitRubAtStart: totalRub }
+    saveTimer(timer)
+    set({ timer })
+  },
+
+  stopSession: () => {
+    const { timer, sessions, profits } = get()
+    if (!timer.running || !timer.startedAt) return
+    const durationMs = Math.max(0, Date.now() - timer.startedAt)
+    const totalRub = profits.reduce((sum, p) => sum + p.myShare, 0)
+    const session: SessionRecord = {
+      id: uid(),
+      endedAt: new Date().toISOString(),
+      durationMs,
+      profitDeltaRub: totalRub - timer.profitRubAtStart,
+    }
+    const newSessions = [session, ...sessions].slice(0, 60)
+    saveSessions(newSessions)
+    saveTimer({ running: false, startedAt: null, profitRubAtStart: 0 })
+    set({ sessions: newSessions, timer: { running: false, startedAt: null, profitRubAtStart: 0 } })
+  },
+
+  discardSession: () => {
+    saveTimer({ running: false, startedAt: null, profitRubAtStart: 0 })
+    set({ timer: { running: false, startedAt: null, profitRubAtStart: 0 } })
+  },
+
+  clearSessions: () => {
+    saveSessions([])
+    set({ sessions: [] })
   },
 }))

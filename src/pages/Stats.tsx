@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef } from 'react'
-import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo, ProfitEntry } from '@/types'
 import { useNavigate } from 'react-router-dom'
@@ -222,9 +222,38 @@ function HeatmapCalendar({ profits, r2u }: { profits: ProfitEntry[]; r2u: number
   )
 }
 
+// ── Daily goal ring ─────────────────────────────────────────────────────
+function DailyRing({ pct, label, value, sub }: { pct: number; label: string; value: string; sub: string }) {
+  const R = 40, C = 2 * Math.PI * R
+  return (
+    <div className="relative w-28 h-28">
+      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+        <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+        <circle
+          cx="50" cy="50" r={R} fill="none"
+          stroke="url(#ring-grad)" strokeWidth="8" strokeLinecap="round"
+          strokeDasharray={C} strokeDashoffset={C * (1 - pct / 100)}
+          style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1)', filter: 'drop-shadow(0 0 6px rgba(10,132,255,0.5))' }}
+        />
+        <defs>
+          <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#64B5FF" />
+            <stop offset="100%" stopColor="#007AFF" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-lg font-bold text-white">{value}</span>
+        <span className="text-[9px] text-text-muted">{sub}</span>
+      </div>
+      <p className="text-center text-[10px] text-text-muted mt-1">{label}</p>
+    </div>
+  )
+}
+
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
-  const { profits, workers, anketas, profile } = useStore()
+  const { profits, workers, anketas, profile, sessions, clearSessions } = useStore()
   const navigate = useNavigate()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
@@ -233,6 +262,23 @@ export default function Stats() {
   const totalUah = usdToUah(totalUsd, u2ua)
   const avgUsd = profits.length > 0 ? totalUsd / profits.length : 0
   const levelInfo = getLevelInfo(totalUah)
+
+  // ── Session timer insights ───────────────────────────────────────────
+  const sessionTotalMs = sessions.reduce((s, x) => s + x.durationMs, 0)
+  const sessionProfitUsd = sessions.reduce((s, x) => s + rubToUsd(x.profitDeltaRub, r2u), 0)
+  const sessionRate = sessionTotalMs > 0 ? sessionProfitUsd / (sessionTotalMs / 3600000) : 0
+  const fmtClock = (ms: number) => {
+    const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000)
+    return h > 0 ? `${h}ч ${m}мин` : `${m}мин`
+  }
+
+  // Daily goal ring — today earned vs a manageable daily target
+  const nowDay = new Date().toISOString().slice(0, 10)
+  const todayRub = profits.filter(p => p.createdAt.startsWith(nowDay)).reduce((s, p) => s + p.myShare, 0)
+  const todayUsd = rubToUsd(todayRub, r2u)
+  const dailyTarget = Math.max(5, totalRub > 0 ? totalRub / 30 : 10)
+  const dailyTargetUsd = rubToUsd(dailyTarget, r2u)
+  const dayPct = Math.min(100, (todayUsd / dailyTargetUsd) * 100)
 
   // Always last 6 months (uk-UA locale)
   const monthlyData = useMemo(() => {
@@ -350,6 +396,34 @@ export default function Stats() {
         <p className="text-text-muted text-xs">{Math.round(levelInfo.neededXp - levelInfo.currentXp).toLocaleString()} ₴ to level {levelInfo.level + 1}</p>
       </div>
 
+      {/* Today ring + live pace */}
+      <div className="glass-light rounded-2xl p-4 mb-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <DailyRing pct={dayPct} label="Дневная цель" value={fmtUsd(todayUsd)} sub={Math.round(dayPct) + '%'} />
+          <div>
+            <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">Today</p>
+            <p className="text-xl font-bold text-white">{fmtUsd(todayUsd)}</p>
+            <p className="text-text-muted text-xs mt-0.5">{fmtUah(usdToUah(todayUsd, u2ua))}</p>
+            <div className="flex items-center gap-1 mt-2">
+              <Zap size={11} className="text-accent-light" />
+              <span className="text-xs text-text-muted">
+                цель {fmtUsd(dailyTargetUsd)}/день
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">Сессии</p>
+          <p className="text-lg font-bold text-white">{fmtClock(sessionTotalMs)}</p>
+          <p className="text-text-muted text-xs mt-0.5">{sessions.length} за всё время</p>
+          {sessionRate > 0 && (
+            <p className="text-xs font-bold mt-1" style={{ color: '#0A84FF' }}>
+              {fmtUsd(sessionRate)}/час
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* This month vs last */}
       <div className="glass-light rounded-2xl p-4 mb-5 flex items-center justify-between">
         <div>
@@ -459,6 +533,46 @@ export default function Stats() {
               <p className="text-text-muted text-[10px]">{fmtUah(usdToUah(avgUsd, u2ua))}</p>
               <p className="text-text-muted text-xs mt-0.5">{profits.length} deals total</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session history */}
+      {sessions.length > 0 && (
+        <div className="glass-light rounded-2xl p-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Timer size={14} className="text-accent-light" />
+              <h3 className="text-sm font-semibold text-text">Session history</h3>
+            </div>
+            <button
+              onClick={clearSessions}
+              className="text-[10px] text-text-muted hover:text-danger transition-colors"
+            >
+              Очистить
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {sessions.slice(0, 6).map(s => {
+              const usd = rubToUsd(s.profitDeltaRub, r2u)
+              return (
+                <div key={s.id} className="flex items-center gap-3 bg-black/20 rounded-xl px-3 py-2">
+                  <span className="text-base">⏱️</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-text">{fmtClock(s.durationMs)}</p>
+                    <p className="text-[10px] text-text-muted truncate">
+                      {new Date(s.endedAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
+                      {' · '}{new Date(s.endedAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {usd > 0 ? (
+                    <span className="text-xs font-bold" style={{ color: '#0A84FF' }}>+{fmtUsd(usd)}</span>
+                  ) : (
+                    <span className="text-[10px] text-text-muted">—</span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

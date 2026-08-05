@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
+import TimerCapsule from '@/components/TimerCapsule'
 import Workers from '@/pages/Workers'
 import WorkerDetail from '@/pages/WorkerDetail'
 import AnketaDetail from '@/pages/AnketaDetail'
@@ -66,6 +67,8 @@ export default function App() {
           </div>
         </div>
       </div>
+      {/* Floating work-session timer */}
+      <TimerCapsule />
     </div>
   )
 }
