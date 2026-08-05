@@ -7,12 +7,20 @@ export interface VKAccount {
   userAgent?: string
 }
 
+// Apple ID ready-to-purchase account (for premium on anketa cities)
+export interface AppleIdEntry {
+  email: string
+  password: string
+  mailPassword?: string // password of the mail account
+  smsLink?: string      // link to fetch the SMS code
+}
+
 export interface CityEntry {
   id: string
   city: string
   status: 'active' | 'blocked'
   vk?: VKAccount
-  appleId?: { email: string; password: string }
+  appleId?: AppleIdEntry
 }
 
 export interface Anketa {
@@ -76,7 +84,7 @@ export interface UserProfile {
   goals: Goal[]
   settings: Settings
   workerAvatars?: Record<string, string>  // workerId -> URL
-  appleIds?: Array<{ email: string; password: string }>  // Available Apple IDs for premium
+  appleIds?: AppleIdEntry[]  // Available Apple IDs (ready to purchase / premium)
 }
 
 export const PROFIT_LABELS: Record<ProfitType, string> = {
@@ -150,4 +158,42 @@ export function parseVkList(raw: string): VKAccount[] {
       }
     })
     .filter(a => a.login && a.password)
+}
+
+// Parse a pasted block of Apple ID accounts (ready to purchase)
+// Accepts "Почта: ... / Пароль: ..." lines and optional card/phone/mail password/sms link.
+export function parseAppleIds(raw: string): AppleIdEntry[] {
+  const blocks = raw
+    .split(/\n\s*\n|\n(?=\d+\s*$)/)
+    .map(b => b.trim())
+    .filter(Boolean)
+
+  const accounts: AppleIdEntry[] = []
+
+  // Try to split on visible numeric index markers ("1", "\n2\n", "---" separators)
+  const splitBlocks = blocks.length === 1
+    ? raw.split(/\n\s*(?=\d+\s*\n)/).filter(b => b.trim())
+    : blocks
+
+  for (const block of splitBlocks) {
+    const get = (label: string) => {
+      const m = block.match(new RegExp(label + '\\s*[:：][ \\t]*([^\\n\\r]+)', 'i'))
+      return m ? m[1].trim() : undefined
+    }
+
+    const email = get('Почта') || get('Email')
+    const password = get('Пароль')
+    if (!email || !password) continue
+
+    const smsMatch = block.match(/https?:\/\/\S+/)
+    const account: AppleIdEntry = {
+      email,
+      password,
+      mailPassword: get('Пароль от почты') || get('Пароль пошти') || get('Mail password'),
+      smsLink: smsMatch ? smsMatch[0].replace(/[),;]+$/, '') : undefined,
+    }
+    accounts.push(account)
+  }
+
+  return accounts
 }

@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight, Copy, Mail, Link2, Plus, Import } from 'lucide-react'
 import { useStore } from '@/store'
+import { AppleIdEntry } from '@/types'
 import { useState, useMemo } from 'react'
 import { useT } from '@/i18n'
 
@@ -8,7 +9,7 @@ export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const t = useT()
-  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity } = useStore()
+  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity, importAppleIds } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
   const [vkRaw, setVkRaw] = useState('')
@@ -17,7 +18,9 @@ export default function AnketaDetail() {
   const [manualVkText, setManualVkText] = useState('')
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [selectedCityIdForPremium, setSelectedCityIdForPremium] = useState<string | null>(null)
-  const [selectedAppleIdIndex, setSelectedAppleIdIndex] = useState<number | null>(null)
+  const [premImportText, setPremImportText] = useState('')
+  const [premImportMsg, setPremImportMsg] = useState('')
+  const [premAddOpen, setPremAddOpen] = useState(false)
 
   const anketa = anketas.find(a => a.id === id)
   if (!anketa) return <div className="p-8 text-text-muted">Не найдено</div>
@@ -50,27 +53,29 @@ export default function AnketaDetail() {
     setManualVkText('')
   }
 
-  const handleInstalledPremium = async () => {
-    if (!selectedCityIdForPremium || selectedAppleIdIndex === null) return
-    const appleId = availableAppleIds[selectedAppleIdIndex]
-    if (!appleId) return
-    await setAppleIdForCity(anketa.id, selectedCityIdForPremium, appleId.email, appleId.password)
+  const handleInstallPremium = async (appleId: AppleIdEntry) => {
+    if (!selectedCityIdForPremium) return
+    await setAppleIdForCity(anketa.id, selectedCityIdForPremium, appleId)
     setShowPremiumModal(false)
     setSelectedCityIdForPremium(null)
-    setSelectedAppleIdIndex(null)
+  }
+
+  const handleImportPremium = async () => {
+    if (!premImportText.trim()) return
+    const msg = await importAppleIds(premImportText)
+    setPremImportMsg(msg)
+    if (msg.startsWith('Импорт')) setPremImportText('')
+    setTimeout(() => setPremImportMsg(''), 2500)
   }
 
   const citiesWithVk = anketa.cities.filter(c => c.vk).length
 
-  const availableAppleIds = useMemo(() => {
-    const usedEmails = new Set<string>()
-    anketas.forEach(a => {
-      a.cities.forEach(city => {
-        if (city.appleId?.email) usedEmails.add(city.appleId.email)
-      })
-    })
-    return (profile.appleIds ?? []).filter(id => !usedEmails.has(id.email))
-  }, [anketas, profile.appleIds])
+  // Emails currently bound to any city — these accounts are "busy"
+  const occupiedAppleEmails = useMemo(() => {
+    const set = new Set<string>()
+    anketas.forEach(a => a.cities.forEach(c => { if (c.appleId?.email) set.add(c.appleId.email) }))
+    return set
+  }, [anketas])
 
   return (
     <div className="pb-28">
@@ -249,23 +254,59 @@ export default function AnketaDetail() {
                   {/* Apple ID Premium */}
                   <div className="px-4 py-3 border-t border-border">
                     {city.appleId ? (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Gift size={12} className="text-accent-light" />
-                          <span className="text-xs text-text-muted">{city.appleId.email}</span>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Gift size={12} className="text-accent-light" />
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-light">Premium привязан</span>
+                          </div>
+                          <button
+                            onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
+                            className="text-xs text-danger text-right"
+                          >
+                            {t('vk_detach')}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
-                          className="text-xs text-danger text-right"
-                        >
-                          {t('vk_detach')}
-                        </button>
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => copy(city.appleId!.email, `be-${city.id}`)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text"
+                          >
+                            {city.appleId.email}
+                            {copied === `be-${city.id}` && <span className="text-success">✓</span>}
+                          </button>
+                          <button
+                            onClick={() => copy(city.appleId!.password, `bp-${city.id}`)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
+                          >
+                            <Key size={11} /> {city.appleId.password}
+                            {copied === `bp-${city.id}` && <span className="text-success">✓</span>}
+                          </button>
+                          {city.appleId.mailPassword && (
+                            <button
+                              onClick={() => copy(city.appleId!.mailPassword!, `bmp-${city.id}`)}
+                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
+                            >
+                              <Mail size={11} /> {city.appleId.mailPassword}
+                              {copied === `bmp-${city.id}` && <span className="text-success">✓</span>}
+                            </button>
+                          )}
+                          {city.appleId.smsLink && (
+                            <a
+                              href={city.appleId.smsLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
+                            >
+                              <Link2 size={11} /> Получить код
+                            </a>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <button
-                        onClick={() => { setSelectedCityIdForPremium(city.id); setShowPremiumModal(true); setSelectedAppleIdIndex(null) }}
-                        disabled={availableAppleIds.length === 0}
-                        className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium disabled:opacity-40"
+                        onClick={() => { setSelectedCityIdForPremium(city.id); setShowPremiumModal(true) }}
+                        className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium"
                       >
                         <Gift size={12} />
                         Поставить премиум
@@ -352,7 +393,7 @@ export default function AnketaDetail() {
       )}
 
       {/* Premium Apple ID Selection Modal */}
-      {showPremiumModal && selectedAppleIdIndex === null && (
+      {showPremiumModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
@@ -360,90 +401,112 @@ export default function AnketaDetail() {
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-text">Выберите Apple ID</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-bold text-text">Apple ID для премиума</h3>
               <button onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }} className="text-text-muted">
                 <X size={18} />
               </button>
             </div>
-            <div className="flex flex-col gap-2">
-              {availableAppleIds.length === 0 ? (
-                <p className="text-text-muted text-sm text-center py-4">Нет доступных Apple ID</p>
+            <p className="text-text-muted text-xs mb-3">Нажми на email/пароль, чтобы скопировать. Занятые выделены серым.</p>
+
+            {/* Add / import accounts */}
+            <button
+              onClick={() => setPremAddOpen(o => !o)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl mb-3 text-xs font-semibold bg-accent/15 border border-accent/30 text-accent-light"
+            >
+              <Plus size={13} />
+              {premAddOpen ? 'Скрыть' : 'Добавить / импортировать Apple ID'}
+            </button>
+            {premAddOpen && (
+              <div className="mb-3 space-y-2">
+                <textarea
+                  autoFocus
+                  value={premImportText}
+                  onChange={e => setPremImportText(e.target.value)}
+                  placeholder={'Вставь список:\nПочта: ...\nПароль: ...\nПароль от почты: ...\nузнать код: https://...'}
+                  rows={4}
+                  className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
+                />
+                {premImportMsg && <p className="text-[11px] text-success px-1">{premImportMsg}</p>}
+                <button
+                  onClick={handleImportPremium}
+                  disabled={!premImportText.trim()}
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent text-white disabled:opacity-40"
+                >
+                  <Import size={13} />
+                  Импортировать в список
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 max-h-[52vh] overflow-y-auto pr-1">
+              {(profile.appleIds ?? []).length === 0 ? (
+                <p className="text-text-muted text-sm text-center py-4">Список пуст. Добавь аккаунты выше.</p>
               ) : (
-                availableAppleIds.map((appleId, idx) => (
-                  <button
-                    key={appleId.email}
-                    onClick={() => setSelectedAppleIdIndex(idx)}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-accent transition-colors text-left"
-                  >
-                    <Gift size={16} className="text-accent-light flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-mono text-text">{appleId.email}</p>
-                      <p className="text-xs text-text-muted">Доступно</p>
+                (profile.appleIds ?? []).map(appleId => {
+                  const occupied = occupiedAppleEmails.has(appleId.email)
+                  return (
+                    <div
+                      key={appleId.email}
+                      className={`rounded-2xl p-3 border transition-colors ${occupied ? 'bg-black/20 border-border opacity-60' : 'bg-card border-border'}`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0 ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
+                            {occupied ? 'Занята' : 'Свободна'}
+                          </span>
+                          <span className="text-xs font-mono text-text truncate">{appleId.email}</span>
+                        </div>
+                        <button
+                          onClick={() => handleInstallPremium(appleId)}
+                          disabled={occupied}
+                          className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-opacity ${occupied ? 'opacity-40' : 'bg-accent text-white'}`}
+                        >
+                          <ArrowRight size={12} />
+                          Установить
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        <button
+                          onClick={() => copy(appleId.email, `a-${appleId.email}`)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text"
+                        >
+                          <Copy size={11} /> {appleId.email}
+                          {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
+                        </button>
+                        <button
+                          onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
+                        >
+                          <Key size={11} /> {appleId.password}
+                          {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
+                        </button>
+                        {appleId.mailPassword && (
+                          <button
+                            onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
+                          >
+                            <Mail size={11} /> {appleId.mailPassword}
+                            {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
+                          </button>
+                        )}
+                        {appleId.smsLink && (
+                          <a
+                            href={appleId.smsLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
+                          >
+                            <Link2 size={11} /> Получить код
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </button>
-                ))
+                  )
+                })
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Premium Apple ID Display Overlay */}
-      {showPremiumModal && selectedAppleIdIndex !== null && availableAppleIds[selectedAppleIdIndex] && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setSelectedAppleIdIndex(null)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <div
-            className="relative w-full max-w-lg bg-surface rounded-3xl p-6 animate-slide-up"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-text">Apple ID</h3>
-              <button onClick={() => setSelectedAppleIdIndex(null)} className="text-text-muted">
-                <X size={18} />
-              </button>
-            </div>
-
-            {(() => {
-              const appleId = availableAppleIds[selectedAppleIdIndex]
-              return (
-                <div className="space-y-4">
-                  <div
-                    onClick={() => copy(appleId.email, 'apple-email')}
-                    className="p-4 bg-card border border-border rounded-2xl cursor-pointer hover:border-accent transition-colors"
-                  >
-                    <p className="text-xs text-text-muted mb-1">Email</p>
-                    <p className="text-sm font-mono text-text break-all">{appleId.email}</p>
-                    {copied === 'apple-email' && <span className="text-xs text-success ml-1">✓ скопировано</span>}
-                  </div>
-
-                  <div
-                    onClick={() => copy(appleId.password, 'apple-password')}
-                    className="p-4 bg-card border border-border rounded-2xl cursor-pointer hover:border-accent transition-colors"
-                  >
-                    <p className="text-xs text-text-muted mb-1">Пароль</p>
-                    <p className="text-sm font-mono text-text break-all">{appleId.password}</p>
-                    {copied === 'apple-password' && <span className="text-xs text-success ml-1">✓ скопировано</span>}
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={handleInstalledPremium}
-                      className="flex-1 bg-accent rounded-2xl py-3 text-white font-semibold"
-                    >
-                      <ArrowRight size={14} className="inline mr-1" />
-                      Установил премиум
-                    </button>
-                    <button
-                      onClick={() => setSelectedAppleIdIndex(null)}
-                      className="px-4 py-3 text-text-muted"
-                    >
-                      <ArrowLeft size={14} />
-                    </button>
-                  </div>
-                </div>
-              )
-            })()}
           </div>
         </div>
       )}

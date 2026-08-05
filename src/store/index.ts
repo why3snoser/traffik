@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import {
   Worker, Anketa, ProfitEntry, UserProfile, Goal,
-  CityEntry, VKAccount, calcMyShare, ProfitType, parseVkList,
+  CityEntry, VKAccount, AppleIdEntry, calcMyShare, ProfitType, parseVkList, parseAppleIds,
   getLevelInfo, rubToUsd, usdToUah,
 } from '@/types'
 
@@ -95,10 +95,11 @@ interface AppState {
 
   setWorkerAvatar: (workerId: string, url: string) => Promise<void>
 
-  setAppleIdForCity: (anketaId: string, cityId: string, email: string, password: string) => Promise<void>
+  setAppleIdForCity: (anketaId: string, cityId: string, appleId: AppleIdEntry) => Promise<void>
   removeAppleIdFromCity: (anketaId: string, cityId: string) => Promise<void>
 
-  addAppleId: (email: string, password: string) => Promise<void>
+  addAppleId: (appleId: AppleIdEntry) => Promise<void>
+  importAppleIds: (raw: string) => Promise<string>
   removeAppleId: (email: string) => Promise<void>
 
   updateSettings: (s: Partial<UserProfile['settings']>) => Promise<void>
@@ -404,11 +405,11 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   // ── Apple ID for premium ───────────────────────────────────────────────
-  setAppleIdForCity: async (anketaId, cityId, email, password) => {
+  setAppleIdForCity: async (anketaId, cityId, appleId) => {
     const anketa = get().anketas.find(a => a.id === anketaId)
     if (!anketa) return
     const updatedCities = anketa.cities.map(c =>
-      c.id === cityId ? { ...c, appleId: { email, password } } : c
+      c.id === cityId ? { ...c, appleId } : c
     )
     await get().updateAnketa(anketaId, { cities: updatedCities })
   },
@@ -421,15 +422,33 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   // ── Apple ID management ────────────────────────────────────────────────
-  addAppleId: async (email, password) => {
+  addAppleId: async (appleId) => {
     set(s => {
+      const exists = (s.profile.appleIds ?? []).some(id => id.email === appleId.email)
+      if (exists) return {}
       const newProfile = {
         ...s.profile,
-        appleIds: [...(s.profile.appleIds ?? []), { email, password }],
+        appleIds: [...(s.profile.appleIds ?? []), appleId],
       }
       saveProfile(newProfile)
       return { profile: newProfile }
     })
+  },
+
+  importAppleIds: async (raw) => {
+    const accounts = parseAppleIds(raw)
+    if (accounts.length === 0) return 'Не распознано аккаунтов. Проверь формат.'
+    set(s => {
+      const existing = new Set((s.profile.appleIds ?? []).map(id => id.email))
+      const newOnes = accounts.filter(a => !existing.has(a.email))
+      const newProfile = {
+        ...s.profile,
+        appleIds: [...(s.profile.appleIds ?? []), ...newOnes],
+      }
+      saveProfile(newProfile)
+      return { profile: newProfile }
+    })
+    return `Импортировано ${accounts.length} аккаунтов`
   },
 
   removeAppleId: async (email) => {

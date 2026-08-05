@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { Plus, Target, Zap, X, Settings, Trash2 } from 'lucide-react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { Plus, Target, Zap, X, Settings, Trash2, Copy, Key, Mail, Link2, Import } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
@@ -45,7 +45,7 @@ const GOAL_COLORS = ['#7c5cfc', '#22d3a5', '#fbbf24', '#ff5f7e', '#60a5fa', '#f4
 
 export default function Profile() {
   const t = useT()
-  const { profile, profits, addGoal, deleteGoal, updateSettings, addAppleId, removeAppleId } = useStore()
+  const { profile, profits, anketas, addGoal, deleteGoal, updateSettings, addAppleId, importAppleIds, removeAppleId } = useStore()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
   const [showAddGoal, setShowAddGoal] = useState(false)
@@ -63,6 +63,22 @@ export default function Profile() {
   const celebratedRef = useRef<Set<string>>(new Set())
   const [newAppleEmail, setNewAppleEmail] = useState('')
   const [newApplePassword, setNewApplePassword] = useState('')
+  const [appleImportText, setAppleImportText] = useState('')
+  const [appleImportMsg, setAppleImportMsg] = useState('')
+  const [copied, setCopied] = useState<string | null>(null)
+
+  const copy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(key)
+    setTimeout(() => setCopied(null), 1500)
+  }
+
+  // Emails currently bound to some city — these accounts are "busy"
+  const occupiedEmails = useMemo(() => {
+    const set = new Set<string>()
+    anketas.forEach(a => a.cities.forEach(c => { if (c.appleId?.email) set.add(c.appleId.email) }))
+    return set
+  }, [anketas])
 
   const totalRub = profits.reduce((s, p) => s + p.myShare, 0)
   const totalUsd = rubToUsd(totalRub, r2u)
@@ -96,13 +112,17 @@ export default function Profile() {
 
   const handleAddAppleId = async () => {
     if (!newAppleEmail.trim() || !newApplePassword.trim()) return
-    await addAppleId(newAppleEmail.trim(), newApplePassword.trim())
+    await addAppleId({ email: newAppleEmail.trim(), password: newApplePassword.trim() })
     setNewAppleEmail('')
     setNewApplePassword('')
   }
 
-  const handleRemoveAppleId = async (email: string) => {
-    await removeAppleId(email)
+  const handleImportAppleIds = async () => {
+    if (!appleImportText.trim()) return
+    const msg = await importAppleIds(appleImportText)
+    setAppleImportMsg(msg)
+    if (msg.startsWith('Импорт')) setAppleImportText('')
+    setTimeout(() => setAppleImportMsg(''), 2500)
   }
 
   return (
@@ -347,29 +367,97 @@ export default function Profile() {
               {/* Apple ID Management */}
               <div>
                 <label className="text-xs text-text-muted mb-2 block">Apple ID для премиума</label>
-                <div className="bg-card border border-border rounded-2xl p-3 mb-3 max-h-40 overflow-y-auto">
+                <div className="bg-card border border-border rounded-2xl p-3 mb-3 max-h-56 overflow-y-auto">
                   {(profile.appleIds ?? []).length === 0 ? (
                     <p className="text-xs text-text-muted text-center py-2">Нет сохраненных Apple ID</p>
                   ) : (
                     <div className="space-y-2">
-                      {(profile.appleIds ?? []).map(appleId => (
-                        <div key={appleId.email} className="flex items-center justify-between bg-bg p-2 rounded-lg">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-mono text-text truncate">{appleId.email}</p>
+                      {(profile.appleIds ?? []).map(appleId => {
+                        const occupied = occupiedEmails.has(appleId.email)
+                        return (
+                          <div key={appleId.email} className={`rounded-xl p-2 ${occupied ? 'bg-black/20 opacity-60' : 'bg-bg'}`}>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
+                                    {occupied ? 'Занята' : 'Свободна'}
+                                  </span>
+                                  <span className="text-[10px] text-text-muted">{occupied ? 'привязана к городу' : 'доступна'}</span>
+                                </div>
+                                <p className="text-xs font-mono text-text mt-1 truncate" title={appleId.email}>{appleId.email}</p>
+                              </div>
+                              <button
+                                onClick={() => removeAppleId(appleId.email)}
+                                className="flex-shrink-0 text-text-muted hover:text-danger transition-colors"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+
+                            {/* Copy / open actions */}
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              <button
+                                onClick={() => copy(appleId.email, `a-${appleId.email}`)}
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                              >
+                                <Copy size={11} /> Email
+                                {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
+                              </button>
+                              <button
+                                onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
+                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                              >
+                                <Key size={11} /> Пароль
+                                {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
+                              </button>
+                              {appleId.mailPassword && (
+                                <button
+                                  onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                                >
+                                  <Mail size={11} /> Почта
+                                  {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
+                                </button>
+                              )}
+                              {appleId.smsLink && (
+                                <a
+                                  href={appleId.smsLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
+                                >
+                                  <Link2 size={11} /> Код
+                                </a>
+                              )}
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleRemoveAppleId(appleId.email)}
-                            className="flex-shrink-0 ml-2 text-text-muted hover:text-danger transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </div>
 
-                {/* Add new Apple ID */}
+                {/* Import list of accounts */}
+                <div className="space-y-2 mb-3">
+                  <textarea
+                    value={appleImportText}
+                    onChange={e => setAppleImportText(e.target.value)}
+                    placeholder={'Вставь список:\nПочта: ...\nПароль: ...\nПароль от почты: ...\nузнать код: https://...'}
+                    rows={3}
+                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
+                  />
+                  {appleImportMsg && <p className="text-[11px] text-success px-1">{appleImportMsg}</p>}
+                  <button
+                    onClick={handleImportAppleIds}
+                    disabled={!appleImportText.trim()}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
+                  >
+                    <Import size={12} />
+                    Импортировать список
+                  </button>
+                </div>
+
+                {/* Add new Apple ID manually */}
                 <div className="space-y-2">
                   <input
                     type="email"
