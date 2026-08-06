@@ -55,17 +55,50 @@ export default function Workers() {
   const pace = sessionTotalMs > 0 ? rubToUsd(sessionEarnRub, rub2usd) / (sessionTotalMs / 3600000) : 0
 
   return (
-    <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">{t('workers_title')}</h1>
-          <p className="text-text-muted text-sm mt-0.5">{t('workers_count')(workers.length)}</p>
+    <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8 relative">
+      {/* ── Hero — jelly / gradient-glow treatment ───────────────────── */}
+      <div className="relative mb-8 text-center">
+        {/* Glowing blobs behind the title */}
+        <div
+          className="absolute left-1/2 top-0 h-72 w-[92%] -translate-x-1/2 opacity-70 pointer-events-none"
+          style={{
+            background: 'radial-gradient(50% 55% at 50% 20%, rgba(139,125,204,0.45) 0%, rgba(124,111,208,0.15) 45%, transparent 75%)',
+            filter: 'blur(38px)',
+            transform: 'translateX(-50%) rotate(-6deg)',
+          }}
+        />
+        <div
+          className="absolute right-[-6%] top-4 h-40 w-40 rounded-full pointer-events-none opacity-60"
+          style={{ background: 'radial-gradient(circle, rgba(90,200,250,0.30) 0%, transparent 70%)', filter: 'blur(28px)' }}
+        />
+        <div
+          className="absolute left-[-6%] top-20 h-40 w-40 rounded-full pointer-events-none opacity-50"
+          style={{ background: 'radial-gradient(circle, rgba(232,192,106,0.22) 0%, transparent 70%)', filter: 'blur(30px)' }}
+        />
+
+        <div className="relative">
+          <h1
+            className="mx-auto mb-3 max-w-3xl bg-clip-text text-4xl font-bold tracking-tighter text-transparent md:text-5xl"
+            style={{ backgroundImage: 'linear-gradient(to bottom, #E4DEFF 0%, #A596E8 45%, rgba(139,125,204,0.55) 100%)' }}
+          >
+            {t('workers_title')}
+          </h1>
+          <p className="mx-auto mb-6 max-w-md text-sm text-text-muted md:text-base">
+            {t('workers_count')(workers.length)}
+          </p>
+
+          {/* Glass CTA with animated plus */}
+          <button
+            onClick={() => setShowAdd(true)}
+            className="group mx-auto inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-colors duration-200 hover:border-accent/50 hover:bg-white/[0.07]"
+          >
+            <span className="relative flex h-5 w-5 items-center justify-center overflow-hidden">
+              <Plus className="absolute transition-all duration-500 group-hover:translate-x-4 group-hover:-translate-y-4" size={16} />
+              <Plus className="absolute -translate-x-4 -translate-y-4 transition-all duration-500 group-hover:translate-x-0 group-hover:translate-y-0" size={16} />
+            </span>
+            {t('workers_new')}
+          </button>
         </div>
-        <button onClick={() => setShowAdd(true)}
-          className="btn-gradient w-10 h-10 rounded-xl flex items-center justify-center shadow-glow-sm active:scale-95 transition-transform">
-          <Plus size={20} />
-        </button>
       </div>
 
       {/* Streak banner */}
