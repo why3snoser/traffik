@@ -159,44 +159,47 @@ export default function Profile() {
       </div>
 
       {/* Balance Card */}
-      <div className="rounded-3xl p-6 mb-6 relative overflow-hidden glass" style={{
-        borderTopColor: 'rgba(216,210,245,0.5)',
+      <div className="rounded-[28px] p-6 mb-6 relative overflow-hidden" style={{
+        background: 'linear-gradient(150deg, #1E1B2B 0%, #14121C 45%, #0B0A10 100%)',
+        border: '1px solid rgba(216,210,245,0.14)',
+        boxShadow: '0 0 0 1px rgba(139,125,204,0.06), 0 24px 60px -20px rgba(0,0,0,0.7), 0 0 42px rgba(139,125,204,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
         minHeight: 178,
       }}>
         {/* Decorative rings */}
-        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.16) 0%, transparent 65%)' }} />
-        <div className="absolute right-6 -bottom-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,190,255,0.10) 0%, transparent 70%)' }} />
-        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.10)' }} />
-        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.06)' }} />
+        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.28) 0%, transparent 65%)' }} />
+        <div className="absolute right-6 -bottom-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,190,255,0.16) 0%, transparent 70%)' }} />
+        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.12)' }} />
+        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.07)' }} />
+        <div className="absolute -left-20 top-1/3 w-56 h-56 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.12) 0%, transparent 70%)' }} />
 
         <div className="relative flex flex-col h-full">
           {/* Top: chip + logo */}
           <div className="flex items-center justify-between mb-5">
-            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(139,125,204,0.45), rgba(124,111,208,0.3))', border: '1px solid rgba(139,125,204,0.35)' }}>
-              <div className="w-1/2 h-full" style={{ borderRight: '1px solid rgba(0,0,0,0.2)' }} />
+            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(232,206,128,0.85), rgba(196,166,90,0.55))', border: '1px solid rgba(255,220,150,0.35)', boxShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>
+              <div className="w-1/2 h-full" style={{ borderRight: '1px solid rgba(0,0,0,0.25)' }} />
             </div>
             <div className="flex items-center gap-2">
               <div className="neon-dot neon-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>TRAFFIK</span>
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.85)' }}>TRAFFIK</span>
             </div>
           </div>
 
           {/* Balance */}
           <div className="mb-5">
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(216,210,245,0.6)' }}>Загальний баланс</p>
-            <p className="text-4xl font-bold text-white tracking-tight num-pop">{fmtUsd(totalUsd)}</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(216,210,245,0.55)' }}>Загальний баланс</p>
+            <p className="text-4xl font-bold text-white tracking-tight num-pop" style={{ textShadow: '0 0 24px rgba(139,125,204,0.35)' }}>{fmtUsd(totalUsd)}</p>
             <p className="text-sm mt-1" style={{ color: 'rgba(200,220,255,0.5)' }}>{fmtUah(totalUah)}</p>
           </div>
 
           {/* Bottom: name + level */}
           <div className="flex items-end justify-between mt-auto">
             <div>
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.5)' }}>HOLDER</p>
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.45)' }}>HOLDER</p>
               <p className="text-sm font-bold text-white uppercase tracking-wide">{profile.name}</p>
             </div>
             <div className="text-right">
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.5)' }}>LEVEL</p>
-              <p className="text-sm font-bold" style={{ color: '#8B7DCC' }}>LVL {levelInfo.level}</p>
+              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.45)' }}>LEVEL</p>
+              <p className="text-sm font-bold" style={{ color: '#A596E8', textShadow: '0 0 12px rgba(139,125,204,0.5)' }}>LVL {levelInfo.level}</p>
             </div>
           </div>
         </div>

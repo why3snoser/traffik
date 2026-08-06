@@ -5,7 +5,7 @@ import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useMemo, useState } from 'react'
 import { useT } from '@/i18n'
 import WorkerTimer from '@/components/WorkerTimer'
-import { ProfitCard } from '@/components/ProfitCard'
+import { WorkerProfitCard } from '@/components/WorkerProfitCard'
 
 function startOf(unit: 'week' | 'month') {
   const d = new Date()
@@ -175,8 +175,9 @@ export default function WorkerDetail() {
                   </div>
                   <div className="flex flex-col gap-2.5">
                     {entries.map(entry => (
-                      <ProfitCard
+                      <WorkerProfitCard
                         key={entry.id}
+                        worker={worker}
                         entry={entry}
                         label={PROFIT_TYPE_LABELS[entry.type]}
                         r2u={r2u}
