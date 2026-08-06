@@ -9,13 +9,15 @@ export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const t = useT()
-  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity, importAppleIds } = useStore()
+  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity, importAppleIds, setEmailForCity, removeEmailFromCity } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
   const [vkRaw, setVkRaw] = useState('')
   const [vkMsg, setVkMsg] = useState('')
   const [manualCityId, setManualCityId] = useState<string | null>(null)
   const [manualVkText, setManualVkText] = useState('')
+  const [emailCityId, setEmailCityId] = useState<string | null>(null)
+  const [emailText, setEmailText] = useState('')
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [selectedCityIdForPremium, setSelectedCityIdForPremium] = useState<string | null>(null)
   const [premImportText, setPremImportText] = useState('')
@@ -51,6 +53,14 @@ export default function AnketaDetail() {
     await setVkForCity(anketa.id, cityId, lines[0], lines[1])
     setManualCityId(null)
     setManualVkText('')
+  }
+
+  const handleSetEmail = async (cityId: string) => {
+    const email = emailText.trim()
+    if (!email) return
+    await setEmailForCity(anketa.id, cityId, email)
+    setEmailCityId(null)
+    setEmailText('')
   }
 
   const handleInstallPremium = async (appleId: AppleIdEntry) => {
@@ -250,6 +260,63 @@ export default function AnketaDetail() {
                       )}
                     </div>
                   )}
+
+                  {/* Email binding */}
+                  <div className="px-4 py-3 border-t border-border">
+                    {city.email ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          onClick={() => copy(city.email!, `email-${city.id}`)}
+                          className="flex items-center gap-2 bg-bg rounded-xl px-3 py-2.5 text-left flex-1 min-w-0 group"
+                        >
+                          <Mail size={12} className="text-accent-light flex-shrink-0" />
+                          <span className="text-sm text-text font-mono flex-1 truncate">{city.email}</span>
+                          <span className="text-xs text-text-muted group-active:text-success">
+                            {copied === `email-${city.id}` ? '✓' : 'copy'}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => removeEmailFromCity(anketa.id, city.id)}
+                          className="text-xs text-danger text-right flex-shrink-0"
+                        >
+                          Отвязать
+                        </button>
+                      </div>
+                    ) : emailCityId === city.id ? (
+                      <div className="flex gap-2">
+                        <input
+                          autoFocus
+                          value={emailText}
+                          onChange={e => setEmailText(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleSetEmail(city.id) }}
+                          placeholder="fidexi5509@ayable.com"
+                          inputMode="email"
+                          className="flex-1 bg-bg border border-border rounded-xl px-3 py-2 text-text text-xs font-mono placeholder:text-text-muted focus:outline-none focus:border-accent min-w-0"
+                        />
+                        <button
+                          onClick={() => handleSetEmail(city.id)}
+                          disabled={!emailText.trim()}
+                          className="flex-shrink-0 bg-accent rounded-xl px-3 py-2 text-white text-xs font-semibold disabled:opacity-40"
+                        >
+                          {t('vk_attach_btn')}
+                        </button>
+                        <button
+                          onClick={() => { setEmailCityId(null); setEmailText('') }}
+                          className="flex-shrink-0 px-1 py-2 text-text-muted text-xs"
+                        >
+                          {t('cancel')}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setEmailCityId(city.id); setEmailText('') }}
+                        className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium"
+                      >
+                        <Mail size={12} />
+                        Привязать почту
+                      </button>
+                    )}
+                  </div>
 
                   {/* Apple ID Premium */}
                   <div className="px-4 py-3 border-t border-border">

@@ -36,6 +36,7 @@ export interface CityEntry {
   status: 'active' | 'blocked'
   vk?: VKAccount
   appleId?: AppleIdEntry
+  email?: string   // simple email binding (no password) per city
 }
 
 export interface Anketa {

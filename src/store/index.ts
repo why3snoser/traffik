@@ -144,6 +144,9 @@ interface AppState {
   setVkForCity: (anketaId: string, cityId: string, login: string, password: string) => Promise<void>
   removeVkFromCity: (anketaId: string, cityId: string) => Promise<void>
 
+  setEmailForCity: (anketaId: string, cityId: string, email: string) => Promise<void>
+  removeEmailFromCity: (anketaId: string, cityId: string) => Promise<void>
+
   addProfit: (workerId: string, amount: number, type: ProfitType, note?: string, anketaId?: string) => Promise<void>
   deleteProfit: (id: string) => Promise<void>
 
@@ -371,6 +374,22 @@ export const useStore = create<AppState>()((set, get) => ({
     const anketa = get().anketas.find(a => a.id === anketaId)
     if (!anketa) return
     const updatedCities = anketa.cities.map(c => c.id === cityId ? { ...c, vk: undefined } : c)
+    await get().updateAnketa(anketaId, { cities: updatedCities })
+  },
+
+  setEmailForCity: async (anketaId, cityId, email) => {
+    const anketa = get().anketas.find(a => a.id === anketaId)
+    if (!anketa) return
+    const updatedCities = anketa.cities.map(c =>
+      c.id === cityId ? { ...c, email } : c
+    )
+    await get().updateAnketa(anketaId, { cities: updatedCities })
+  },
+
+  removeEmailFromCity: async (anketaId, cityId) => {
+    const anketa = get().anketas.find(a => a.id === anketaId)
+    if (!anketa) return
+    const updatedCities = anketa.cities.map(c => c.id === cityId ? { ...c, email: undefined } : c)
     await get().updateAnketa(anketaId, { cities: updatedCities })
   },
 
