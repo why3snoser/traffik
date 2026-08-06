@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useRef, useMemo } from 'react'
-import { Plus, Target, Zap, X, Settings, Trash2, Copy, Key, Mail, Link2, Import } from 'lucide-react'
+import { Plus, Target, Zap, Settings, Trash2, Copy, Key, Mail, Link2, Import } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
@@ -66,6 +67,7 @@ export default function Profile() {
   const [appleImportText, setAppleImportText] = useState('')
   const [appleImportMsg, setAppleImportMsg] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
+  const [activeGoalId, setActiveGoalId] = useState<string | null>(null)
 
   const copy = (text: string, key: string) => {
     navigator.clipboard.writeText(text)
@@ -217,72 +219,188 @@ export default function Profile() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {profile.goals.map((goal, idx) => {
-          const pct = Math.min(100, (totalUsd / goal.targetAmount) * 100)
-          const remaining = goal.targetAmount - totalUsd
-          const isLast = idx === profile.goals.length - 1
-          return (
-            <div key={goal.id} className="glass-light rounded-2xl overflow-hidden transition-all duration-500"
-              style={pct >= 100 ? { borderColor: 'rgba(139,125,204,0.5)', boxShadow: '0 0 24px rgba(139,125,204,0.15)' } : {}}>
+      {profile.goals.length === 0 ? (
+        <div className="glass-light rounded-2xl p-10 flex flex-col items-center gap-3 text-center">
+          <div className="w-14 h-14 rounded-2xl glass-light flex items-center justify-center text-2xl">🎯</div>
+          <p className="text-text-muted text-sm">Нет целей. Добавь первую!</p>
+          <button onClick={() => setShowAddGoal(true)} className="btn-gradient px-5 py-2.5 rounded-xl text-sm font-semibold shadow-glow-sm">
+            {t('goals_add')}
+          </button>
+        </div>
+      ) : (
+        <div className="relative glass-light rounded-[26px] overflow-hidden">
+          {/* Active goal showcase */}
+          {(() => {
+            const active = profile.goals.find(g => g.id === activeGoalId) ?? profile.goals[0]
+            const pct = Math.min(100, (totalUsd / active.targetAmount) * 100)
+            const remaining = active.targetAmount - totalUsd
+            const color = active.color ?? '#8B7DCC'
+            const glow = active.color ? `${active.color}55` : 'rgba(139,125,204,0.35)'
 
-              {goal.imageUrl && (
-                <div className={`relative overflow-hidden ${isLast ? 'h-80 md:h-96' : 'h-44 md:h-56'}`}>
-                  <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" style={{ objectPosition: goal.imagePosition ?? 'center top', filter: 'brightness(0.75) saturate(0.55)' }} />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,13,17,0.9) 0%, rgba(139,125,204,0.06) 60%, transparent 100%)' }} />
-                  <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
-                    <div>
-                      <p className="font-bold text-white text-lg">{goal.title}</p>
-                      {goal.description && <p className="text-white/70 text-xs">{goal.description}</p>}
+            return (
+              <>
+                {/* Ambient color blob that follows the goal color */}
+                <motion.div
+                  key={`bg-${active.id}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full pointer-events-none"
+                  style={{ background: `radial-gradient(circle, ${glow} 0%, transparent 70%)`, filter: 'blur(30px)' }}
+                />
+
+                {/* Visual */}
+                <div className="relative pt-8 pb-2 flex flex-col items-center">
+                  <div className="relative shrink-0">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+                      className="absolute inset-[-14%] rounded-full border border-dashed"
+                      style={{ borderColor: `${glow}` }}
+                    />
+                    <motion.div
+                      animate={{ scale: [1, 1.06, 1] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                      className="absolute inset-0 rounded-full opacity-40"
+                      style={{ background: `radial-gradient(circle, ${glow} 0%, transparent 70%)`, filter: 'blur(20px)' }}
+                    />
+                    <div className="relative w-32 h-32 rounded-full border border-white/10 bg-black/30 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                      <AnimatePresence mode="wait">
+                        {active.imageUrl ? (
+                          <motion.img
+                            key={`img-${active.id}`}
+                            src={active.imageUrl}
+                            alt={active.title}
+                            initial={{ opacity: 0, scale: 1.4, filter: 'blur(10px)' }}
+                            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                            exit={{ opacity: 0, scale: 0.7, filter: 'blur(8px)' }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            className="w-full h-full object-cover"
+                            style={{ objectPosition: active.imagePosition ?? 'center top', filter: 'brightness(0.85) saturate(0.7)' }}
+                            draggable={false}
+                          />
+                        ) : (
+                          <motion.span
+                            key={`emoji-${active.id}`}
+                            initial={{ opacity: 0, scale: 1.3, filter: 'blur(8px)' }}
+                            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                            exit={{ opacity: 0, scale: 0.7, filter: 'blur(6px)' }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            className="text-6xl leading-none"
+                          >
+                            {active.emoji}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <button onClick={() => deleteGoal(goal.id)} className="text-white/60 hover:text-danger">
-                      <X size={14} />
+                  </div>
+
+                  {/* Title + desc */}
+                  <div className="relative mt-6 px-6 text-center w-full">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`text-${active.id}`}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={{
+                          hidden: { opacity: 0, y: 12, filter: 'blur(8px)' },
+                          visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: 'spring', stiffness: 120, damping: 20 } },
+                          exit: { opacity: 0, y: -8, filter: 'blur(5px)' },
+                        }}
+                      >
+                        <h4 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text mb-1" style={{ backgroundImage: `linear-gradient(to bottom, #fff 0%, ${color} 140%)` }}>
+                          {active.title}
+                        </h4>
+                        {active.description && <p className="text-text-muted text-sm leading-relaxed">{active.description}</p>}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Progress metric */}
+                <div className="relative px-5 pb-5">
+                  <div className="bg-white/[0.04] border border-white/10 rounded-2xl p-4">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-text-muted">Прогрес</span>
+                      <span className="font-mono text-xs text-text-muted">{Math.min(100, pct).toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2.5 w-full bg-white/[0.06] rounded-full overflow-hidden mb-2.5">
+                      <motion.div
+                        key={active.id}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+                        className="absolute top-0 bottom-0 left-0 rounded-full"
+                        style={{ background: `linear-gradient(90deg, ${color}88, ${color})`, boxShadow: `0 0 12px ${glow}` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-bold text-text tabular-nums">{fmtUsd(totalUsd)}</p>
+                        <p className="text-[10px] text-text-muted uppercase tracking-widest mt-0.5">накопичено</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-text tabular-nums">{fmtUsd(active.targetAmount)}</p>
+                        <p className="text-[10px] text-text-muted uppercase tracking-widest mt-0.5">ціль</p>
+                      </div>
+                    </div>
+
+                    {remaining > 0 ? (
+                      <p className="text-xs text-text-muted mt-3 pt-3 border-t border-white/[0.06]">
+                        Залишилось <span className="font-semibold text-accent-light">{fmtUsd(remaining)}</span> до цілі
+                      </p>
+                    ) : (
+                      <p className="text-xs font-bold mt-3 pt-3 border-t border-white/[0.06] text-success">🎉 Ціль досягнута!</p>
+                    )}
+                  </div>
+
+                  {/* Delete */}
+                  <button
+                    onClick={() => {
+                      deleteGoal(active.id)
+                      setActiveGoalId(null)
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-text-muted hover:text-danger transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </>
+            )
+          })()}
+
+          {/* Goal switcher — island pill */}
+          {profile.goals.length > 1 && (
+            <div className="relative flex justify-center px-4 pb-4">
+              <div className="flex items-center gap-1 p-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl">
+                {profile.goals.map(goal => {
+                  const active = (goal.id === activeGoalId) || (activeGoalId === null && goal.id === profile.goals[0].id)
+                  return (
+                    <button
+                      key={goal.id}
+                      onClick={() => setActiveGoalId(goal.id)}
+                      className="relative w-11 h-11 rounded-full flex items-center justify-center text-xl focus:outline-none"
+                    >
+                      {active && (
+                        <motion.div
+                          layoutId="goal-island-surface"
+                          className="absolute inset-0 rounded-full"
+                          style={{ background: `radial-gradient(circle at 50% 30%, ${(goal.color ?? '#8B7DCC')}44 0%, transparent 80%)`, boxShadow: `inset 0 1px 1px rgba(255,255,255,0.12)` }}
+                          transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+                        />
+                      )}
+                      <span className={`relative z-10 transition-all duration-300 ${active ? 'scale-110' : 'opacity-40 grayscale hover:opacity-70'}`}>
+                        {goal.emoji}
+                      </span>
                     </button>
-                  </div>
-                </div>
-              )}
-              <div className="p-4">
-                {!goal.imageUrl && (
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-2xl">{goal.emoji}</span>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-text">{goal.title}</span>
-                        <button onClick={() => deleteGoal(goal.id)} className="text-text-muted hover:text-danger">
-                          <X size={14} />
-                        </button>
-                      </div>
-                      {goal.description && <p className="text-text-muted text-xs mt-0.5">{goal.description}</p>}
-                      <div className="flex items-baseline gap-2 mt-0.5">
-                        <span className="text-sm font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(totalUsd)}</span>
-                        <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {goal.imageUrl && (
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-sm font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(totalUsd)}</span>
-                    <span className="text-xs text-text-muted">of {fmtUsd(goal.targetAmount)}</span>
-                  </div>
-                )}
-
-                <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: '#8B7DCC', boxShadow: '0 0 8px rgba(139,125,204,0.5)' }} />
-                </div>
-
-                <div className="flex items-center">
-                  <span className="text-xs text-text-muted">{Math.min(100, pct).toFixed(0)}%</span>
-                  {remaining > 0
-                    ? <span className="text-xs text-text-muted ml-2">залишилось {fmtUsd(remaining)}</span>
-                    : <span className="text-xs font-bold ml-2" style={{ color: '#8B7DCC' }}>🎉 Ціль досягнута!</span>
-                  }
-                </div>
+                  )
+                })}
               </div>
             </div>
-          )
-        })}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Add goal modal */}
       {showAddGoal && (
