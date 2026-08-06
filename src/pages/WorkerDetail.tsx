@@ -5,6 +5,7 @@ import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useMemo, useState } from 'react'
 import { useT } from '@/i18n'
 import WorkerTimer from '@/components/WorkerTimer'
+import { ProfitCard } from '@/components/ProfitCard'
 
 function startOf(unit: 'week' | 'month') {
   const d = new Date()
@@ -172,18 +173,15 @@ export default function WorkerDetail() {
                       +{fmtUsd(rubToUsd(entries.reduce((s, e) => s + e.myShare, 0), r2u))}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2.5">
                     {entries.map(entry => (
-                      <div key={entry.id} className="bg-card border border-border rounded-2xl px-4 py-3">
-                        <div className="flex items-baseline justify-between">
-                          <span className="text-xs text-text-muted">{PROFIT_TYPE_LABELS[entry.type]}</span>
-                          <span className="text-success font-bold">{fmtUsd(rubToUsd(entry.myShare, r2u))}</span>
-                        </div>
-                        <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-text-muted text-xs">{fmtUah(usdToUah(rubToUsd(entry.myShare, r2u), u2ua))}</span>
-                          <span className="text-text-muted text-xs">· {t('profit_entry')(entry.amount.toLocaleString('en-US') + ' ₽')}</span>
-                        </div>
-                      </div>
+                      <ProfitCard
+                        key={entry.id}
+                        entry={entry}
+                        label={PROFIT_TYPE_LABELS[entry.type]}
+                        r2u={r2u}
+                        u2ua={u2ua}
+                      />
                     ))}
                   </div>
                 </div>

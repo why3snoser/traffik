@@ -3,6 +3,7 @@ import { Calendar } from 'lucide-react'
 import { useStore } from '@/store'
 import { PROFIT_LABELS, rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useNavigate } from 'react-router-dom'
+import { ProfitCard } from '@/components/ProfitCard'
 
 function startOf(unit: 'day' | 'week' | 'month') {
   const d = new Date()
@@ -41,15 +42,6 @@ export default function Finance() {
 
   const workerMap = useMemo(() =>
     new Map(workers.map(w => [w.id, w])), [workers])
-
-  const entryDelays = useMemo(() => {
-    const delays = new Map<string, number>()
-    let idx = 0
-    grouped.forEach(([, entries]) => {
-      entries.forEach(entry => { delays.set(entry.id, idx++ * 45) })
-    })
-    return delays
-  }, [grouped])
 
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8 max-w-2xl">
@@ -110,33 +102,18 @@ export default function Finance() {
                   <div className="flex-1 h-px bg-border" />
                   <span className="text-xs font-bold text-accent-light tabular-nums">+{fmtUsd(dayUsd)}</span>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2.5">
                   {entries.map(entry => {
                     const w = workerMap.get(entry.workerId)
-                    const usd = rubToUsd(entry.myShare, r2u)
-                    const uah = usdToUah(usd, u2ua)
                     return (
-                      <div
+                      <ProfitCard
                         key={entry.id}
-                        className="glass-light rounded-2xl p-3 neon-hover slide-in-left flex items-center gap-3"
-                        style={{ animationDelay: `${entryDelays.get(entry.id) ?? 0}ms` }}
-                      >
-                        <span className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xl shrink-0">
-                          {w ? w.emoji : '💼'}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-text">{PROFIT_LABELS[entry.type]}</p>
-                          {(entry.note || entry.amount > 0) && (
-                            <p className="text-text-muted text-[10px] mt-0.5 truncate tabular-nums">
-                              {entry.amount.toLocaleString('uk-UA')} ₽{entry.note ? ` · ${entry.note}` : ''}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-accent-light tabular-nums">+{fmtUsd(usd)}</p>
-                          <p className="text-text-muted text-[10px] mt-0.5 tabular-nums">{fmtUah(uah)} ₴</p>
-                        </div>
-                      </div>
+                        entry={entry}
+                        label={PROFIT_LABELS[entry.type]}
+                        workerLabel={w ? `${w.emoji} ${w.name}` : undefined}
+                        r2u={r2u}
+                        u2ua={u2ua}
+                      />
                     )
                   })}
                 </div>
