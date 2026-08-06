@@ -289,7 +289,7 @@ export default function AnketaDetail() {
                           value={emailText}
                           onChange={e => setEmailText(e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') handleSetEmail(city.id) }}
-                          placeholder="fidexi5509@ayable.com"
+                          placeholder="Введите почту"
                           inputMode="email"
                           className="flex-1 bg-bg border border-border rounded-xl px-3 py-2 text-text text-xs font-mono placeholder:text-text-muted focus:outline-none focus:border-accent min-w-0"
                         />
