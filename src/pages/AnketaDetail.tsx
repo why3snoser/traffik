@@ -1,15 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight, Copy, Mail, Link2, Plus, Import } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight, Copy, Mail, Link2, Plus, Import, ImagePlus, Video, Play, Download, Loader2, Trash2 as Trash } from 'lucide-react'
 import { useStore } from '@/store'
 import { AppleIdEntry } from '@/types'
-import { useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useT } from '@/i18n'
+import PhotoLightbox from '@/components/PhotoLightbox'
+import { compressImage, compressVideo, downloadDataUrl } from '@/lib/media'
 
 export default function AnketaDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const t = useT()
-  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity, importAppleIds, setEmailForCity, removeEmailFromCity } = useStore()
+  const { anketas, deleteAnketa, assignVkToAnketa, setVkForCity, removeVkFromCity, profile, setAppleIdForCity, removeAppleIdFromCity, importAppleIds, setEmailForCity, removeEmailFromCity, loadAnketaMedia, addAnketaPhotos, removeAnketaPhoto, setAnketaVideo, removeAnketaVideo } = useStore()
   const [copied, setCopied] = useState<string | null>(null)
   const [showVkImport, setShowVkImport] = useState(false)
   const [vkRaw, setVkRaw] = useState('')
@@ -23,9 +25,53 @@ export default function AnketaDetail() {
   const [premImportText, setPremImportText] = useState('')
   const [premImportMsg, setPremImportMsg] = useState('')
   const [premAddOpen, setPremAddOpen] = useState(false)
+  const [photoViewer, setPhotoViewer] = useState<number | null>(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [videoBusy, setVideoBusy] = useState(false)
+  const [videoMsg, setVideoMsg] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (id) loadAnketaMedia(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
   const anketa = anketas.find(a => a.id === id)
   if (!anketa) return <div className="p-8 text-text-muted">Не найдено</div>
+
+  const handleAddPhotos = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setPhotoBusy(true)
+    try {
+      const results = await Promise.all(
+        Array.from(files).map(f => compressImage(f, 1280, 0.8))
+      )
+      await addAnketaPhotos(anketa.id, results)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setPhotoBusy(false)
+      if (photoInputRef.current) photoInputRef.current.value = ''
+    }
+  }
+
+  const handleSetVideo = async (file: File | undefined) => {
+    if (!file) return
+    setVideoBusy(true)
+    setVideoMsg(null)
+    try {
+      const { dataUrl } = await compressVideo(file, 7)
+      await setAnketaVideo(anketa.id, dataUrl)
+    } catch (e) {
+      setVideoMsg(e instanceof Error && e.message === 'VIDEO_TOO_LONG' ? t('video_too_long') : t('video_error'))
+    } finally {
+      setVideoBusy(false)
+      if (videoInputRef.current) videoInputRef.current.value = ''
+    }
+  }
+
+  const videoSrc = anketa.videos?.[0]
 
   const copy = (text: string, key: string) => {
     navigator.clipboard.writeText(text)
@@ -415,6 +461,103 @@ export default function AnketaDetail() {
             </div>
           </div>
         )}
+
+        {/* Photos */}
+        <div>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">{t('photos_header')}</h3>
+            {anketa.photos.length > 0 && (
+              <span className="text-xs text-text-muted">{anketa.photos.length}</span>
+            )}
+          </div>
+
+          {anketa.photos.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {anketa.photos.map((p, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPhotoViewer(i)}
+                  className="aspect-square rounded-2xl overflow-hidden bg-card border border-border active:scale-[0.97] transition-transform"
+                >
+                  <img src={p} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={e => handleAddPhotos(e.target.files)}
+          />
+          <button
+            onClick={() => photoInputRef.current?.click()}
+            disabled={photoBusy}
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-border rounded-2xl py-3 text-text-muted text-sm hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+          >
+            {photoBusy ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+            {t('photos_add')}
+          </button>
+        </div>
+
+        {/* Verification video */}
+        <div>
+          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">{t('video_header')}</h3>
+
+          {videoSrc ? (
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <video src={videoSrc} controls className="w-full aspect-video bg-black/40" />
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-xs text-text-muted flex items-center gap-1.5">
+                  <Video size={13} className="text-accent-light" />
+                  {t('video_uploaded')}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => downloadDataUrl(videoSrc, `video-${anketa.name}.webm`)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-accent-light px-3 py-1.5 rounded-xl bg-accent/10 border border-accent/20"
+                  >
+                    <Download size={12} />
+                    {t('photo_download')}
+                  </button>
+                  <button
+                    onClick={() => removeAnketaVideo(anketa.id)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-danger px-3 py-1.5 rounded-xl bg-danger/10 border border-danger/20"
+                  >
+                    <Trash size={12} />
+                    {t('video_delete')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {videoMsg && (
+                <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-2.5 text-danger text-sm text-center">
+                  {videoMsg}
+                </div>
+              )}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={e => handleSetVideo(e.target.files?.[0])}
+              />
+              <button
+                onClick={() => videoInputRef.current?.click()}
+                disabled={videoBusy}
+                className="w-full flex items-center justify-center gap-2 border border-dashed border-border rounded-2xl py-3 text-text-muted text-sm hover:border-accent hover:text-accent transition-colors disabled:opacity-40"
+              >
+                {videoBusy ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+                {t('video_add')}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* VK Import Modal */}
@@ -457,6 +600,16 @@ export default function AnketaDetail() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Photo lightbox */}
+      {photoViewer !== null && anketa.photos[photoViewer] && (
+        <PhotoLightbox
+          photos={anketa.photos}
+          index={photoViewer}
+          onClose={() => setPhotoViewer(null)}
+          onDelete={idx => removeAnketaPhoto(anketa.id, idx)}
+        />
       )}
 
       {/* Premium Apple ID Selection Modal */}

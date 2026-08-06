@@ -140,6 +140,12 @@ interface AppState {
   updateAnketa: (id: string, updates: Partial<Anketa>) => Promise<void>
   deleteAnketa: (id: string) => Promise<void>
 
+  loadAnketaMedia: (id: string) => Promise<void>
+  addAnketaPhotos: (id: string, photos: string[]) => Promise<void>
+  removeAnketaPhoto: (id: string, index: number) => Promise<void>
+  setAnketaVideo: (id: string, videoDataUrl: string) => Promise<void>
+  removeAnketaVideo: (id: string) => Promise<void>
+
   assignVkToAnketa: (anketaId: string, rawList: string) => Promise<string>
   setVkForCity: (anketaId: string, cityId: string, login: string, password: string) => Promise<void>
   removeVkFromCity: (anketaId: string, cityId: string) => Promise<void>
@@ -203,7 +209,7 @@ export const useStore = create<AppState>()((set, get) => ({
       { data: profileRows },
     ] = await Promise.all([
       supabase.from('workers').select('*').order('created_at', { ascending: false }),
-      supabase.from('anketas').select('*').order('created_at', { ascending: false }),
+      supabase.from('anketas').select('id, worker_id, name, age, telegram, cities, birth_dates, notes, created_at, updated_at').order('created_at', { ascending: false }),
       supabase.from('profits').select('*').order('created_at', { ascending: false }),
       supabase.from('profile').select('*').eq('id', 1),
     ])
@@ -261,7 +267,8 @@ export const useStore = create<AppState>()((set, get) => ({
         age: a.age, telegram: a.telegram,
         cities: a.cities ?? [],
         birthDates: a.birth_dates ?? [],
-        notes: a.notes, photos: a.photos ?? [], videos: a.videos ?? [],
+        notes: a.notes,
+        photos: [], videos: [],
         createdAt: a.created_at, updatedAt: a.updated_at,
       })),
       profits: (profits ?? []).map(p => ({
@@ -333,12 +340,46 @@ export const useStore = create<AppState>()((set, get) => ({
     if (updates.birthDates !== undefined) dbUpdates.birth_dates = updates.birthDates
     if (updates.notes !== undefined) dbUpdates.notes = updates.notes
     if (updates.photos !== undefined) dbUpdates.photos = updates.photos
+    if (updates.videos !== undefined) dbUpdates.videos = updates.videos
     await supabase.from('anketas').update(dbUpdates).eq('id', id)
   },
 
   deleteAnketa: async (id) => {
     set(s => ({ anketas: s.anketas.filter(a => a.id !== id) }))
     await supabase.from('anketas').delete().eq('id', id)
+  },
+
+  // ── Anketa media (photos / verification video) ───────────────────────
+  loadAnketaMedia: async (id) => {
+    const { data } = await supabase.from('anketas').select('photos, videos').eq('id', id).single()
+    if (!data) return
+    set(s => ({
+      anketas: s.anketas.map(a =>
+        a.id === id ? { ...a, photos: data.photos ?? [], videos: data.videos ?? [] } : a
+      ),
+    }))
+  },
+
+  addAnketaPhotos: async (id, photos) => {
+    const anketa = get().anketas.find(a => a.id === id)
+    if (!anketa) return
+    const next = [...(anketa.photos ?? []), ...photos]
+    await get().updateAnketa(id, { photos: next })
+  },
+
+  removeAnketaPhoto: async (id, index) => {
+    const anketa = get().anketas.find(a => a.id === id)
+    if (!anketa) return
+    const next = (anketa.photos ?? []).filter((_, i) => i !== index)
+    await get().updateAnketa(id, { photos: next })
+  },
+
+  setAnketaVideo: async (id, videoDataUrl) => {
+    await get().updateAnketa(id, { videos: [videoDataUrl] })
+  },
+
+  removeAnketaVideo: async (id) => {
+    await get().updateAnketa(id, { videos: [] })
   },
 
   // ── VK assign ────────────────────────────────────────────────────────
