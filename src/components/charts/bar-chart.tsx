@@ -389,19 +389,9 @@ const ChartCore = memo(function ChartCore({
     onPhaseChange?.(isLoaded ? "ready" : "revealing");
   }, [isLoaded, onPhaseChange]);
 
-  // Mouse move handler
-  const handleMouseMove = useCallback(
-    (event: React.MouseEvent<SVGGElement>) => {
-      const point = localPoint(event);
-      if (!point) {
-        return;
-      }
-
-      const pos = isHorizontal ? point.y - margin.top : point.x - margin.left;
-
-      // Find which band the mouse is over
-      const bandIndex = Math.floor(pos / columnWidth);
-      const clampedIndex = Math.max(0, Math.min(data.length - 1, bandIndex));
+  // Build + schedule the tooltip for a band index (shared by mouse and touch).
+  const scheduleBandTooltip = useCallback(
+    (clampedIndex: number) => {
       const d = data[clampedIndex];
 
       if (!d) {
@@ -542,11 +532,72 @@ const ChartCore = memo(function ChartCore({
     ]
   );
 
+  // Touch-pinned tooltip — stays after the finger lifts until a tap outside.
+  const pinnedRef = useRef(false);
+
+  const canInteract = isLoaded;
+
+  const resolveBandIndex = useCallback(
+    (plotPos: number): number => {
+      const bandIndex = Math.floor(plotPos / columnWidth);
+      return Math.max(0, Math.min(data.length - 1, bandIndex));
+    },
+    [columnWidth, data.length]
+  );
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<SVGGElement>) => {
+      const point = localPoint(event);
+      if (!point) {
+        return;
+      }
+      const pos = isHorizontal ? point.y - margin.top : point.x - margin.left;
+      scheduleBandTooltip(resolveBandIndex(pos));
+    },
+    [isHorizontal, margin.left, margin.top, resolveBandIndex, scheduleBandTooltip]
+  );
+
+  const handleTouchStart = useCallback(
+    (event: React.TouchEvent<SVGGElement>) => {
+      if (!canInteract) {
+        return;
+      }
+      const touch = event.touches[0];
+      if (!touch) {
+        return;
+      }
+      pinnedRef.current = true;
+      // Resolve against the plot rect so a tap anywhere in a band (not just on
+      // the thin bar) selects it — no pixel-perfect accuracy needed. The `<g>`
+      // is already translated by the margin, so its rect gives plot-local px.
+      const rect = event.currentTarget.getBoundingClientRect();
+      const pos = isHorizontal
+        ? touch.clientY - rect.top
+        : touch.clientX - rect.left;
+      scheduleBandTooltip(resolveBandIndex(pos));
+    },
+    [canInteract, isHorizontal, resolveBandIndex, scheduleBandTooltip]
+  );
+
   const handleMouseLeave = useCallback(() => {
+    if (pinnedRef.current) {
+      return;
+    }
     clearTooltip();
   }, [clearTooltip]);
 
-  const canInteract = isLoaded;
+  // A tap anywhere outside the chart dismisses a touch-pinned tooltip.
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const el = containerRef.current;
+      if (el && event.target instanceof Node && !el.contains(event.target)) {
+        pinnedRef.current = false;
+        clearTooltip();
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [clearTooltip, containerRef]);
 
   // Separate children into defs, pre-overlay, and post-overlay
   const defsChildren: ReactElement[] = [];
@@ -637,7 +688,11 @@ const ChartCore = memo(function ChartCore({
         <g
           onMouseLeave={canInteract ? handleMouseLeave : undefined}
           onMouseMove={canInteract ? handleMouseMove : undefined}
-          style={{ cursor: canInteract ? "crosshair" : "default" }}
+          onTouchStart={canInteract ? handleTouchStart : undefined}
+          style={{
+            cursor: canInteract ? "crosshair" : "default",
+            touchAction: "manipulation",
+          }}
           transform={`translate(${margin.left},${margin.top})`}
         >
           {/* Background rect for mouse event detection */}
@@ -696,7 +751,12 @@ export function BarChart({
     <div
       className={cn("relative w-full overflow-visible", className)}
       ref={containerRef}
-      style={{ aspectRatio }}
+      style={{
+        aspectRatio,
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+      }}
     >
       <ParentSize debounceTime={10}>
         {({ width, height }) => (

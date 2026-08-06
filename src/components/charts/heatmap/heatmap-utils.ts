@@ -216,44 +216,61 @@ export function filterHeatmapColumns(
   });
 }
 
-const heatmapTooltipDateFmt = new Intl.DateTimeFormat("uk-UA", {
-  day: "numeric",
+const heatmapTooltipMonthFmt = new Intl.DateTimeFormat("en-US", {
   month: "long",
-  year: "numeric",
 });
 
-const heatmapTooltipWeekdayFmt = new Intl.DateTimeFormat("uk-UA", {
+const heatmapTooltipWeekdayFmt = new Intl.DateTimeFormat("en-US", {
   weekday: "long",
 });
 
-/** Tooltip header date — e.g. `20 січня 2026`. */
-export function formatHeatmapTooltipDate(date: Date): string {
-  return heatmapTooltipDateFmt.format(date);
+function formatHeatmapOrdinalDay(day: number): string {
+  if (day >= 11 && day <= 13) {
+    return `${day}th`;
+  }
+
+  switch (day % 10) {
+    case 1:
+      return `${day}st`;
+    case 2:
+      return `${day}nd`;
+    case 3:
+      return `${day}rd`;
+    default:
+      return `${day}th`;
+  }
 }
 
-/** Tooltip weekday line — e.g. `понеділок`. */
+/** Tooltip header date — e.g. `January 20th 2026`. */
+export function formatHeatmapTooltipDate(date: Date): string {
+  const month = heatmapTooltipMonthFmt.format(date);
+  const day = formatHeatmapOrdinalDay(date.getDate());
+  return `${month} ${day} ${date.getFullYear()}`;
+}
+
+/** Tooltip weekday line — e.g. `Monday`. */
 export function formatHeatmapTooltipWeekday(date: Date): string {
   return heatmapTooltipWeekdayFmt.format(date);
 }
 
-/** Tooltip contribution line — e.g. `3 внески`. */
+/** Tooltip contribution line — e.g. `3 contributions`. */
 export function formatHeatmapContributionLabel(
   count: number,
   _date?: Date
 ): string {
-  const word = count === 1 ? "внесок" : "внески";
+  const word = count === 1 ? "contribution" : "contributions";
   return `${count} ${word}`;
 }
 
 /** Sunday-first day labels for heatmap row bins. */
 export const HEATMAP_DAY_LABELS = [
-  "Нд",
-  "Пн",
-  "Вт",
-  "Ср",
-  "Чт",
-  "Пт",
-  "Сб",
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
 ] as const;
 
 /** First row of the grid — `0` = Sunday (GitHub default). */

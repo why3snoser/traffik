@@ -452,6 +452,8 @@ export const HeatmapCells = memo(function HeatmapCells({
 }: HeatmapCellsProps) {
   const {
     data,
+    innerWidth,
+    innerHeight,
     binWidth,
     binHeight,
     gap,
@@ -544,6 +546,99 @@ export const HeatmapCells = memo(function HeatmapCells({
     [data, hideGhostCells]
   );
 
+  // Coarse pointers (touch) get a full-grid overlay with forgiving nearest-cell
+  // targets — the whole plot resolves to a cell, so tiny on-screen squares are
+  // still easy to hit. Fine pointers keep the precise per-cell hover.
+  const isCoarsePointer = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches,
+    []
+  );
+
+  const resolveCellFromTap = useCallback(
+    (tapX: number, tapY: number): HeatmapTooltipData | null => {
+      if (data.length === 0) {
+        return null;
+      }
+
+      // Nearest column by x-center (accounts for separator spacing).
+      let nearestColumn = 0;
+      let nearestDist = Infinity;
+      for (let col = 0; col < data.length; col++) {
+        const centerX = xScale(col) + binWidth / 2;
+        const dist = Math.abs(centerX - tapX);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestColumn = col;
+        }
+      }
+
+      const rowCount = Math.max(data[0]?.bins.length ?? 7, 1);
+      const row = Math.min(
+        Math.max(Math.round(tapY / binHeight), 0),
+        rowCount - 1
+      );
+
+      const bin = data[nearestColumn]?.bins[row];
+      if (!bin) {
+        return null;
+      }
+      if (displayRange && isHeatmapGhostBin(bin, displayRange)) {
+        return null;
+      }
+
+      const cellX = xScale(nearestColumn);
+      const cellY = yScale(row);
+      return {
+        column: nearestColumn,
+        row,
+        count: bin.count,
+        date: bin.date,
+        x: margin.left + cellX + binWidth / 2,
+        y: margin.top + cellY + binHeight / 2,
+      };
+    },
+    [
+      binHeight,
+      binWidth,
+      data,
+      displayRange,
+      margin.left,
+      margin.top,
+      xScale,
+      yScale,
+    ]
+  );
+
+  const handleGridTap = useCallback(
+    (event: React.PointerEvent<SVGRectElement>) => {
+      if (!cellsInteractive || event.pointerType === "mouse") {
+        return;
+      }
+      const rect = event.currentTarget.getBoundingClientRect();
+      const tapX = event.clientX - rect.left;
+      const tapY = event.clientY - rect.top;
+      const tooltip = resolveCellFromTap(tapX, tapY);
+
+      setHoveredLegendLevel(null);
+      if (!tooltip) {
+        return;
+      }
+      setHoveredCell({ column: tooltip.column, row: tooltip.row });
+      setTooltipData(tooltip);
+      setPinned(true);
+    },
+    [
+      cellsInteractive,
+      resolveCellFromTap,
+      setHoveredCell,
+      setHoveredLegendLevel,
+      setPinned,
+      setTooltipData,
+    ]
+  );
+
   return (
     <HeatmapRect<HeatmapColumn, HeatmapBin>
       binHeight={binHeight}
@@ -599,6 +694,17 @@ export const HeatmapCells = memo(function HeatmapCells({
                 />
               );
             })
+          )}
+          {isCoarsePointer && (
+            <rect
+              fill="transparent"
+              height={innerHeight}
+              onPointerDown={handleGridTap}
+              style={{ touchAction: "manipulation" }}
+              width={innerWidth}
+              x={0}
+              y={0}
+            />
           )}
         </Group>
       )}
