@@ -1,9 +1,9 @@
-export const shortDateFmt = new Intl.DateTimeFormat("en-US", {
+export const shortDateFmt = new Intl.DateTimeFormat("uk-UA", {
   month: "short",
   day: "numeric",
 });
 
-export const weekdayDateFmt = new Intl.DateTimeFormat("en-US", {
+export const weekdayDateFmt = new Intl.DateTimeFormat("uk-UA", {
   weekday: "short",
   month: "short",
   day: "numeric",

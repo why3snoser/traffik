@@ -11,7 +11,7 @@ export interface HeatmapXAxisProps {
   className?: string;
 }
 
-const monthFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
+const monthFmt = new Intl.DateTimeFormat("uk-UA", { month: "short" });
 
 export const HeatmapXAxis = memo(function HeatmapXAxis({
   className,

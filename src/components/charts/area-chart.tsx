@@ -229,7 +229,14 @@ export function AreaChart({
     <div
       className={cn("relative w-full", className)}
       ref={containerRef}
-      style={{ aspectRatio, touchAction: "none", ...style }}
+      style={{
+        aspectRatio,
+        touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+        ...style,
+      }}
     >
       <ParentSize debounceTime={10}>
         {({ width, height }) => (

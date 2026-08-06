@@ -415,6 +415,7 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
   } = useChartInteraction({
     bisectDate,
     canInteract,
+    containerRef,
     data: visiblePlotData,
     lines,
     margin,

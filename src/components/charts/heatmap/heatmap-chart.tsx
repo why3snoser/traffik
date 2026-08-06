@@ -462,7 +462,7 @@ function HeatmapChartSurface({
     loadingLabel,
     showLoadingLabel,
   } = useHeatmap();
-  const { clearInteraction } = useHeatmapInteraction();
+  const { clearInteraction, pinned } = useHeatmapInteraction();
   const reducedOpacity =
     chartPhase === "loading" || chartPhase === "exitingReady"
       ? loadingOpacity
@@ -471,9 +471,21 @@ function HeatmapChartSurface({
   return (
     <div
       className={cn("relative w-full", layout === "fill" && "h-full")}
-      onPointerLeave={clearInteraction}
+      onPointerLeave={(event) => {
+        // On touch, pointerleave fires right after the finger lifts — keep a
+        // tapped/pinned tooltip until the next tap outside the chart.
+        if (event.pointerType === "mouse" || !pinned) {
+          clearInteraction();
+        }
+      }}
       ref={containerRef as React.Ref<HTMLDivElement>}
-      style={{ opacity: reducedOpacity }}
+      style={{
+        opacity: reducedOpacity,
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+        touchAction: "manipulation",
+      }}
     >
       <svg aria-hidden="true" height={height} width={width}>
         <HeatmapPatternDefs levelStyles={levelStyles} />

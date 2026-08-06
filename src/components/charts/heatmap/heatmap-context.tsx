@@ -10,7 +10,9 @@ import {
   type SetStateAction,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { cn } from "@/lib/utils";
@@ -52,9 +54,14 @@ export interface HeatmapInteractionContextValue {
   hoveredCell: { column: number; row: number } | null;
   hoveredLegendLevel: number | null;
   tooltipData: HeatmapTooltipData | null;
+  /** A cell was tapped on a touch device — tooltip stays until the next tap outside. */
+  pinned: boolean;
   setHoveredCell: (cell: { column: number; row: number } | null) => void;
   setHoveredLegendLevel: (level: number | null) => void;
   setTooltipData: Dispatch<SetStateAction<HeatmapTooltipData | null>>;
+  setPinned: (pinned: boolean) => void;
+  /** Registers the chart+legend boundary element for outside-tap dismissal. */
+  registerBoundary: (el: HTMLElement | null) => void;
   clearInteraction: () => void;
 }
 
@@ -118,24 +125,53 @@ export function HeatmapInteractionProvider({
   const [tooltipData, setTooltipData] = useState<HeatmapTooltipData | null>(
     null
   );
+  const [pinned, setPinned] = useState(false);
+  const boundaryRef = useRef<HTMLElement | null>(null);
+
+  const registerBoundary = useCallback((el: HTMLElement | null) => {
+    boundaryRef.current = el;
+  }, []);
 
   const clearInteraction = useCallback(() => {
     setHoveredCell(null);
     setHoveredLegendLevel(null);
     setTooltipData(null);
+    setPinned(false);
   }, []);
+
+  // A tap anywhere outside the chart+legend clears a pinned tooltip.
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const el = boundaryRef.current;
+      if (el && event.target instanceof Node && !el.contains(event.target)) {
+        clearInteraction();
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [clearInteraction]);
 
   const value = useMemo<HeatmapInteractionContextValue>(
     () => ({
       hoveredCell,
       hoveredLegendLevel,
       tooltipData,
+      pinned,
       setHoveredCell,
       setHoveredLegendLevel,
       setTooltipData,
+      setPinned,
+      registerBoundary,
       clearInteraction,
     }),
-    [clearInteraction, hoveredCell, hoveredLegendLevel, tooltipData]
+    [
+      clearInteraction,
+      hoveredCell,
+      hoveredLegendLevel,
+      pinned,
+      registerBoundary,
+      tooltipData,
+    ]
   );
 
   return (
@@ -187,12 +223,30 @@ export function HeatmapInteractionBoundary({
   children: ReactNode;
   className?: string;
 }) {
-  const { clearInteraction } = useHeatmapInteraction();
+  const { clearInteraction, pinned, registerBoundary } =
+    useHeatmapInteraction();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    registerBoundary(ref.current);
+  }, [registerBoundary]);
 
   return (
     <div
+      ref={ref}
       className={cn("size-full min-h-0 min-w-0", className)}
-      onPointerLeave={clearInteraction}
+      onPointerLeave={(event) => {
+        // On touch, pointerleave fires right after the finger lifts — don't
+        // dismiss a tooltip the user pinned by tapping a cell.
+        if (event.pointerType === "mouse" || !pinned) {
+          clearInteraction();
+        }
+      }}
+      style={{
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTouchCallout: "none",
+      }}
     >
       {children}
     </div>

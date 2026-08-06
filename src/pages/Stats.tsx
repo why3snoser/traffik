@@ -102,6 +102,8 @@ export default function Stats() {
   const { profits, workers, anketas, profile, sessions, clearSessions, workerTime, workerBaseline } = useStore()
   const navigate = useNavigate()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
+  const [isMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches)
+  const heatmapBinSize = isMobile ? 16 : 0
 
   const totalRub = profits.reduce((s, p) => s + p.myShare, 0)
   const totalUsd = rubToUsd(totalRub, r2u)
@@ -446,25 +448,28 @@ export default function Stats() {
         </div>
         <HeatmapInteractionProvider>
           <HeatmapInteractionBoundary>
-            <HeatmapChart
-              data={heatmapData}
-              layout="fluid"
-              weekStartDay={1}
-              margin={{ top: 20, right: 4, bottom: 0, left: 26 }}
-            >
-              <HeatmapCells />
-              <HeatmapXAxis />
-              <HeatmapYAxis tickFilter="odd" />
-              <HeatmapTooltip
-                formatLabel={(_count, date) => {
-                  const key = date.toISOString().slice(0, 10)
-                  const rub = heatmapDayRub.get(key) ?? 0
-                  return rub > 0
-                    ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
-                    : 'нет профита'
-                }}
-              />
-            </HeatmapChart>
+            <div className="overflow-x-auto pb-1">
+              <HeatmapChart
+                data={heatmapData}
+                layout="fluid"
+                weekStartDay={1}
+                binSize={heatmapBinSize}
+                margin={{ top: 20, right: 4, bottom: 0, left: 26 }}
+              >
+                <HeatmapCells />
+                <HeatmapXAxis />
+                <HeatmapYAxis tickFilter="odd" />
+                <HeatmapTooltip
+                  formatLabel={(_count, date) => {
+                    const key = date.toISOString().slice(0, 10)
+                    const rub = heatmapDayRub.get(key) ?? 0
+                    return rub > 0
+                      ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
+                      : 'нет профита'
+                  }}
+                />
+              </HeatmapChart>
+            </div>
             <HeatmapLegend lessLabel="Менше" moreLabel="Більше" />
           </HeatmapInteractionBoundary>
         </HeatmapInteractionProvider>

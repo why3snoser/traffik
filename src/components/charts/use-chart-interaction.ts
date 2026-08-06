@@ -32,6 +32,8 @@ interface UseChartInteractionParams {
     lo: number
   ) => number;
   canInteract: boolean;
+  /** Chart container element — taps outside it dismiss a pinned tooltip. */
+  containerRef: React.RefObject<HTMLElement | null>;
 }
 
 interface ChartInteractionResult {
@@ -47,6 +49,7 @@ interface ChartInteractionResult {
     onTouchStart?: (event: React.TouchEvent<SVGGElement>) => void;
     onTouchMove?: (event: React.TouchEvent<SVGGElement>) => void;
     onTouchEnd?: () => void;
+    onTouchCancel?: () => void;
   };
   interactionStyle: React.CSSProperties;
 }
@@ -61,6 +64,7 @@ export function useChartInteraction({
   xAccessor,
   bisectDate,
   canInteract,
+  containerRef,
 }: UseChartInteractionParams): ChartInteractionResult {
   const [selection, setSelection] = useState<ChartSelection | null>(null);
   const {
@@ -74,6 +78,8 @@ export function useChartInteraction({
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef<number>(0);
   const lastHoveredXRef = useRef<number | null>(null);
+  /** Touch-pinned tooltip — stays visible after the finger lifts. */
+  const pinnedRef = useRef(false);
 
   const resolveTooltipFromX = useCallback(
     (pixelX: number): TooltipData | null => {
@@ -197,11 +203,15 @@ export function useChartInteraction({
 
   const handleMouseLeave = useCallback(() => {
     lastHoveredXRef.current = null;
-    clearTooltip();
     if (isDraggingRef.current) {
       isDraggingRef.current = false;
     }
     setSelection(null);
+    // On touch, the browser can fire a synthetic mouseleave right after the
+    // finger lifts — don't let that dismiss a tooltip pinned by a tap.
+    if (!pinnedRef.current) {
+      clearTooltip();
+    }
   }, [clearTooltip]);
 
   const handleMouseDown = useCallback(
@@ -234,12 +244,14 @@ export function useChartInteraction({
           return;
         }
         lastHoveredXRef.current = chartX;
+        pinnedRef.current = true;
         const tooltip = resolveTooltipFromX(chartX);
         if (tooltip) {
           scheduleTooltip(tooltip);
         }
       } else if (event.touches.length === 2) {
         event.preventDefault();
+        pinnedRef.current = false;
         resetTooltipDedupe();
         clearTooltip();
         const x0 = getChartX(event, 0);
@@ -303,13 +315,32 @@ export function useChartInteraction({
   );
 
   const handleTouchEnd = useCallback(() => {
-    clearTooltip();
+    // Keep the pinned tooltip — clearing here is what made it flash for a
+    // frame on mobile taps. It's dismissed by the next tap elsewhere.
     setSelection(null);
-  }, [clearTooltip]);
+  }, []);
+
+  const handleTouchCancel = useCallback(() => {
+    setSelection(null);
+  }, []);
 
   const clearSelection = useCallback(() => {
     setSelection(null);
   }, []);
+
+  // A tap anywhere outside the chart dismisses a touch-pinned tooltip.
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const el = containerRef.current;
+      if (el && event.target instanceof Node && !el.contains(event.target)) {
+        pinnedRef.current = false;
+        clearTooltip();
+        setSelection(null);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [clearTooltip, containerRef]);
 
   // Re-anchor tooltip/crosshair when x-scale or visible data changes (e.g. brush zoom commit).
   useEffect(() => {
@@ -333,12 +364,16 @@ export function useChartInteraction({
         onTouchStart: handleTouchStart,
         onTouchMove: handleTouchMove,
         onTouchEnd: handleTouchEnd,
+        onTouchCancel: handleTouchCancel,
       }
     : {};
 
   const interactionStyle: React.CSSProperties = {
     cursor: canInteract ? "crosshair" : "default",
     touchAction: "none",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+    WebkitTouchCallout: "none",
   };
 
   return {

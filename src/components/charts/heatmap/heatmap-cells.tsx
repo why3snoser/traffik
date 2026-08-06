@@ -24,6 +24,7 @@ import { heatmapLevelCellFillOpacity } from "./heatmap-colors";
 import {
   type HeatmapBin,
   type HeatmapColumn,
+  type HeatmapTooltipData,
   useHeatmap,
   useHeatmapInteraction,
 } from "./heatmap-context";
@@ -198,6 +199,13 @@ interface HeatmapCellRectProps {
     y: number
   ) => void;
   onLeave: () => void;
+  onTap: (
+    column: number,
+    row: number,
+    bin: HeatmapBin,
+    x: number,
+    y: number
+  ) => void;
 }
 
 const HeatmapMotionCell = memo(function HeatmapMotionCell({
@@ -213,6 +221,7 @@ const HeatmapMotionCell = memo(function HeatmapMotionCell({
   hoverState,
   onEnter,
   onLeave,
+  onTap,
 }: HeatmapCellRectProps & {
   fillScale: (count: number | null | undefined) => string;
 }) {
@@ -405,6 +414,11 @@ const HeatmapMotionCell = memo(function HeatmapMotionCell({
         fillOpacity={
           (cell.opacity ?? 1) * patternFillOpacity * rowOpacityMultiplier
         }
+        onPointerDown={(event) => {
+          if (event.pointerType !== "mouse") {
+            onTap(cell.column, cell.row, bin, cell.x, cell.y);
+          }
+        }}
         onPointerEnter={() =>
           onEnter(cell.column, cell.row, bin, cell.x, cell.y)
         }
@@ -454,10 +468,30 @@ export const HeatmapCells = memo(function HeatmapCells({
   const {
     hoveredCell,
     hoveredLegendLevel,
+    pinned,
     setHoveredCell,
     setHoveredLegendLevel,
+    setPinned,
     setTooltipData,
   } = useHeatmapInteraction();
+
+  const buildTooltipData = useCallback(
+    (
+      column: number,
+      row: number,
+      bin: HeatmapBin,
+      x: number,
+      y: number
+    ): HeatmapTooltipData => ({
+      column,
+      row,
+      count: bin.count,
+      date: bin.date,
+      x: margin.left + x + binWidth / 2,
+      y: margin.top + y + binHeight / 2,
+    }),
+    [binHeight, binWidth, margin.left, margin.top]
+  );
 
   const handleCellEnter = useCallback(
     (column: number, row: number, bin: HeatmapBin, x: number, y: number) => {
@@ -467,35 +501,33 @@ export const HeatmapCells = memo(function HeatmapCells({
 
       setHoveredLegendLevel(null);
       setHoveredCell({ column, row });
-      setTooltipData({
-        column,
-        row,
-        count: bin.count,
-        date: bin.date,
-        x: margin.left + x + binWidth / 2,
-        y: margin.top + y + binHeight / 2,
-      });
+      setTooltipData(buildTooltipData(column, row, bin, x, y));
     },
-    [
-      binHeight,
-      binWidth,
-      cellsInteractive,
-      margin.left,
-      margin.top,
-      setHoveredCell,
-      setHoveredLegendLevel,
-      setTooltipData,
-    ]
+    [buildTooltipData, cellsInteractive, setHoveredCell, setHoveredLegendLevel, setTooltipData]
+  );
+
+  const handleCellTap = useCallback(
+    (column: number, row: number, bin: HeatmapBin, x: number, y: number) => {
+      if (!cellsInteractive) {
+        return;
+      }
+
+      setHoveredLegendLevel(null);
+      setHoveredCell({ column, row });
+      setTooltipData(buildTooltipData(column, row, bin, x, y));
+      setPinned(true);
+    },
+    [buildTooltipData, cellsInteractive, setHoveredCell, setHoveredLegendLevel, setPinned, setTooltipData]
   );
 
   const handleCellLeave = useCallback(() => {
-    if (!cellsInteractive) {
+    if (!cellsInteractive || pinned) {
       return;
     }
 
     setHoveredCell(null);
     setTooltipData(null);
-  }, [cellsInteractive, setHoveredCell, setTooltipData]);
+  }, [cellsInteractive, pinned, setHoveredCell, setTooltipData]);
 
   const inactiveEnabled = isHeatmapHoverEffectEnabled({
     inactiveOpacity,
@@ -562,6 +594,7 @@ export const HeatmapCells = memo(function HeatmapCells({
                   key={`heatmap-cell-${cell.column}-${cell.row}`}
                   onEnter={handleCellEnter}
                   onLeave={handleCellLeave}
+                  onTap={handleCellTap}
                   rowOpacity={rowOpacity}
                 />
               );
