@@ -52,7 +52,7 @@ const DEFAULT_GOALS: Goal[] = [
     savedAmount: 0,
     color: '#7c5cfc',
     imageUrl: '/goals/iphone-17-cutout.png?v=2',
-    imageScale: 1.25,
+    imageScale: 1.42,
     description: 'iPhone 17 Pro Max · 256GB',
   },
   {
@@ -63,7 +63,7 @@ const DEFAULT_GOALS: Goal[] = [
     savedAmount: 0,
     color: '#60a5fa',
     imageUrl: '/goals/macbook-pro-16.png?v=2',
-    imageScale: 1.6,
+    imageScale: 1.15,
     description: 'MacBook Pro 16 · M4 Max · 48GB · 1TB',
   },
   {
@@ -105,6 +105,24 @@ const DEFAULT_GOALS: Goal[] = [
     imageFit: 'cover',
     imagePosition: 'center',
     description: 'Цель мечты',
+    variants: [
+      {
+        id: 'left',
+        label: 'Фото 1',
+        title: 'Ангелина 💕',
+        description: 'Цель мечты',
+        image: 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
+        color: '#f472b6',
+      },
+      {
+        id: 'right',
+        label: 'Фото 2',
+        title: 'Ангелина 💕',
+        description: 'Цель мечты',
+        image: 'https://i.ibb.co/1G0Kr3Gq/photo-2026-04-23-03-03-04.jpg',
+        color: '#ec4899',
+      },
+    ],
   },
 ]
 
@@ -207,9 +225,13 @@ async function saveProfile(profile: UserProfile) {
     xp: profile.xp,
     total_earned: profile.totalEarned,
     goals: profile.goals,
-    settings: profile.settings,
-    worker_avatars: profile.workerAvatars ?? {},
-    apple_ids: profile.appleIds ?? [],
+    // The profile table has no dedicated columns for these, so stash them in
+    // the settings jsonb object to keep Apple IDs and worker avatars persisted.
+    settings: {
+      ...profile.settings,
+      _workerAvatars: profile.workerAvatars ?? {},
+      _appleIds: profile.appleIds ?? [],
+    },
   })
 }
 
@@ -236,19 +258,23 @@ export const useStore = create<AppState>()((set, get) => ({
       supabase.from('workers').select('*').order('created_at', { ascending: false }),
       supabase.from('anketas').select('id, worker_id, name, age, telegram, cities, birth_dates, notes, created_at, updated_at').order('created_at', { ascending: false }),
       supabase.from('profits').select('*').order('created_at', { ascending: false }),
-      supabase.from('profile').select('*').eq('id', 1),
+      supabase.from('profile').select('id, name, level, xp, total_earned, goals, settings').eq('id', 1),
     ])
 
     const p = profileRows?.[0]
+    const rawSettings = (p?.settings ?? DEFAULT_SETTINGS) as UserProfile['settings'] & {
+      _workerAvatars?: Record<string, string>
+      _appleIds?: AppleIdEntry[]
+    }
     const profile: UserProfile = p ? {
       name: p.name,
       level: p.level,
       xp: p.xp,
       totalEarned: p.total_earned,
       goals: p.goals ?? [],
-      settings: p.settings ?? DEFAULT_SETTINGS,
-      workerAvatars: p.worker_avatars ?? {},
-      appleIds: (p.apple_ids ?? []).length > 0 ? p.apple_ids : DEFAULT_APPLE_IDS,
+      settings: rawSettings,
+      workerAvatars: rawSettings._workerAvatars ?? {},
+      appleIds: (rawSettings._appleIds ?? []).length > 0 ? rawSettings._appleIds : DEFAULT_APPLE_IDS,
     } : DEFAULT_PROFILE
 
     // Recalculate totals from the authoritative profit records so the stored
@@ -267,16 +293,21 @@ export const useStore = create<AppState>()((set, get) => ({
       if (profile.goals.length === 0) {
         profile.goals = DEFAULT_GOALS
       } else {
-        // Rename legacy goals whose default was replaced (e.g. BMW → MacBook)
-        const legacyRenames: Record<string, string> = { 'goal-bmw': 'goal-macbook', 'goal-apt': 'goal-earbuds' }
+        // Goals the user has given their own image are treated as user-customized:
+        // never rename, replace or touch them — only heal goals that still use the
+        // default placeholder (no imageUrl yet).
         const seen = new Set<string>()
+        const placeholderRenames: Record<string, string> = { 'goal-bmw': 'goal-macbook', 'goal-apt': 'goal-earbuds' }
         profile.goals = profile.goals
           .map(g => {
-            const renamed = legacyRenames[g.id]
+            if (g.imageUrl) return g
+            const renamed = placeholderRenames[g.id]
             if (renamed) {
               const def = DEFAULT_GOALS.find(d => d.id === renamed)
               return def ? { ...def, savedAmount: g.savedAmount } : g
             }
+            const def = DEFAULT_GOALS.find(d => d.id === g.id)
+            if (def) return { ...def, savedAmount: g.savedAmount }
             return g
           })
           .filter(g => {
@@ -284,26 +315,6 @@ export const useStore = create<AppState>()((set, get) => ({
             seen.add(g.id)
             return true
           })
-        // Always sync imageUrl/description/variants/fit from DEFAULT_GOALS (in case they were updated)
-        profile.goals = profile.goals.map(g => {
-          const def = DEFAULT_GOALS.find(d => d.id === g.id)
-          if (def && g.imageUrl !== def.imageUrl) {
-            return { ...g, imageUrl: def.imageUrl }
-          }
-          if (def && JSON.stringify(def.variants ?? null) !== JSON.stringify(g.variants ?? null)) {
-            return { ...g, variants: def.variants }
-          }
-          if (def && (g.imageFit ?? null) !== (def.imageFit ?? null)) {
-            return { ...g, imageFit: def.imageFit }
-          }
-          if (def && (g.imagePosition ?? null) !== (def.imagePosition ?? null)) {
-            return { ...g, imagePosition: def.imagePosition }
-          }
-          if (def && (g.imageScale ?? null) !== (def.imageScale ?? null)) {
-            return { ...g, imageScale: def.imageScale }
-          }
-          return g
-        })
       }
       // Persist healed counter (and any goal patches) back to the DB
       await saveProfile(profile)
@@ -439,11 +450,11 @@ export const useStore = create<AppState>()((set, get) => ({
   // ── VK assign ────────────────────────────────────────────────────────
   assignVkToAnketa: async (anketaId, rawList) => {
     const accounts: VKAccount[] = parseVkList(rawList)
-    if (accounts.length === 0) return 'Не удалось распознать аккаунты'
+    if (accounts.length === 0) return 'Could not recognize accounts'
     const anketa = get().anketas.find(a => a.id === anketaId)
-    if (!anketa) return 'Анкета не найдена'
+    if (!anketa) return 'Profile not found'
     const freeCities = anketa.cities.filter(c => !c.vk)
-    if (freeCities.length === 0) return 'Все города уже имеют ВК аккаунты'
+    if (freeCities.length === 0) return 'All locations already have linked accounts'
     const shuffled = [...accounts].sort(() => Math.random() - 0.5)
     const toAssign = shuffled.slice(0, freeCities.length)
     const updatedCities: CityEntry[] = anketa.cities.map(city => {
@@ -453,7 +464,7 @@ export const useStore = create<AppState>()((set, get) => ({
     })
     await get().updateAnketa(anketaId, { cities: updatedCities })
     const assigned = updatedCities.filter(c => c.vk).length - anketa.cities.filter(c => c.vk).length
-    return `Привязано ${assigned} аккаунтов`
+    return `Linked ${assigned} account${assigned === 1 ? '' : 's'}`
   },
 
   setVkForCity: async (anketaId, cityId, login, password) => {
@@ -617,7 +628,7 @@ export const useStore = create<AppState>()((set, get) => ({
 
   importAppleIds: async (raw) => {
     const accounts = parseAppleIds(raw)
-    if (accounts.length === 0) return 'Не распознано аккаунтов. Проверь формат.'
+    if (accounts.length === 0) return 'Could not recognize accounts. Check the format.'
     set(s => {
       const existing = new Set((s.profile.appleIds ?? []).map(id => id.email))
       const newOnes = accounts.filter(a => !existing.has(a.email))
@@ -628,7 +639,7 @@ export const useStore = create<AppState>()((set, get) => ({
       saveProfile(newProfile)
       return { profile: newProfile }
     })
-    return `Импортировано ${accounts.length} аккаунтов`
+    return `Imported ${accounts.length} account${accounts.length === 1 ? '' : 's'}`
   },
 
   removeAppleId: async (email) => {

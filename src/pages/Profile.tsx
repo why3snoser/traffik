@@ -227,7 +227,9 @@ export default function Profile() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="flex flex-col gap-5">
+          {/* One per row: two-up squeezed the artwork and the progress readout
+              into ~320px and clipped the title. */}
           {profile.goals.map(goal => (
             <GoalShowcaseCard
               key={goal.id}

@@ -1,6 +1,5 @@
 ﻿import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
 import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
 import LiquidChrome from '@/components/LiquidChrome'
@@ -25,7 +24,7 @@ export default function App() {
 
   if (!initialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-dvh flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-accent-glow border border-accent/20 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -37,7 +36,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-dvh flex">
       {/* Ambient backdrop (WebGL) */}
       <div id="app-backdrop">
         <LiquidChrome
@@ -55,32 +54,36 @@ export default function App() {
       <Sidebar />
       {/* Main content — offset by sidebar on desktop */}
       <div className="flex-1 md:ml-56 min-w-0">
-        {openedGoalId ? (
-          <AnimatePresence mode="wait" initial={false}>
-            <GoalView key="goal-view" goalId={openedGoalId} />
-          </AnimatePresence>
-        ) : (
-          <div key="app-content" className="max-w-lg mx-auto md:max-w-2xl md:mx-0 relative">
-            <main key={location.pathname} className="animate-page-in">
-              <Routes>
-                <Route path="/" element={<Workers />} />
-                <Route path="/workers/:id" element={<WorkerDetail />} />
-                <Route path="/workers/:id/edit" element={<Workers />} />
-                <Route path="/workers/:workerId/anketas/new" element={<AnketaForm />} />
-                <Route path="/workers/:id/profit/new" element={<ProfitForm />} />
-                <Route path="/anketas/:id" element={<AnketaDetail />} />
-                <Route path="/anketas/:id/edit" element={<AnketaForm />} />
-                <Route path="/finance" element={<Finance />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/stats" element={<Stats />} />
-              </Routes>
-            </main>
-            {/* Bottom nav only on mobile */}
-            <div className="md:hidden">
-              <BottomNav />
-            </div>
+        <div className="max-w-lg mx-auto md:max-w-2xl md:mx-0 relative">
+          <main key={location.pathname} className="animate-page-in">
+            <Routes>
+              <Route path="/" element={<Workers />} />
+              <Route path="/workers/:id" element={<WorkerDetail />} />
+              <Route path="/workers/:id/edit" element={<Workers />} />
+              <Route path="/workers/:workerId/anketas/new" element={<AnketaForm />} />
+              <Route path="/workers/:id/profit/new" element={<ProfitForm />} />
+              <Route path="/anketas/:id" element={<AnketaDetail />} />
+              <Route path="/anketas/:id/edit" element={<AnketaForm />} />
+              <Route path="/finance" element={<Finance />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/stats" element={<Stats />} />
+            </Routes>
+          </main>
+          {/* Bottom nav only on mobile */}
+          <div className="md:hidden">
+            <BottomNav />
           </div>
-        )}
+        </div>
+
+        {/* The goal overlay is `fixed inset-0` and opaque, so it stacks on top
+            of the page instead of replacing it. Routing both through a single
+            `mode="wait"` presence kept the page unmounted until the overlay's
+            exit finished — and switching goals inside the overlay left a
+            `layoutId` handoff in flight that stalled that exit, leaving a
+            blank, unclickable screen. The overlay now owns its own fade-out
+            and clears the store when it ends, so no presence bookkeeping sits
+            between the close button and the page. */}
+        {openedGoalId && <GoalView goalId={openedGoalId} />}
       </div>
     </div>
   )

@@ -38,7 +38,7 @@ export default function AnketaDetail() {
   }, [id])
 
   const anketa = anketas.find(a => a.id === id)
-  if (!anketa) return <div className="p-8 text-text-muted">Не найдено</div>
+  if (!anketa) return <div className="p-8 text-text-muted">{t('not_found')}</div>
 
   const handleAddPhotos = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -120,7 +120,7 @@ export default function AnketaDetail() {
     if (!premImportText.trim()) return
     const msg = await importAppleIds(premImportText)
     setPremImportMsg(msg)
-    if (msg.startsWith('Импорт')) setPremImportText('')
+    if (msg.startsWith('Imported')) setPremImportText('')
     setTimeout(() => setPremImportMsg(''), 2500)
   }
 
@@ -325,7 +325,7 @@ export default function AnketaDetail() {
                           onClick={() => removeEmailFromCity(anketa.id, city.id)}
                           className="text-xs text-danger text-right flex-shrink-0"
                         >
-                          Отвязать
+                          {t('vk_detach')}
                         </button>
                       </div>
                     ) : emailCityId === city.id ? (
@@ -335,7 +335,7 @@ export default function AnketaDetail() {
                           value={emailText}
                           onChange={e => setEmailText(e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') handleSetEmail(city.id) }}
-                          placeholder="Введите почту"
+                          placeholder="Enter email"
                           inputMode="email"
                           className="flex-1 bg-bg border border-border rounded-xl px-3 py-2 text-text text-xs font-mono placeholder:text-text-muted focus:outline-none focus:border-accent min-w-0"
                         />
@@ -359,7 +359,7 @@ export default function AnketaDetail() {
                         className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium"
                       >
                         <Mail size={12} />
-                        Привязать почту
+                        {t('vk_attach_btn')} email
                       </button>
                     )}
                   </div>
@@ -371,13 +371,13 @@ export default function AnketaDetail() {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Gift size={12} className="text-accent-light" />
-                            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-light">Premium привязан</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-light">Subscription attached</span>
                           </div>
                           <button
                             onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
                             className="text-xs text-danger text-right"
                           >
-                            Отвязать премиум
+                            Remove subscription
                           </button>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
@@ -411,7 +411,7 @@ export default function AnketaDetail() {
                               rel="noreferrer"
                               className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
                             >
-                              <Link2 size={11} /> Получить код
+                              <Link2 size={11} /> Get code
                             </a>
                           )}
                         </div>
@@ -422,7 +422,7 @@ export default function AnketaDetail() {
                         className="w-full flex items-center justify-center gap-2 text-xs text-accent-light font-medium"
                       >
                         <Gift size={12} />
-                        Поставить премиум
+                        Add subscription
                       </button>
                     )}
                   </div>
@@ -622,12 +622,12 @@ export default function AnketaDetail() {
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-text">Apple ID для премиума</h3>
+              <h3 className="text-lg font-bold text-text">Subscription accounts</h3>
               <button onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }} className="text-text-muted">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-text-muted text-xs mb-3">Нажми на email/пароль, чтобы скопировать. Занятые выделены серым.</p>
+            <p className="text-text-muted text-xs mb-3">Tap an email/password to copy. In-use ones are greyed out.</p>
 
             {/* Add / import accounts */}
             <button
@@ -635,7 +635,7 @@ export default function AnketaDetail() {
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl mb-3 text-xs font-semibold bg-accent/15 border border-accent/30 text-accent-light"
             >
               <Plus size={13} />
-              {premAddOpen ? 'Скрыть' : 'Добавить / импортировать Apple ID'}
+              {premAddOpen ? 'Hide' : 'Add / import accounts'}
             </button>
             {premAddOpen && (
               <div className="mb-3 space-y-2">
@@ -643,7 +643,7 @@ export default function AnketaDetail() {
                   autoFocus
                   value={premImportText}
                   onChange={e => setPremImportText(e.target.value)}
-                  placeholder={'Вставь список:\nПочта: ...\nПароль: ...\nПароль от почты: ...\nузнать код: https://...'}
+                  placeholder={'Paste list:\nEmail: ...\nPassword: ...\nMail password: ...\nGet code link: https://...'}
                   rows={4}
                   className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
                 />
@@ -654,14 +654,14 @@ export default function AnketaDetail() {
                   className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent text-white disabled:opacity-40"
                 >
                   <Import size={13} />
-                  Импортировать в список
+                  Import to list
                 </button>
               </div>
             )}
 
             <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
               {(profile.appleIds ?? []).length === 0 ? (
-                <p className="text-text-muted text-sm text-center py-4">Список пуст. Добавь аккаунты выше.</p>
+                <p className="text-text-muted text-sm text-center py-4">The list is empty. Add accounts above.</p>
               ) : (
                 (profile.appleIds ?? []).map(appleId => {
                   const occupied = occupiedAppleEmails.has(appleId.email)
@@ -673,7 +673,7 @@ export default function AnketaDetail() {
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0 ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
-                            {occupied ? 'Занята' : 'Свободна'}
+                            {occupied ? 'In use' : 'Available'}
                           </span>
                           <span className="text-xs font-mono text-text truncate">{appleId.email}</span>
                         </div>
@@ -683,7 +683,7 @@ export default function AnketaDetail() {
                           className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-opacity ${occupied ? 'opacity-40' : 'bg-accent text-white'}`}
                         >
                           <ArrowRight size={12} />
-                          Установить
+                          Connect
                         </button>
                       </div>
 
@@ -718,7 +718,7 @@ export default function AnketaDetail() {
                             rel="noreferrer"
                             className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
                           >
-                            <Link2 size={11} /> Получить код
+                            <Link2 size={11} /> Get code
                           </a>
                         )}
                       </div>

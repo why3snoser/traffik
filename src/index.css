@@ -48,7 +48,13 @@ body {
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS inflates text on rotate unless this is pinned. */
+  -webkit-text-size-adjust: 100%;
 }
+
+/* A glow or a ring that overhangs its parent must not open a horizontal
+   scroll on a phone. `clip` (not `hidden`) keeps `position: sticky` working. */
+#root { overflow-x: clip; }
 
 /* Apple-esque ambient backdrop — soft dark graphite with calm violet light, no neon */
 #app-backdrop {
@@ -65,6 +71,20 @@ body {
 ::-webkit-scrollbar-thumb { background: rgba(139,125,204,0.3); border-radius: 4px; }
 
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-top { padding-top: env(safe-area-inset-top); }
+
+/* Chip/tab rows that can outgrow a phone's width: scroll them instead of
+   letting the overflow fall off-screen, and hide the bar so it still reads
+   as a solid control. `overscroll-contain` stops the swipe from dragging
+   the page sideways once the row hits its end. */
+.scroll-row {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-row::-webkit-scrollbar { display: none; }
 
 /* ── Animations ──────────────────────────────────────────────────── */
 @keyframes pageEnter {
@@ -219,6 +239,12 @@ button.glass-light:hover {
 .group:hover .goal-glow,
 .group:hover .goal-float { animation-play-state: running; }
 
+/* Touch devices never fire :hover, so these would sit frozen forever. Let the
+   card breathe on its own there instead. */
+@media (hover: none) {
+  .goal-ring, .goal-glow, .goal-float { animation-play-state: running; }
+}
+
 /* ── Utilities ──────────────────────────────────────────────────── */
 @layer utilities {
 
@@ -360,4 +386,21 @@ button.glass-light:hover {
 
   /* Softer press feedback instead of the snap */
   button:active { transform: scale(0.975) !important; }
+
+  /* iOS Safari zooms the whole page when a focused field is under 16px, and
+     never zooms back out. Every input here is text-xs/text-sm, so pin them. */
+  input, select, textarea { font-size: 16px; }
+
+  /* Bottom sheets are anchored to the bottom edge, so anything taller than
+     the screen used to run off the top with no way to reach it. */
+  .sheet {
+    max-height: 88dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Comfortable thumb targets — 44px is the iOS minimum. */
+  nav a, .tap-target { min-height: 44px; }
 }

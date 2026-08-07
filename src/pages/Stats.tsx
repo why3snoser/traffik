@@ -287,7 +287,7 @@ export default function Stats() {
         {[
           { label: 'Earned', value: fmtUsd(totalUsd), sub: fmtUah(totalUah) },
           { label: 'Deals', value: String(profits.length), sub: `~${fmtUsd(avgUsd)}/ea` },
-          { label: 'Workers', value: String(workers.length), sub: `${anketas.length} profiles` },
+          { label: 'Members', value: String(workers.length), sub: `${anketas.length} profiles` },
         ].map(({ label, value, sub }) => (
           <div key={label} className="glass-light rounded-2xl p-3 text-center neon-hover" style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease' }}>
             <p className="text-text font-bold text-sm">{value}</p>
@@ -466,7 +466,7 @@ export default function Stats() {
                       const rub = heatmapDayRub.get(key) ?? 0
                       return rub > 0
                         ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
-                        : 'нет профита'
+                        : 'немає даних'
                     }}
                   />
                 </HeatmapChart>
@@ -487,7 +487,7 @@ export default function Stats() {
                     const rub = heatmapDayRub.get(key) ?? 0
                     return rub > 0
                       ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
-                      : 'нет профита'
+                      : 'немає даних'
                   }}
                 />
               </HeatmapChart>
@@ -630,7 +630,7 @@ export default function Stats() {
       {topWorkers.length > 0 && (
         <div className="glass-light rounded-2xl p-4">
           <Legend
-            title="Worker ranking"
+            title="Member ranking"
             titleClassName="text-sm font-semibold text-text mb-3"
             className="gap-1"
             items={topWorkers.map((w, i) => ({

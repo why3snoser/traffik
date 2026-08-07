@@ -162,12 +162,13 @@ export default function Workers() {
             const uah = usdToUah(usd, usd2uah)
             return (
               <div key={worker.id} className="glass-light rounded-2xl overflow-hidden transition-all duration-200 neon-hover group relative">
-                {/* Edit avatar button */}
+                {/* Edit avatar — visible by default on touch, where there is
+                    no hover to reveal it with. */}
                 <button
                   onClick={e => { e.stopPropagation(); setEditAvatarId(worker.id); setEditAvatarUrl(worker.avatarUrl ?? '') }}
-                  className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 z-10 w-8 h-8 md:w-6 md:h-6 rounded-lg flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-                  <Pencil size={11} style={{ color: '#8B7DCC' }} />
+                  <Pencil size={12} style={{ color: '#8B7DCC' }} />
                 </button>
 
                 <button className="w-full text-left active:scale-95 transition-transform" onClick={() => navigate(`/workers/${worker.id}`)}>
@@ -211,7 +212,7 @@ export default function Workers() {
           <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white">Аватар воркера</h3>
+              <h3 className="text-lg font-bold text-white">Аватар учасника</h3>
               <button onClick={() => setEditAvatarId(null)} className="text-text-muted hover:text-text"><X size={18} /></button>
             </div>
             {editAvatarUrl && (

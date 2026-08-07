@@ -74,7 +74,7 @@ export default function Finance() {
 
           <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
-              <p className="text-xs uppercase tracking-widest text-text-muted mb-1">Загальний прибуток</p>
+              <p className="text-xs uppercase tracking-widest text-text-muted mb-1">Загальний дохід</p>
               <h2 className="text-4xl font-bold tracking-tight gradient-text num-pop tabular-nums">
                 {fmtUsd(stats.total)}
               </h2>
@@ -105,12 +105,12 @@ export default function Finance() {
         {activeWorkers.length > 0 && (
           <motion.div variants={itemVariants} className="glass-light rounded-[22px] p-5">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-lg font-semibold text-text">Воркери</h3>
+              <h3 className="text-lg font-semibold text-text">Учасники</h3>
               <button className="text-text-muted hover:text-text">
                 <MoreHorizontal className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-xs text-text-muted mb-2">Прибуток по кожному воркеру</p>
+            <p className="text-xs text-text-muted mb-2">Дохід по кожному учаснику</p>
 
             <div className="divide-y divide-white/[0.06]">
               {activeWorkers.map(w => {
@@ -131,7 +131,7 @@ export default function Finance() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-text truncate">{w.name}</p>
-                        <p className="text-xs text-text-muted tabular-nums">{workerProfitsCount(w.id)} {workerProfitsCount(w.id) === 1 ? 'профіт' : 'профітів'}</p>
+                        <p className="text-xs text-text-muted tabular-nums">{workerProfitsCount(w.id)} {workerProfitsCount(w.id) === 1 ? 'операція' : 'операцій'}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -160,7 +160,7 @@ export default function Finance() {
           {grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-muted">
               <div className="w-14 h-14 rounded-2xl glass-light flex items-center justify-center text-2xl">📊</div>
-              <p className="text-sm">Нет записей. Зайди в воркера и добавь профит.</p>
+              <p className="text-sm">Немає записів. Відкрий учасника і додай операцію.</p>
             </div>
           ) : (
             <div className="mt-3 flex flex-col gap-4 max-h-[520px] overflow-y-auto pr-1">

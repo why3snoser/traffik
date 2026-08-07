@@ -101,7 +101,7 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
                   <span className="font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earningsUsd)}</span> за {fmtDur(totalMs)}
                 </>
               ) : (
-                <>за {fmtDur(totalMs)} пока без профитов</>
+                <>за {fmtDur(totalMs)} поки без операцій</>
               )}
               {rate > 0 && (
                 <span className="font-bold ml-1.5" style={{ color: '#8B7DCC' }}>{fmtUsd(rate)}/час</span>
@@ -120,13 +120,13 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
 
       {!running && totalMs === 0 && (
         <p className="text-[11px] text-text-muted mt-2">
-          Ставь анкеты, бери премики — потом добавь профиты и узнаешь, сколько $ приносит час работы.
+          Додавай профілі та операції — і дізнаєшся, скільки $ приносить година роботи.
         </p>
       )}
 
       {justStopped && !running && (
         <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#A596E8' }}>
-          ✓ Время записано. Добавленные профиты тоже учтутся в $/час.
+          ✓ Час записано. Додані операції також врахуються в $/год.
         </p>
       )}
     </div>

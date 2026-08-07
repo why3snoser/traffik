@@ -74,7 +74,7 @@ export default function Sidebar() {
             <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>Total earned</p>
           </div>
           <p className="text-2xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
-          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{workers.length} workers</p>
+          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{workers.length} {workers.length === 1 ? 'member' : 'members'}</p>
         </div>
         <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(216,210,245,0.35)' }}>TRAFFIK v1.0</p>
       </div>

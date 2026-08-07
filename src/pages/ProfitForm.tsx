@@ -89,7 +89,7 @@ export default function ProfitForm() {
             </div>
             <div className="flex flex-col gap-1.5 text-sm">
               <div className="flex justify-between text-text-muted">
-                <span>Profit</span>
+                <span>Сума</span>
                 <span>{amountNum.toLocaleString('en-US')} ₽</span>
               </div>
               <div className="flex justify-between text-text-muted">
