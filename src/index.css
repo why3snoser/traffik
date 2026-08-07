@@ -198,6 +198,27 @@ button.glass-light:hover {
 }
 .fade-up { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* ── Goal cards (Profile) — hover-driven animations ───────────── */
+@keyframes goalRingSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes goalGlowPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.06); }
+}
+@keyframes goalFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.goal-ring  { animation: goalRingSpin 12s linear infinite;   animation-play-state: paused; }
+.goal-glow  { animation: goalGlowPulse 3.2s ease-in-out infinite; animation-play-state: paused; }
+.goal-float { animation: goalFloat 2.8s ease-in-out infinite; animation-play-state: paused; }
+
+.group:hover .goal-ring,
+.group:hover .goal-glow,
+.group:hover .goal-float { animation-play-state: running; }
+
 /* ── Utilities ──────────────────────────────────────────────────── */
 @layer utilities {
 

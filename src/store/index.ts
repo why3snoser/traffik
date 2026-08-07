@@ -43,7 +43,7 @@ function saveWS(d: PersistedWS) {
 
 const DEFAULT_SETTINGS = { rubToUsd: 90, usdToUah: 43.70, language: 'en' as const }
 
-const DEFAULT_GOALS = [
+const DEFAULT_GOALS: Goal[] = [
   {
     id: 'goal-iphone',
     title: 'iPhone 17 Pro Max',
@@ -51,28 +51,48 @@ const DEFAULT_GOALS = [
     targetAmount: 1300,
     savedAmount: 0,
     color: '#7c5cfc',
-    imageUrl: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80',
+    imageUrl: '/goals/iphone-17-cutout.png?v=2',
+    imageScale: 1.25,
     description: 'iPhone 17 Pro Max · 256GB',
   },
   {
-    id: 'goal-bmw',
-    title: 'BMW 328 Xi 2015',
-    emoji: '🚗',
-    targetAmount: 5500,
+    id: 'goal-macbook',
+    title: 'MacBook Pro 16',
+    emoji: '💻',
+    targetAmount: 3200,
     savedAmount: 0,
     color: '#60a5fa',
-    imageUrl: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80',
-    description: '2015 · 67 093 км · 2.0л · $5,500',
+    imageUrl: '/goals/macbook-pro-16.png?v=2',
+    imageScale: 1.6,
+    description: 'MacBook Pro 16 · M4 Max · 48GB · 1TB',
   },
   {
-    id: 'goal-apt',
-    title: '2-комн. квартира',
-    emoji: '🏠',
-    targetAmount: 45000,
+    id: 'goal-earbuds',
+    title: 'AirPods Pro',
+    emoji: '🎧',
+    targetAmount: 300,
     savedAmount: 0,
     color: '#22d3a5',
-    imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-    description: 'Ивано-Франковск · 2 комнаты',
+    imageUrl: 'https://ik.imagekit.io/kqmrslzuq/SOUND/right-earbud.png',
+    description: 'AirPods Pro · Spatial Audio · Active Noise Cancellation',
+    variants: [
+      {
+        id: 'left',
+        label: 'Left',
+        title: 'Spatial Anchor',
+        description: 'The primary node for binaural synchronization. Handles low-latency transmission and anchors the spatial audio soundstage.',
+        image: 'https://ik.imagekit.io/kqmrslzuq/SOUND/left-earbud.png',
+        color: '#3b82f6',
+      },
+      {
+        id: 'right',
+        label: 'Right',
+        title: 'Vocal Clarity',
+        description: 'Optimized for high-frequency detail and voice pickup. Contains the beamforming microphone array for crystal clear calls.',
+        image: 'https://ik.imagekit.io/kqmrslzuq/SOUND/right-earbud.png',
+        color: '#10b981',
+      },
+    ],
   },
   {
     id: 'goal-angelina',
@@ -82,6 +102,8 @@ const DEFAULT_GOALS = [
     savedAmount: 0,
     color: '#f472b6',
     imageUrl: 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
+    imageFit: 'cover',
+    imagePosition: 'center',
     description: 'Цель мечты',
   },
 ]
@@ -160,6 +182,9 @@ interface AppState {
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>
   deleteGoal: (id: string) => Promise<void>
   addToGoal: (id: string, amount: number) => Promise<void>
+
+  openedGoalId: string | null
+  setOpenedGoalId: (id: string | null) => void
 
   setWorkerAvatar: (workerId: string, url: string) => Promise<void>
 
@@ -242,11 +267,40 @@ export const useStore = create<AppState>()((set, get) => ({
       if (profile.goals.length === 0) {
         profile.goals = DEFAULT_GOALS
       } else {
-        // Always sync imageUrl/description from DEFAULT_GOALS (in case they were updated)
+        // Rename legacy goals whose default was replaced (e.g. BMW → MacBook)
+        const legacyRenames: Record<string, string> = { 'goal-bmw': 'goal-macbook', 'goal-apt': 'goal-earbuds' }
+        const seen = new Set<string>()
+        profile.goals = profile.goals
+          .map(g => {
+            const renamed = legacyRenames[g.id]
+            if (renamed) {
+              const def = DEFAULT_GOALS.find(d => d.id === renamed)
+              return def ? { ...def, savedAmount: g.savedAmount } : g
+            }
+            return g
+          })
+          .filter(g => {
+            if (seen.has(g.id)) return false
+            seen.add(g.id)
+            return true
+          })
+        // Always sync imageUrl/description/variants/fit from DEFAULT_GOALS (in case they were updated)
         profile.goals = profile.goals.map(g => {
           const def = DEFAULT_GOALS.find(d => d.id === g.id)
           if (def && g.imageUrl !== def.imageUrl) {
             return { ...g, imageUrl: def.imageUrl }
+          }
+          if (def && JSON.stringify(def.variants ?? null) !== JSON.stringify(g.variants ?? null)) {
+            return { ...g, variants: def.variants }
+          }
+          if (def && (g.imageFit ?? null) !== (def.imageFit ?? null)) {
+            return { ...g, imageFit: def.imageFit }
+          }
+          if (def && (g.imagePosition ?? null) !== (def.imagePosition ?? null)) {
+            return { ...g, imagePosition: def.imagePosition }
+          }
+          if (def && (g.imageScale ?? null) !== (def.imageScale ?? null)) {
+            return { ...g, imageScale: def.imageScale }
           }
           return g
         })
@@ -513,6 +567,9 @@ export const useStore = create<AppState>()((set, get) => ({
       return { profile: newProfile }
     })
   },
+
+  openedGoalId: null,
+  setOpenedGoalId: (id) => set({ openedGoalId: id }),
 
   // ── Worker avatars ───────────────────────────────────────────────────
   setWorkerAvatar: async (workerId, url) => {

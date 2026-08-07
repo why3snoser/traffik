@@ -74,6 +74,15 @@ export interface ProfitEntry {
   createdAt: string
 }
 
+export interface GoalVariant {
+  id: string          // e.g. 'left' | 'right'
+  label: string       // Display name for the switcher (e.g. 'Left')
+  title: string
+  description: string
+  image: string
+  color: string       // Accent color for this variant
+}
+
 export interface Goal {
   id: string
   title: string
@@ -83,7 +92,10 @@ export interface Goal {
   color: string
   imageUrl?: string
   imagePosition?: string
+  imageFit?: 'contain' | 'cover'  // contain = transparent cutout, cover = photo fills circle
+  imageScale?: number             // per-goal visual scale (normalizes different aspect ratios)
   description?: string
+  variants?: GoalVariant[]  // Sub-products that the switcher toggles between (like Left/Right earbuds)
 }
 
 export interface Settings {
