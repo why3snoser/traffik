@@ -118,9 +118,9 @@ export default function AnketaDetail() {
 
   const handleImportPremium = async () => {
     if (!premImportText.trim()) return
-    const msg = await importAppleIds(premImportText)
-    setPremImportMsg(msg)
-    if (msg.startsWith('Imported')) setPremImportText('')
+    const count = await importAppleIds(premImportText)
+    setPremImportMsg(count > 0 ? t('apple_import_ok')(count) : t('apple_import_fail'))
+    if (count > 0) setPremImportText('')
     setTimeout(() => setPremImportMsg(''), 2500)
   }
 
@@ -371,7 +371,7 @@ export default function AnketaDetail() {
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Gift size={12} className="text-accent-light" />
-                            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-light">Subscription attached</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-accent-light">{t('subscription_attached')}</span>
                           </div>
                           <button
                             onClick={() => removeAppleIdFromCity(anketa.id, city.id)}
@@ -622,7 +622,7 @@ export default function AnketaDetail() {
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-text">Subscription accounts</h3>
+              <h3 className="text-lg font-bold text-text">{t('subscription_accounts')}</h3>
               <button onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }} className="text-text-muted">
                 <X size={18} />
               </button>

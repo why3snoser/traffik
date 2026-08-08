@@ -1,7 +1,9 @@
 ﻿import { useState, useEffect, useRef, useMemo } from 'react'
 import { Plus, Target, Zap, Settings, Trash2, Copy, Key, Mail, Link2, Import } from 'lucide-react'
 import { useStore } from '@/store'
+import { CreditCard } from '@/components/CreditCard'
 import { GoalShowcaseCard } from '@/components/GoalShowcaseCard'
+import { LanguageSelector } from '@/components/LanguageSelector'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
 
@@ -120,9 +122,9 @@ export default function Profile() {
 
   const handleImportAppleIds = async () => {
     if (!appleImportText.trim()) return
-    const msg = await importAppleIds(appleImportText)
-    setAppleImportMsg(msg)
-    if (msg.startsWith('Импорт')) setAppleImportText('')
+    const count = await importAppleIds(appleImportText)
+    setAppleImportMsg(count > 0 ? t('apple_import_ok')(count) : t('apple_import_fail'))
+    if (count > 0) setAppleImportText('')
     setTimeout(() => setAppleImportMsg(''), 2500)
   }
 
@@ -151,7 +153,7 @@ export default function Profile() {
 
         <div className="mb-1.5 flex justify-between text-xs text-white/60 relative">
           <span>{levelInfo.currentXp.toLocaleString()} ₴</span>
-          <span>{levelInfo.neededXp.toLocaleString()} ₴ to lvl {levelInfo.level + 1}</span>
+          <span>{levelInfo.neededXp.toLocaleString()} ₴ {t('level_to_next')(levelInfo.level + 1)}</span>
         </div>
         <div className="h-1.5 bg-black/30 rounded-full overflow-hidden mb-4 relative">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#8B7DCC', boxShadow: '0 0 8px rgba(139,125,204,0.6)' }} />
@@ -160,51 +162,7 @@ export default function Profile() {
       </div>
 
       {/* Balance Card */}
-      <div className="rounded-[28px] p-6 mb-6 relative overflow-hidden" style={{
-        background: 'linear-gradient(150deg, #1E1B2B 0%, #14121C 45%, #0B0A10 100%)',
-        border: '1px solid rgba(216,210,245,0.14)',
-        boxShadow: '0 0 0 1px rgba(139,125,204,0.06), 0 24px 60px -20px rgba(0,0,0,0.7), 0 0 42px rgba(139,125,204,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
-        minHeight: 178,
-      }}>
-        {/* Decorative rings */}
-        <div className="absolute -right-14 -top-14 w-60 h-60 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.28) 0%, transparent 65%)' }} />
-        <div className="absolute right-6 -bottom-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,190,255,0.16) 0%, transparent 70%)' }} />
-        <div className="absolute -right-6 top-2 w-44 h-44 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.12)' }} />
-        <div className="absolute right-4 -top-4 w-56 h-56 rounded-full pointer-events-none" style={{ border: '1px solid rgba(216,210,245,0.07)' }} />
-        <div className="absolute -left-20 top-1/3 w-56 h-56 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.12) 0%, transparent 70%)' }} />
-
-        <div className="relative flex flex-col h-full">
-          {/* Top: chip + logo */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="w-10 h-7 rounded-md flex overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(232,206,128,0.85), rgba(196,166,90,0.55))', border: '1px solid rgba(255,220,150,0.35)', boxShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>
-              <div className="w-1/2 h-full" style={{ borderRight: '1px solid rgba(0,0,0,0.25)' }} />
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="neon-dot neon-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.85)' }}>TRAFFIK</span>
-            </div>
-          </div>
-
-          {/* Balance */}
-          <div className="mb-5">
-            <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(216,210,245,0.55)' }}>Загальний баланс</p>
-            <p className="text-4xl font-bold text-white tracking-tight num-pop" style={{ textShadow: '0 0 24px rgba(139,125,204,0.35)' }}>{fmtUsd(totalUsd)}</p>
-            <p className="text-sm mt-1" style={{ color: 'rgba(200,220,255,0.5)' }}>{fmtUah(totalUah)}</p>
-          </div>
-
-          {/* Bottom: name + level */}
-          <div className="flex items-end justify-between mt-auto">
-            <div>
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.45)' }}>HOLDER</p>
-              <p className="text-sm font-bold text-white uppercase tracking-wide">{profile.name}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[9px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(216,210,245,0.45)' }}>LEVEL</p>
-              <p className="text-sm font-bold" style={{ color: '#A596E8', textShadow: '0 0 12px rgba(139,125,204,0.5)' }}>LVL {levelInfo.level}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CreditCard balancePrimary={fmtUsd(totalUsd)} balanceSecondary={fmtUah(totalUah)} />
 
       {/* Goals */}
       <div className="flex items-center justify-between mb-4 px-1">
@@ -221,7 +179,7 @@ export default function Profile() {
       {profile.goals.length === 0 ? (
         <div className="glass-light rounded-2xl p-10 flex flex-col items-center gap-3 text-center">
           <div className="w-14 h-14 rounded-2xl glass-light flex items-center justify-center text-2xl">🎯</div>
-          <p className="text-text-muted text-sm">Нет целей. Добавь первую!</p>
+          <p className="text-text-muted text-sm">{t('goals_empty')}</p>
           <button onClick={() => setShowAddGoal(true)} className="btn-gradient px-5 py-2.5 rounded-xl text-sm font-semibold shadow-glow-sm">
             {t('goals_add')}
           </button>
@@ -247,7 +205,9 @@ export default function Profile() {
       {showAddGoal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddGoal(false)}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop" onClick={e => e.stopPropagation()}>
+          {/* Bottom-anchored, so anything past the viewport height runs off the
+              top edge out of reach — the sheet scrolls instead. */}
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop max-h-[88dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('new_goal')}</h3>
             <div className="flex flex-col gap-4">
@@ -261,7 +221,7 @@ export default function Profile() {
               <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder={t('goal_image_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
               {goalImageUrl.trim() && (
                 <div>
-                  <p className="text-xs text-text-muted mb-2">Фокус фото</p>
+                  <p className="text-xs text-text-muted mb-2">{t('goal_photo_focus')}</p>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
                       'left top',    'center top',    'right top',
@@ -302,7 +262,7 @@ export default function Profile() {
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowSettings(false)}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop" onClick={e => e.stopPropagation()}>
+          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop max-h-[88dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold text-white mb-5">{t('settings_title')}</h3>
             <div className="flex flex-col gap-4">
@@ -316,22 +276,15 @@ export default function Profile() {
               </div>
               <div>
                 <label className="text-xs text-text-muted mb-2 block">{t('settings_language')}</label>
-                <div className="flex gap-2">
-                  {(['en', 'uk'] as const).map(lang => (
-                    <button key={lang} onClick={() => updateSettings({ language: lang })}
-                      className={`flex-1 py-3 rounded-2xl text-sm font-semibold border transition-all ${profile.settings.language === lang ? 'bg-accent border-accent/40 text-white' : 'bg-card border-border text-text-muted'}`}>
-                      {lang === 'en' ? '🇬🇧 English' : '🇺🇦 Українська'}
-                    </button>
-                  ))}
-                </div>
+                <LanguageSelector />
               </div>
 
               {/* Apple ID Management */}
               <div>
-                <label className="text-xs text-text-muted mb-2 block">Apple ID для премиума</label>
+                <label className="text-xs text-text-muted mb-2 block">{t('apple_title')}</label>
                 <div className="bg-card border border-border rounded-2xl p-3 mb-3 max-h-56 overflow-y-auto">
                   {(profile.appleIds ?? []).length === 0 ? (
-                    <p className="text-xs text-text-muted text-center py-2">Нет сохраненных Apple ID</p>
+                    <p className="text-xs text-text-muted text-center py-2">{t('apple_empty')}</p>
                   ) : (
                     <div className="space-y-2">
                       {(profile.appleIds ?? []).map(appleId => {
@@ -342,9 +295,9 @@ export default function Profile() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
-                                    {occupied ? 'Занята' : 'Свободна'}
+                                    {occupied ? t('apple_busy') : t('apple_free')}
                                   </span>
-                                  <span className="text-[10px] text-text-muted">{occupied ? 'привязана к городу' : 'доступна'}</span>
+                                  <span className="text-[10px] text-text-muted">{occupied ? t('apple_bound_city') : t('apple_available')}</span>
                                 </div>
                                 <p className="text-xs font-mono text-text mt-1 truncate" title={appleId.email}>{appleId.email}</p>
                               </div>
@@ -369,7 +322,7 @@ export default function Profile() {
                                 onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
                                 className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
                               >
-                                <Key size={11} /> Пароль
+                                <Key size={11} /> {t('apple_password')}
                                 {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
                               </button>
                               {appleId.mailPassword && (
@@ -377,7 +330,7 @@ export default function Profile() {
                                   onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
                                   className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
                                 >
-                                  <Mail size={11} /> Почта
+                                  <Mail size={11} /> {t('apple_mail')}
                                   {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
                                 </button>
                               )}
@@ -388,7 +341,7 @@ export default function Profile() {
                                   rel="noreferrer"
                                   className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
                                 >
-                                  <Link2 size={11} /> Код
+                                  <Link2 size={11} /> {t('apple_code')}
                                 </a>
                               )}
                             </div>
@@ -404,7 +357,7 @@ export default function Profile() {
                   <textarea
                     value={appleImportText}
                     onChange={e => setAppleImportText(e.target.value)}
-                    placeholder={'Вставь список:\nПочта: ...\nПароль: ...\nПароль от почты: ...\nузнать код: https://...'}
+                    placeholder={t('apple_import_placeholder')}
                     rows={3}
                     className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
                   />
@@ -415,7 +368,7 @@ export default function Profile() {
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
                   >
                     <Import size={12} />
-                    Импортировать список
+                    {t('apple_import_btn')}
                   </button>
                 </div>
 
@@ -432,7 +385,7 @@ export default function Profile() {
                     type="password"
                     value={newApplePassword}
                     onChange={e => setNewApplePassword(e.target.value)}
-                    placeholder="Пароль"
+                    placeholder={t('apple_password')}
                     className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
                   />
                   <button
@@ -441,7 +394,7 @@ export default function Profile() {
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
                   >
                     <Plus size={12} />
-                    Добавить Apple ID
+                    {t('apple_add_btn')}
                   </button>
                 </div>
               </div>

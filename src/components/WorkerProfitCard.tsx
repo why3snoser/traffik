@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import type { Worker, ProfitEntry } from '@/types'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, fmtRub, getLevelInfo } from '@/types'
+import { INTL_LOCALE, useLang } from '@/i18n'
 
 interface WorkerProfitCardProps {
   worker: Worker
@@ -16,7 +17,7 @@ export function WorkerProfitCard({ worker, entry, label, r2u, u2ua }: WorkerProf
   const workerUah = usdToUah(rubToUsd(worker.totalProfit, r2u), u2ua)
   const level = getLevelInfo(workerUah).level
 
-  const time = new Date(entry.createdAt).toLocaleTimeString('uk-UA', {
+  const time = new Date(entry.createdAt).toLocaleTimeString(INTL_LOCALE[useLang()], {
     hour: '2-digit',
     minute: '2-digit',
   })

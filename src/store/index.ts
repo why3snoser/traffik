@@ -101,9 +101,13 @@ const DEFAULT_GOALS: Goal[] = [
     targetAmount: 10000,
     savedAmount: 0,
     color: '#f472b6',
-    imageUrl: 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
-    imageFit: 'cover',
-    imagePosition: 'center',
+    // Background-free cutout, so this goal now behaves like the iPhone and the
+    // MacBook: round frame, contained artwork, no special photo treatment.
+    imageUrl: '/goals/angelina.png?v=1',
+    // Bounding-box math caps a 0.461 ratio at ~1.29 inside the round mask, but
+    // this cutout's corners are transparent — only the jeans reach wide, and at
+    // 1.35 their bottom corners land at 49% of the 50% radius.
+    imageScale: 1.35,
     description: 'Цель мечты',
     variants: [
       {
@@ -111,7 +115,7 @@ const DEFAULT_GOALS: Goal[] = [
         label: 'Фото 1',
         title: 'Ангелина 💕',
         description: 'Цель мечты',
-        image: 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
+        image: '/goals/angelina.png?v=1',
         color: '#f472b6',
       },
       {
@@ -121,10 +125,37 @@ const DEFAULT_GOALS: Goal[] = [
         description: 'Цель мечты',
         image: 'https://i.ibb.co/1G0Kr3Gq/photo-2026-04-23-03-03-04.jpg',
         color: '#ec4899',
+        // Still an uncropped photo — keep the frameless, edge-dissolved
+        // treatment for this one only.
+        imageFit: 'cover',
       },
     ],
   },
 ]
+
+/**
+ * Artwork that has been replaced since it was first seeded, keyed by goal id.
+ *
+ * A saved goal that carries an image is otherwise treated as user-customized and
+ * never touched (see the healing pass in `init`). Matching on the *exact* image
+ * being retired keeps that promise: only a goal still showing the old artwork is
+ * re-synced, and a goal the user re-imaged themselves is left alone.
+ */
+const RETIRED_GOAL_IMAGES: Record<string, string> = {
+  'goal-angelina': 'https://i.postimg.cc/CLGnK9W0/photo-2026-04-06-03-06-26.jpg',
+}
+
+/** Re-sync just the fields that decide how a goal is drawn; progress is kept. */
+function withDefaultArtwork(goal: Goal, def: Goal): Goal {
+  return {
+    ...goal,
+    imageUrl: def.imageUrl,
+    imageFit: def.imageFit,
+    imageScale: def.imageScale,
+    imagePosition: def.imagePosition,
+    variants: def.variants,
+  }
+}
 
 const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
   { email: 'vimijadumobi39@gmail.com', password: '3Bq4vmd2' },
@@ -151,6 +182,19 @@ const DEFAULT_PROFILE: UserProfile = {
   goals: DEFAULT_GOALS,
   settings: DEFAULT_SETTINGS,
   appleIds: DEFAULT_APPLE_IDS,
+}
+
+/** What the payment ticket overlay renders after a profit is recorded. */
+export interface TicketData {
+  id: string
+  /** My share of the deal, in USD — the headline figure on the ticket. */
+  amountUsd: number
+  /** The same share in UAH, shown underneath. */
+  amountUah: number
+  /** Raw deal size in RUB, as entered. */
+  amountRub: number
+  workerName: string
+  createdAt: string
 }
 
 interface AppState {
@@ -196,6 +240,10 @@ interface AppState {
   addProfit: (workerId: string, amount: number, type: ProfitType, note?: string, anketaId?: string) => Promise<void>
   deleteProfit: (id: string) => Promise<void>
 
+  /** Receipt for the profit just recorded; the overlay clears it when it closes. */
+  ticket: TicketData | null
+  dismissTicket: () => void
+
   addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>
   updateGoal: (id: string, updates: Partial<Goal>) => Promise<void>
   deleteGoal: (id: string) => Promise<void>
@@ -210,7 +258,8 @@ interface AppState {
   removeAppleIdFromCity: (anketaId: string, cityId: string) => Promise<void>
 
   addAppleId: (appleId: AppleIdEntry) => Promise<void>
-  importAppleIds: (raw: string) => Promise<string>
+  /** Number of accounts imported; `0` means the paste could not be parsed. */
+  importAppleIds: (raw: string) => Promise<number>
   removeAppleId: (email: string) => Promise<void>
 
   updateSettings: (s: Partial<UserProfile['settings']>) => Promise<void>
@@ -245,6 +294,7 @@ export const useStore = create<AppState>()((set, get) => ({
   workerTime: loadWS().workerTime,
   workerBaseline: loadWS().workerBaseline,
   workerTimers: loadWS().workerTimers,
+  ticket: null,
 
   // ── Load all data from Supabase ──────────────────────────────────────
   initialize: async () => {
@@ -300,6 +350,13 @@ export const useStore = create<AppState>()((set, get) => ({
         const placeholderRenames: Record<string, string> = { 'goal-bmw': 'goal-macbook', 'goal-apt': 'goal-earbuds' }
         profile.goals = profile.goals
           .map(g => {
+            // Retired artwork is refreshed even though the goal has an image —
+            // it is our old image, not one the user chose.
+            const retired = RETIRED_GOAL_IMAGES[g.id]
+            if (retired && g.imageUrl === retired) {
+              const def = DEFAULT_GOALS.find(d => d.id === g.id)
+              if (def) return withDefaultArtwork(g, def)
+            }
             if (g.imageUrl) return g
             const renamed = placeholderRenames[g.id]
             if (renamed) {
@@ -512,12 +569,20 @@ export const useStore = create<AppState>()((set, get) => ({
       const { level } = getLevelInfo(totalUah)
       const newProfile = { ...s.profile, totalEarned: newTotalEarned, xp: Math.floor(totalUah), level }
       saveProfile(newProfile)
+      const shareUsd = rubToUsd(myShare, s.profile.settings.rubToUsd)
       return {
         profits: [entry, ...s.profits],
         workers: s.workers.map(w => w.id === workerId ? { ...w, totalProfit: w.totalProfit + myShare } : w),
         profile: newProfile,
+        ticket: {
+          id: entry.id,
+          amountUsd: shareUsd,
+          amountUah: usdToUah(shareUsd, s.profile.settings.usdToUah),
+          amountRub: amount,
+          workerName: s.workers.find(w => w.id === workerId)?.name ?? '',
+          createdAt: entry.createdAt,
+        },
       }
-
     })
     await supabase.from('profits').insert({
       id: entry.id, worker_id: workerId, anketa_id: anketaId ?? null,
@@ -526,6 +591,8 @@ export const useStore = create<AppState>()((set, get) => ({
     })
     await supabase.from('workers').update({ total_profit: get().workers.find(w => w.id === workerId)?.totalProfit ?? 0 }).eq('id', workerId)
   },
+
+  dismissTicket: () => set({ ticket: null }),
 
   deleteProfit: async (id) => {
     const entry = get().profits.find(p => p.id === id)
@@ -628,7 +695,7 @@ export const useStore = create<AppState>()((set, get) => ({
 
   importAppleIds: async (raw) => {
     const accounts = parseAppleIds(raw)
-    if (accounts.length === 0) return 'Could not recognize accounts. Check the format.'
+    if (accounts.length === 0) return 0
     set(s => {
       const existing = new Set((s.profile.appleIds ?? []).map(id => id.email))
       const newOnes = accounts.filter(a => !existing.has(a.email))
@@ -639,7 +706,7 @@ export const useStore = create<AppState>()((set, get) => ({
       saveProfile(newProfile)
       return { profile: newProfile }
     })
-    return `Imported ${accounts.length} account${accounts.length === 1 ? '' : 's'}`
+    return accounts.length
   },
 
   removeAppleId: async (email) => {

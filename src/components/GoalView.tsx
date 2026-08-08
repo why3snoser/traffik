@@ -489,8 +489,11 @@ export default function GoalView({ goalId }: { goalId: string }) {
       ?? current.description
       ?? t('goal_desc_fallback'),
     image: activeVariant?.image ?? current.imageUrl,
-    imagePosition: activeVariant ? undefined : current.imagePosition,
-    imageFit: current.imageFit,
+    // A variant may carry artwork of a different kind than the goal's own — a
+    // cutout beside a plain photo — so it gets to override the fit it is drawn
+    // with, falling back to the goal when it does not care.
+    imagePosition: activeVariant ? activeVariant.imagePosition : current.imagePosition,
+    imageFit: activeVariant?.imageFit ?? current.imageFit,
     imageScale: activeVariant ? undefined : current.imageScale,
     color: activeVariant?.color ?? current.color ?? '#8B7DCC',
     stats: {

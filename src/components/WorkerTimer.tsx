@@ -2,6 +2,7 @@
 import { Play, Square, RotateCcw, Timer as TimerIcon } from 'lucide-react'
 import { useStore } from '@/store'
 import { rubToUsd, fmtUsd } from '@/types'
+import { useT } from '@/i18n'
 
 function fmtTime(ms: number): string {
   const total = Math.floor(ms / 1000)
@@ -13,16 +14,20 @@ function fmtTime(ms: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
-function fmtDur(ms: number): string {
-  const h = Math.floor(ms / 3600000)
-  const m = Math.round((ms % 3600000) / 60000)
-  if (h > 0) return `${h}ч ${m}мин`
-  if (m > 0) return `${m}мин`
-  return `${Math.max(1, Math.round(ms / 1000))}с`
-}
-
 export default function WorkerTimer({ workerId }: { workerId: string }) {
+  const t = useT()
   const { workers, workerTimers, workerTime, workerBaseline, startWorkerSession, stopWorkerSession, discardWorkerSession, profile } = useStore()
+
+  // Unit suffixes are localized, so the formatter has to live inside the
+  // component where `t` is available.
+  const fmtDur = (ms: number): string => {
+    const h = Math.floor(ms / 3600000)
+    const m = Math.round((ms % 3600000) / 60000)
+    if (h > 0) return t('dur_hm')(h, m)
+    if (m > 0) return t('dur_m')(m)
+    return t('dur_s')(Math.max(1, Math.round(ms / 1000)))
+  }
+
   const { rubToUsd: r2u } = profile.settings
   const [now, setNow] = useState(Date.now())
   const [justStopped, setJustStopped] = useState(false)
@@ -68,7 +73,7 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
         <div className="flex items-center gap-2">
           <TimerIcon size={14} style={{ color: running ? '#A596E8' : undefined }} className={running ? 'animate-pulse' : ''} />
           <span className="text-xs font-bold uppercase tracking-widest" style={{ color: running ? '#A596E8' : 'rgba(164,164,179,0.6)' }}>
-            {running ? 'Сессия идёт' : 'Таймер работы'}
+            {running ? t('timer_running') : t('timer_idle')}
           </span>
         </div>
         <span className="font-mono font-bold text-lg tabular-nums" style={{ color: running ? '#fff' : '#eef3ff' }}>
@@ -82,14 +87,14 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
             onClick={() => { stopWorkerSession(workerId); setJustStopped(true) }}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white btn-gradient active:scale-95"
           >
-            <Square size={12} fill="#fff" /> Завершить
+            <Square size={12} fill="#fff" /> {t('timer_stop')}
           </button>
         ) : (
           <button
             onClick={() => startWorkerSession(workerId)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white btn-gradient active:scale-95"
           >
-            <Play size={12} fill="#fff" /> Начать сессию
+            <Play size={12} fill="#fff" /> {t('timer_start')}
           </button>
         )}
 
@@ -98,18 +103,18 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
             <span className="text-[11px] text-text-muted">
               {earningsUsd > 0 ? (
                 <>
-                  <span className="font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earningsUsd)}</span> за {fmtDur(totalMs)}
+                  <span className="font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earningsUsd)}</span> {t('timer_for')(fmtDur(totalMs))}
                 </>
               ) : (
-                <>за {fmtDur(totalMs)} поки без операцій</>
+                <>{t('timer_no_ops')(fmtDur(totalMs))}</>
               )}
               {rate > 0 && (
-                <span className="font-bold ml-1.5" style={{ color: '#8B7DCC' }}>{fmtUsd(rate)}/час</span>
+                <span className="font-bold ml-1.5" style={{ color: '#8B7DCC' }}>{t('per_hour')(fmtUsd(rate))}</span>
               )}
             </span>
             <button
               onClick={() => discardWorkerSession(workerId)}
-              title="Сбросить время"
+              title={t('timer_reset')}
               className="w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-danger active:scale-90"
             >
               <RotateCcw size={13} />
@@ -120,13 +125,13 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
 
       {!running && totalMs === 0 && (
         <p className="text-[11px] text-text-muted mt-2">
-          Додавай профілі та операції — і дізнаєшся, скільки $ приносить година роботи.
+          {t('timer_hint')}
         </p>
       )}
 
       {justStopped && !running && (
         <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#A596E8' }}>
-          ✓ Час записано. Додані операції також врахуються в $/год.
+          {t('timer_saved')}
         </p>
       )}
     </div>

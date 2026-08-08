@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronUp, ChevronDown, Calendar, MoreHorizontal, TrendingUp, ArrowRight } from 'lucide-react'
+import { ChevronUp, ChevronDown, MoreHorizontal, TrendingUp, ArrowRight } from 'lucide-react'
 import { useStore } from '@/store'
-import { PROFIT_LABELS, rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
+import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useNavigate } from 'react-router-dom'
-import { ProfitCard } from '@/components/ProfitCard'
+import { INTL_LOCALE, useLang, useT } from '@/i18n'
+import { TransactionList } from '@/components/TransactionList'
 
 function startOf(unit: 'day' | 'week' | 'month') {
   const d = new Date()
@@ -26,6 +27,8 @@ const itemVariants = {
 export default function Finance() {
   const { profits, workers, profile } = useStore()
   const navigate = useNavigate()
+  const t = useT()
+  const locale = INTL_LOCALE[useLang()]
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
 
   const stats = useMemo(() => {
@@ -41,15 +44,11 @@ export default function Finance() {
     }
   }, [profits, r2u])
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, typeof profits>()
-    profits.forEach(p => {
-      const date = new Date(p.createdAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' })
-      if (!map.has(date)) map.set(date, [])
-      map.get(date)!.push(p)
-    })
-    return Array.from(map.entries())
-  }, [profits])
+  // The list reads newest-first; `profits` order from the store is not guaranteed.
+  const recent = useMemo(
+    () => [...profits].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [profits],
+  )
 
   const workerMap = useMemo(() =>
     new Map(workers.map(w => [w.id, w])), [workers])
@@ -62,40 +61,40 @@ export default function Finance() {
     profits.filter(p => p.workerId === workerId).length
 
   const isPositive = stats.today >= 0
-  const asOf = new Date().toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' })
+  const asOf = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8 max-w-2xl">
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         {/* ── Header — portfolio gain ─────────────────────────────────── */}
-        <motion.div variants={itemVariants} className="glass-light rounded-[22px] p-6 relative overflow-hidden">
+        <motion.div variants={itemVariants} className="glass-light rounded-[22px] p-5 sm:p-6 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.25) 0%, transparent 65%)' }} />
           <div className="absolute right-4 -bottom-8 w-36 h-36 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(90,200,250,0.12) 0%, transparent 70%)' }} />
 
           <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
-              <p className="text-xs uppercase tracking-widest text-text-muted mb-1">Загальний дохід</p>
-              <h2 className="text-4xl font-bold tracking-tight gradient-text num-pop tabular-nums">
+              <p className="text-xs uppercase tracking-widest text-text-muted mb-1">{t('fin_total_income')}</p>
+              <h2 className="text-[2rem] sm:text-4xl font-bold tracking-tight gradient-text num-pop tabular-nums">
                 {fmtUsd(stats.total)}
               </h2>
               <div className={`mt-1.5 flex items-center gap-1.5 text-sm font-medium ${isPositive ? 'text-success' : 'text-danger'}`}>
                 {isPositive ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                +{fmtUsd(stats.today)} <span className="text-text-muted">today</span>
+                +{fmtUsd(stats.today)} <span className="text-text-muted">{t('fin_today_suffix')}</span>
               </div>
             </div>
-            <p className="text-xs text-text-muted mt-2 sm:mt-0">As of {asOf}</p>
+            <p className="text-xs text-text-muted mt-2 sm:mt-0">{t('fin_as_of')(asOf)}</p>
           </div>
 
           {/* Mini stat row */}
           <div className="relative grid grid-cols-3 gap-2 mt-5">
             {[
-              { label: 'Week', usd: stats.week },
-              { label: 'Month', usd: stats.month },
-              { label: 'All time', usd: stats.total },
+              { label: t('stat_week'), usd: stats.week },
+              { label: t('stat_month'), usd: stats.month },
+              { label: t('stat_all_time'), usd: stats.total },
             ].map(({ label, usd }) => (
-              <div key={label} className="rounded-xl px-3 py-2.5 text-center" style={{ background: 'rgba(139,125,204,0.08)', border: '1px solid rgba(139,125,204,0.15)' }}>
+              <div key={label} className="rounded-xl px-2 sm:px-3 py-2.5 text-center" style={{ background: 'rgba(139,125,204,0.08)', border: '1px solid rgba(139,125,204,0.15)' }}>
                 <p className="text-[9px] uppercase tracking-widest text-text-muted mb-1">{label}</p>
-                <p className="text-sm font-bold text-white tabular-nums">{fmtUsd(usd)}</p>
+                <p className="text-[13px] sm:text-sm font-bold text-white tabular-nums">{fmtUsd(usd)}</p>
               </div>
             ))}
           </div>
@@ -105,12 +104,12 @@ export default function Finance() {
         {activeWorkers.length > 0 && (
           <motion.div variants={itemVariants} className="glass-light rounded-[22px] p-5">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-lg font-semibold text-text">Учасники</h3>
+              <h3 className="text-lg font-semibold text-text">{t('fin_members')}</h3>
               <button className="text-text-muted hover:text-text">
                 <MoreHorizontal className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-xs text-text-muted mb-2">Дохід по кожному учаснику</p>
+            <p className="text-xs text-text-muted mb-2">{t('fin_per_member')}</p>
 
             <div className="divide-y divide-white/[0.06]">
               {activeWorkers.map(w => {
@@ -131,7 +130,7 @@ export default function Finance() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-text truncate">{w.name}</p>
-                        <p className="text-xs text-text-muted tabular-nums">{workerProfitsCount(w.id)} {workerProfitsCount(w.id) === 1 ? 'операція' : 'операцій'}</p>
+                        <p className="text-xs text-text-muted tabular-nums">{workerProfitsCount(w.id)} {t('fin_ops_count')(workerProfitsCount(w.id))}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -148,60 +147,37 @@ export default function Finance() {
           </motion.div>
         )}
 
-        {/* ── Related news — profit history ───────────────────────────── */}
+        {/* ── Profit history — expandable transaction rows ─────────────── */}
         <motion.div variants={itemVariants} className="glass-light rounded-[22px] p-5">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-lg font-semibold text-text">Історія</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-text">{t('fin_history')}</h3>
             <span className="text-xs text-text-muted bg-white/[0.04] border border-white/10 px-2 py-1 rounded-lg tabular-nums">
-              {profits.length} {profits.length === 1 ? 'запис' : 'записів'}
+              {t('fin_records')(profits.length)}
             </span>
           </div>
 
-          {grouped.length === 0 ? (
+          {recent.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-muted">
               <div className="w-14 h-14 rounded-2xl glass-light flex items-center justify-center text-2xl">📊</div>
-              <p className="text-sm">Немає записів. Відкрий учасника і додай операцію.</p>
+              <p className="text-sm text-center">{t('fin_empty')}</p>
             </div>
           ) : (
-            <div className="mt-3 flex flex-col gap-4 max-h-[520px] overflow-y-auto pr-1">
-              {grouped.map(([date, entries]) => {
-                const dayUsd = rubToUsd(entries.reduce((s, e) => s + e.myShare, 0), r2u)
-                return (
-                  <div key={date}>
-                    <div className="flex items-center gap-2 mb-2 px-1">
-                      <Calendar size={12} className="text-text-muted" />
-                      <span className="text-xs text-text-muted font-medium">{date}</span>
-                      <div className="flex-1 h-px bg-white/[0.07]" />
-                      <span className="text-xs font-bold text-success tabular-nums">+{fmtUsd(dayUsd)}</span>
-                    </div>
-                    <div className="flex flex-col gap-2.5">
-                      {entries.map(entry => {
-                        const w = workerMap.get(entry.workerId)
-                        return (
-                          <ProfitCard
-                            key={entry.id}
-                            entry={entry}
-                            label={PROFIT_LABELS[entry.type]}
-                            workerLabel={w ? `${w.emoji} ${w.name}` : undefined}
-                            r2u={r2u}
-                            u2ua={u2ua}
-                          />
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <TransactionList
+              entries={recent}
+              workerMap={workerMap}
+              r2u={r2u}
+              u2ua={u2ua}
+              onViewAll={() => navigate('/stats')}
+              onOpenWorker={id => navigate(`/workers/${id}`)}
+            />
           )}
 
-          {/* "View all" footer */}
-          {grouped.length > 0 && (
+          {recent.length > 0 && (
             <button
               onClick={() => navigate('/stats')}
               className="group w-full flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-white/[0.06] text-sm font-semibold text-accent-light"
             >
-              Аналітика
+              {t('fin_analytics')}
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           )}

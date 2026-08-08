@@ -4,6 +4,7 @@ import BottomNav from '@/components/BottomNav'
 import Sidebar from '@/components/Sidebar'
 import LiquidChrome from '@/components/LiquidChrome'
 import GoalView from '@/components/GoalView'
+import { PaymentTicket } from '@/components/PaymentTicket'
 import Workers from '@/pages/Workers'
 import WorkerDetail from '@/pages/WorkerDetail'
 import AnketaDetail from '@/pages/AnketaDetail'
@@ -85,6 +86,10 @@ export default function App() {
             between the close button and the page. */}
         {openedGoalId && <GoalView goalId={openedGoalId} />}
       </div>
+
+      {/* Sits outside the content column so the receipt centres on the whole
+          viewport, not just the page area beside the sidebar. */}
+      <PaymentTicket />
     </div>
   )
 }

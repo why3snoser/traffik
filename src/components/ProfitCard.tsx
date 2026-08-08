@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import type { ProfitEntry, ProfitType } from '@/types'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
+import { INTL_LOCALE, useLang } from '@/i18n'
 
 interface TypeMeta {
   Icon: LucideIcon
@@ -16,8 +17,9 @@ interface TypeMeta {
 }
 
 // One soft accent per operation type — all in the app's violet family so the
-// whole list keeps a calm, premium feel.
-const TYPE_META: Record<ProfitType, TypeMeta> = {
+// whole list keeps a calm, premium feel. Exported because the Finance
+// transaction list renders the same iconography.
+export const TYPE_META: Record<ProfitType, TypeMeta> = {
   oplata: {
     Icon: Banknote,
     color: '#C3BCEA',
@@ -54,18 +56,19 @@ interface ProfitCardProps {
 }
 
 export function ProfitCard({ entry, label, workerLabel, r2u, u2ua }: ProfitCardProps) {
+  const locale = INTL_LOCALE[useLang()]
   const meta = TYPE_META[entry.type] ?? TYPE_META.oplata
   const { Icon } = meta
 
   const usd = rubToUsd(entry.myShare, r2u)
   const uah = usdToUah(usd, u2ua)
 
-  const time = new Date(entry.createdAt).toLocaleTimeString('uk-UA', {
+  const time = new Date(entry.createdAt).toLocaleTimeString(locale, {
     hour: '2-digit',
     minute: '2-digit',
   })
 
-  const sub = [workerLabel, entry.amount.toLocaleString('uk-UA') + ' ₽']
+  const sub = [workerLabel, entry.amount.toLocaleString(locale) + ' ₽']
     .filter(Boolean)
     .join(' · ')
 

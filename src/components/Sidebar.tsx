@@ -37,7 +37,7 @@ export default function Sidebar() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide">TRAFFIK</h1>
-            <p className="text-[10px]" style={{ color: 'rgba(216,210,245,0.6)' }}>Personal CRM</p>
+            <p className="text-[10px]" style={{ color: 'rgba(216,210,245,0.6)' }}>{t('sidebar_tagline')}</p>
           </div>
         </div>
       </div>
@@ -71,10 +71,10 @@ export default function Sidebar() {
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full" style={{ background: 'radial-gradient(circle,rgba(139,125,204,0.18) 0%,transparent 70%)' }} />
           <div className="flex items-center gap-1.5 mb-2 relative">
             <div className="neon-dot neon-pulse" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>Total earned</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'rgba(216,210,245,0.8)' }}>{t('total_earned')}</p>
           </div>
           <p className="text-2xl font-bold text-white relative">{fmtUsd(totalUsd)}</p>
-          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{workers.length} {workers.length === 1 ? 'member' : 'members'}</p>
+          <p className="text-xs mt-1 relative" style={{ color: 'rgba(200,220,255,0.5)' }}>{t('workers_count')(workers.length)}</p>
         </div>
         <p className="text-center text-[9px] mt-3" style={{ color: 'rgba(216,210,245,0.35)' }}>TRAFFIK v1.0</p>
       </div>

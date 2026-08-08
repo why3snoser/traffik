@@ -1,8 +1,9 @@
 ﻿import { useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown, Minus, Trophy, Zap, Star, Flame, Timer } from 'lucide-react'
 import { useStore } from '@/store'
-import { rubToUsd, usdToUah, fmtUsd, fmtUah, PROFIT_LABELS, ProfitType, getLevelInfo } from '@/types'
+import { rubToUsd, usdToUah, fmtUsd, fmtUah, ProfitType, getLevelInfo } from '@/types'
 import { useNavigate } from 'react-router-dom'
+import { INTL_LOCALE, useLang, useProfitLabels, useT } from '@/i18n'
 import {
   AreaChart, Area, Grid, XAxis, ChartTooltip,
   HeatmapChart, HeatmapCells, HeatmapXAxis, HeatmapYAxis, HeatmapTooltip, HeatmapLegend,
@@ -99,6 +100,10 @@ function RingLegendRow() {
 
 // ── Main Stats Page ──────────────────────────────────────────────────────────
 export default function Stats() {
+  const t = useT()
+  const lang = useLang()
+  const locale = INTL_LOCALE[lang]
+  const profitLabels = useProfitLabels()
   const { profits, workers, anketas, profile, sessions, clearSessions, workerTime, workerBaseline } = useStore()
   const navigate = useNavigate()
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
@@ -114,11 +119,11 @@ export default function Stats() {
 
   // ── Per-worker time → money insights ─────────────────────────────────
   const workerEarn = (w: { id: string; totalProfit: number }) => {
-    const t = workerTime[w.id] ?? 0
+    const ms = workerTime[w.id] ?? 0
     const base = workerBaseline[w.id]
     const earned = base !== undefined ? Math.max(0, w.totalProfit - base) : 0
-    const rate = t > 0 ? rubToUsd(earned, r2u) / (t / 3600000) : 0
-    return { ms: t, earnedRub: earned, earnedUsd: rubToUsd(earned, r2u), rate }
+    const rate = ms > 0 ? rubToUsd(earned, r2u) / (ms / 3600000) : 0
+    return { ms, earnedRub: earned, earnedUsd: rubToUsd(earned, r2u), rate }
   }
   const trackedWorkers = workers
     .map(w => ({ w, ...workerEarn(w) }))
@@ -130,7 +135,7 @@ export default function Stats() {
   const sessionRate = sessionTotalMs > 0 ? sessionProfitUsd / (sessionTotalMs / 3600000) : 0
   const fmtClock = (ms: number) => {
     const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000)
-    return h > 0 ? `${h}ч ${m}мин` : `${m}мин`
+    return h > 0 ? t('dur_hm')(h, m) : t('dur_m')(m)
   }
 
   // Daily goal ring — today earned vs a manageable daily target
@@ -142,11 +147,11 @@ export default function Stats() {
   const dayPct = Math.min(100, (todayUsd / dailyTargetUsd) * 100)
   const reachUsd = Math.max(0, dailyTargetUsd - todayUsd)
   const ringData = useMemo(() => [
-    { label: 'Today', value: todayUsd, color: '#8B7DCC' },
-    { label: 'До цели', value: reachUsd, color: 'rgba(255,255,255,0.10)' },
-  ], [todayUsd, reachUsd])
+    { label: t('stats_today'), value: todayUsd, color: '#8B7DCC' },
+    { label: t('stats_to_goal'), value: reachUsd, color: 'rgba(255,255,255,0.10)' },
+  ], [todayUsd, reachUsd, lang])
 
-  // Always last 6 months (uk-UA locale)
+  // Always the last 6 months, named in the active locale
   const monthlyData = useMemo(() => {
     const rows = []
     for (let i = 5; i >= 0; i--) {
@@ -155,10 +160,10 @@ export default function Stats() {
       d.setMonth(d.getMonth() - i)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
-      rows.push({ name: d.toLocaleDateString('uk-UA', { month: 'short' }), usd: rubToUsd(rub, r2u) })
+      rows.push({ name: d.toLocaleDateString(locale, { month: 'short' }), usd: rubToUsd(rub, r2u) })
     }
     return rows
-  }, [profits, r2u])
+  }, [profits, r2u, locale])
 
   // This month vs last
   const now = new Date()
@@ -182,7 +187,7 @@ export default function Stats() {
       const rub = profits.filter(p => p.createdAt.startsWith(key)).reduce((s, p) => s + p.myShare, 0)
       days.push({
         date: d,
-        label: d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }),
+        label: d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
         usd: rubToUsd(rub, r2u),
       })
     }
@@ -194,7 +199,7 @@ export default function Stats() {
       const avg = slice.reduce((s, x) => s + x.usd, 0) / slice.length
       return { ...d, avg: Math.round(avg * 100) / 100 }
     })
-  }, [profits, r2u, dailyDays])
+  }, [profits, r2u, dailyDays, locale])
 
   // Profit by type
   const byType = useMemo(() => {
@@ -203,12 +208,12 @@ export default function Stats() {
     const entries = Array.from(map.entries()).sort((a, b) => b[1] - a[1])
     const maxRub = Math.max(...entries.map(e => e[1]), 1)
     return entries.map(([type, rub]) => ({
-      type, label: PROFIT_LABELS[type],
+      type, label: profitLabels[type],
       usd: rubToUsd(rub, r2u),
       pct: totalRub > 0 ? (rub / totalRub) * 100 : 0,
       barPct: (rub / maxRub) * 100,
     }))
-  }, [profits, r2u, totalRub])
+  }, [profits, r2u, totalRub, lang])
 
   // Streak
   const streak = useMemo(() => {
@@ -229,9 +234,9 @@ export default function Stats() {
     })
     const entries = Array.from(map.entries()).sort((a, b) => b[1] - a[1])
     return entries[0]
-      ? { date: new Date(entries[0][0]).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }), usd: rubToUsd(entries[0][1], r2u) }
+      ? { date: new Date(entries[0][0]).toLocaleDateString(locale, { day: 'numeric', month: 'short' }), usd: rubToUsd(entries[0][1], r2u) }
       : null
-  }, [profits, r2u])
+  }, [profits, r2u, locale])
 
   // Heatmap — daily earnings, 26 weeks, Monday-first (GitHub style)
   const heatmapWeeks = 26
@@ -278,16 +283,16 @@ export default function Stats() {
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text">Stats</h1>
-        <p className="text-text-muted text-sm mt-1">Overview</p>
+        <h1 className="text-2xl font-bold text-text">{t('stats_title')}</h1>
+        <p className="text-text-muted text-sm mt-1">{t('stats_overview')}</p>
       </div>
 
       {/* Key stats */}
       <div className="grid grid-cols-3 gap-3 mb-5 stagger">
         {[
-          { label: 'Earned', value: fmtUsd(totalUsd), sub: fmtUah(totalUah) },
-          { label: 'Deals', value: String(profits.length), sub: `~${fmtUsd(avgUsd)}/ea` },
-          { label: 'Members', value: String(workers.length), sub: `${anketas.length} profiles` },
+          { label: t('stats_earned'), value: fmtUsd(totalUsd), sub: fmtUah(totalUah) },
+          { label: t('stats_deals'), value: String(profits.length), sub: t('stats_deals_each')(fmtUsd(avgUsd)) },
+          { label: t('fin_members'), value: String(workers.length), sub: t('stats_profiles_sub')(anketas.length) },
         ].map(({ label, value, sub }) => (
           <div key={label} className="glass-light rounded-2xl p-3 text-center neon-hover" style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease' }}>
             <p className="text-text font-bold text-sm">{value}</p>
@@ -309,7 +314,7 @@ export default function Stats() {
         <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: 'linear-gradient(90deg,#8B7DCC,#7C6FD0)' }} />
         </div>
-        <p className="text-text-muted text-xs">{Math.round(levelInfo.neededXp - levelInfo.currentXp).toLocaleString()} ₴ to level {levelInfo.level + 1}</p>
+        <p className="text-text-muted text-xs">{Math.round(levelInfo.neededXp - levelInfo.currentXp).toLocaleString()} ₴ {t('level_to_next')(levelInfo.level + 1)}</p>
       </div>
 
       {/* Today ring + live pace */}
@@ -340,16 +345,16 @@ export default function Stats() {
           </Legend>
         </div>
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-2 text-xs text-text-muted flex-wrap">
-          <span>Сессии: <b className="text-white">{fmtClock(sessionTotalMs)}</b> · {sessions.length} за всё время</span>
-          <span>цель {fmtUsd(dailyTargetUsd)}/день</span>
-          {sessionRate > 0 && <span className="font-bold" style={{ color: '#8B7DCC' }}>{fmtUsd(sessionRate)}/час</span>}
+          <span>{t('stats_sessions_label')} <b className="text-white">{fmtClock(sessionTotalMs)}</b> · {t('stats_all_time')(sessions.length)}</span>
+          <span>{t('stats_daily_target')(fmtUsd(dailyTargetUsd))}</span>
+          {sessionRate > 0 && <span className="font-bold" style={{ color: '#8B7DCC' }}>{t('per_hour')(fmtUsd(sessionRate))}</span>}
         </div>
       </div>
 
       {/* This month vs last */}
       <div className="glass-light rounded-2xl p-4 mb-5 flex items-center justify-between">
         <div>
-          <p className="text-text-muted text-xs mb-1">This month</p>
+          <p className="text-text-muted text-xs mb-1">{t('stats_this_month')}</p>
           <p className="text-xl font-bold text-white">{fmtUsd(rubToUsd(thisRub, r2u))}</p>
           <p className="text-text-muted text-xs">{fmtUah(usdToUah(rubToUsd(thisRub, r2u), u2ua))}</p>
         </div>
@@ -360,7 +365,7 @@ export default function Stats() {
           </div>
         ) : <div className="w-2" />}
         <div className="text-right">
-          <p className="text-text-muted text-xs mb-1">Last month</p>
+          <p className="text-text-muted text-xs mb-1">{t('stats_last_month')}</p>
           <p className="text-lg font-bold text-white/60">{fmtUsd(rubToUsd(lastRub, r2u))}</p>
           <p className="text-text-muted text-xs">{fmtUah(usdToUah(rubToUsd(lastRub, r2u), u2ua))}</p>
         </div>
@@ -368,7 +373,7 @@ export default function Stats() {
 
       {/* Monthly bar chart */}
       <div className="glass-light rounded-2xl p-4 mb-5">
-        <h3 className="text-sm font-semibold text-text mb-4">Monthly earnings</h3>
+        <h3 className="text-sm font-semibold text-text mb-4">{t('stats_monthly')}</h3>
         <BarChart
           data={monthlyData}
           xDataKey="name"
@@ -388,7 +393,7 @@ export default function Stats() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Zap size={14} className="text-accent-light" />
-            <h3 className="text-sm font-semibold text-text">Daily earnings</h3>
+            <h3 className="text-sm font-semibold text-text">{t('stats_daily')}</h3>
           </div>
           {/* Range switcher */}
           <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(0,0,0,0.35)' }}>
@@ -398,7 +403,7 @@ export default function Stats() {
                 onClick={() => setDailyRange(r)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${dailyRange === r ? 'bg-accent text-white' : 'text-text-muted hover:text-text'}`}
               >
-                {r === '7d' ? '7 д' : r === '30d' ? '30 д' : '90 д'}
+                {r === '7d' ? t('range_days')(7) : r === '30d' ? t('range_days')(30) : t('range_days')(90)}
               </button>
             ))}
           </div>
@@ -419,7 +424,7 @@ export default function Stats() {
             rows={point => {
               const usd = typeof point.usd === 'number' ? point.usd : 0
               return [
-                { color: '#8B7DCC', label: 'Заработок', value: fmtUsd(usd) },
+                { color: '#8B7DCC', label: t('stats_earnings'), value: fmtUsd(usd) },
                 { color: 'rgba(255,255,255,0.25)', label: '₴', value: fmtUah(usdToUah(usd, u2ua)) },
               ]
             }}
@@ -437,12 +442,12 @@ export default function Stats() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Flame size={15} style={{ color: '#ffa000' }} />
-            <h3 className="text-sm font-semibold text-text">Активність</h3>
+            <h3 className="text-sm font-semibold text-text">{t('stats_activity')}</h3>
           </div>
           {streak > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold" style={{ background: 'rgba(255,160,0,0.12)', color: '#ffa000' }}>
               <Flame size={12} />
-              {streak} {streak === 1 ? 'день' : streak < 5 ? 'дні' : 'днів'}
+              {t('days_count')(streak)}
             </div>
           )}
         </div>
@@ -466,7 +471,7 @@ export default function Stats() {
                       const rub = heatmapDayRub.get(key) ?? 0
                       return rub > 0
                         ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
-                        : 'немає даних'
+                        : t('no_data')
                     }}
                   />
                 </HeatmapChart>
@@ -487,12 +492,12 @@ export default function Stats() {
                     const rub = heatmapDayRub.get(key) ?? 0
                     return rub > 0
                       ? `${fmtUsd(rubToUsd(rub, r2u))} · ${fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}`
-                      : 'немає даних'
+                      : t('no_data')
                   }}
                 />
               </HeatmapChart>
             )}
-            <HeatmapLegend lessLabel="Менше" moreLabel="Більше" />
+            <HeatmapLegend lessLabel={t('heat_less')} moreLabel={t('heat_more')} />
           </HeatmapInteractionBoundary>
         </HeatmapInteractionProvider>
       </div>
@@ -523,22 +528,22 @@ export default function Stats() {
         <div className="glass-light rounded-2xl p-4 mb-5">
           <div className="flex items-center gap-2 mb-3">
             <Trophy size={14} className="text-yellow-400" />
-            <h3 className="text-sm font-semibold text-text">Records</h3>
+            <h3 className="text-sm font-semibold text-text">{t('stats_records')}</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {bestDay && (
               <div className="bg-black/20 rounded-xl p-3 hover:bg-black/30 transition-colors">
-                <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">Best day</p>
+                <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">{t('stats_best_day')}</p>
                 <p className="text-base font-bold text-white">{fmtUsd(bestDay.usd)}</p>
                 <p className="text-text-muted text-[10px]">{fmtUah(usdToUah(bestDay.usd, u2ua))}</p>
                 <p className="text-text-muted text-xs mt-0.5">{bestDay.date}</p>
               </div>
             )}
             <div className="bg-black/20 rounded-xl p-3 hover:bg-black/30 transition-colors">
-              <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">Avg deal</p>
+              <p className="text-text-muted text-[10px] uppercase tracking-wide mb-1">{t('stats_avg_deal')}</p>
               <p className="text-base font-bold text-white">{fmtUsd(avgUsd)}</p>
               <p className="text-text-muted text-[10px]">{fmtUah(usdToUah(avgUsd, u2ua))}</p>
-              <p className="text-text-muted text-xs mt-0.5">{profits.length} deals total</p>
+              <p className="text-text-muted text-xs mt-0.5">{t('stats_deals_total')(profits.length)}</p>
             </div>
           </div>
         </div>
@@ -549,7 +554,7 @@ export default function Stats() {
         <div className="glass-light rounded-2xl p-4 mb-5">
           <div className="flex items-center gap-2 mb-3">
             <Timer size={14} className="text-accent-light" />
-            <h3 className="text-sm font-semibold text-text">Время → деньги</h3>
+            <h3 className="text-sm font-semibold text-text">{t('stats_time_money')}</h3>
           </div>
           <div className="flex flex-col gap-3 stagger">
             {trackedWorkers.map(({ w, ms, earnedUsd, rate }) => {
@@ -567,7 +572,7 @@ export default function Stats() {
                     </div>
                     <div className="flex justify-between items-baseline mt-1">
                       <span className="text-xs font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earnedUsd)}</span>
-                      {rate > 0 && <span className="text-[10px] text-text-muted">{fmtUsd(rate)}/час</span>}
+                      {rate > 0 && <span className="text-[10px] text-text-muted">{t('per_hour')(fmtUsd(rate))}</span>}
                     </div>
                   </div>
                 </button>
@@ -577,7 +582,7 @@ export default function Stats() {
               onClick={clearSessions}
               className="text-center text-[10px] text-text-muted hover:text-danger transition-colors"
             >
-              Очистить всё
+              {t('clear_all')}
             </button>
           </div>
         </div>
@@ -589,13 +594,13 @@ export default function Stats() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Timer size={14} className="text-accent-light" />
-              <h3 className="text-sm font-semibold text-text">Session history</h3>
+              <h3 className="text-sm font-semibold text-text">{t('stats_session_history')}</h3>
             </div>
             <button
               onClick={clearSessions}
               className="text-[10px] text-text-muted hover:text-danger transition-colors"
             >
-              Очистить
+              {t('clear')}
             </button>
           </div>
           <div className="flex flex-col gap-2">
@@ -610,8 +615,8 @@ export default function Stats() {
                       <p className="text-xs font-medium text-text">{w ? w.name : ''}{w ? ' · ' : ''}{fmtClock(s.durationMs)}</p>
                     </div>
                     <p className="text-[10px] text-text-muted truncate">
-                      {new Date(s.endedAt).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
-                      {' · '}{new Date(s.endedAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(s.endedAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+                      {' · '}{new Date(s.endedAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
                   {usd > 0 ? (

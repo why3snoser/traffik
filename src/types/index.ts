@@ -81,6 +81,10 @@ export interface GoalVariant {
   description: string
   image: string
   color: string       // Accent color for this variant
+  // Artwork of one goal can be mixed: a background-free cutout next to a plain
+  // photo. When set, these win over the goal's own values for this variant.
+  imageFit?: 'contain' | 'cover'
+  imagePosition?: string
 }
 
 export interface Goal {
@@ -101,7 +105,7 @@ export interface Goal {
 export interface Settings {
   rubToUsd: number      // e.g. 90
   usdToUah: number      // e.g. 43.70
-  language: 'en' | 'uk'
+  language: 'en' | 'uk' | 'ru'
 }
 
 export interface UserProfile {

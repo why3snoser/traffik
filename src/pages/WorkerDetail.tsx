@@ -3,7 +3,7 @@ import { ArrowLeft, Plus, TrendingUp, User, Trash2, Edit3, ChevronRight } from '
 import { useStore } from '@/store'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useMemo, useState } from 'react'
-import { useT } from '@/i18n'
+import { INTL_LOCALE, useLang, useProfitLabels, useT } from '@/i18n'
 import WorkerTimer from '@/components/WorkerTimer'
 import { WorkerProfitCard } from '@/components/WorkerProfitCard'
 
@@ -18,6 +18,8 @@ export default function WorkerDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const t = useT()
+  const locale = INTL_LOCALE[useLang()]
+  const profitLabels = useProfitLabels()
   const { workers, anketas, profits, deleteWorker, profile } = useStore()
   const [tab, setTab] = useState<'anketas' | 'profits'>('anketas')
   const { rubToUsd: r2u, usdToUah: u2ua } = profile.settings
@@ -48,20 +50,12 @@ export default function WorkerDetail() {
   const grouped = useMemo(() => {
     const map = new Map<string, typeof myProfits>()
     myProfits.forEach(p => {
-      const date = new Date(p.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+      const date = new Date(p.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'long' })
       if (!map.has(date)) map.set(date, [])
       map.get(date)!.push(p)
     })
     return Array.from(map.entries())
-  }, [myProfits])
-
-  const PROFIT_TYPE_LABELS: Record<string, string> = {
-    oplata: t('type_oplata'),
-    perevod: t('type_perevod'),
-    iks: t('type_iks'),
-    vozvrat: t('type_vozvrat'),
-    vozvrat_yurist: t('type_vozvrat_yurist'),
-  }
+  }, [myProfits, locale])
 
   return (
     <div className="pb-28">
@@ -179,7 +173,7 @@ export default function WorkerDetail() {
                         key={entry.id}
                         worker={worker}
                         entry={entry}
-                        label={PROFIT_TYPE_LABELS[entry.type]}
+                        label={profitLabels[entry.type]}
                         r2u={r2u}
                         u2ua={u2ua}
                       />

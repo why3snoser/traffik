@@ -108,8 +108,8 @@ export default function Workers() {
             <Flame size={18} style={{ color: '#ffa000' }} />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">{streak} {streak === 1 ? 'день' : streak < 5 ? 'дні' : 'днів'} поспіль 🔥</p>
-            <p className="text-[11px] text-text-muted">Продовжуй — не втрачай серію!</p>
+            <p className="text-sm font-bold text-white">{t('streak_row')(streak)}</p>
+            <p className="text-[11px] text-text-muted">{t('streak_hint')}</p>
           </div>
         </div>
       )}
@@ -135,11 +135,11 @@ export default function Workers() {
           <div className="flex flex-wrap gap-2 mt-4 relative">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(139,125,204,0.12)', border: '1px solid rgba(139,125,204,0.2)', color: '#A596E8' }}>
               <TrendingUp size={12} />
-              Сегодня {fmtUsd(rubToUsd(todayRub, rub2usd))}
+              {t('today_label')(fmtUsd(rubToUsd(todayRub, rub2usd)))}
             </div>
             {pace > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: 'rgba(90,200,250,0.10)', border: '1px solid rgba(90,200,250,0.2)', color: '#8fd8ff' }}>
-                ⚡ {fmtUsd(pace)}/час
+                ⚡ {t('per_hour')(fmtUsd(pace))}
               </div>
             )}
           </div>
@@ -212,7 +212,7 @@ export default function Workers() {
           <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white">Аватар учасника</h3>
+              <h3 className="text-lg font-bold text-white">{t('avatar_title')}</h3>
               <button onClick={() => setEditAvatarId(null)} className="text-text-muted hover:text-text"><X size={18} /></button>
             </div>
             {editAvatarUrl && (
@@ -221,12 +221,12 @@ export default function Workers() {
               </div>
             )}
             <input type="url" value={editAvatarUrl} onChange={e => setEditAvatarUrl(e.target.value)}
-              placeholder="URL фото (imgbb.com, imgur та ін.)"
+              placeholder={t('avatar_url_placeholder')}
               className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
             <button
               onClick={async () => { await setWorkerAvatar(editAvatarId, editAvatarUrl.trim()); setEditAvatarId(null) }}
               className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">
-              Зберегти
+              {t('save')}
             </button>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function Workers() {
               placeholder={t('workers_name_placeholder')}
               className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-3" />
             <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)}
-              placeholder="Аватар (URL фото, необов'язково)"
+              placeholder={t('avatar_optional_placeholder')}
               className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
             <button onClick={handleAdd} disabled={!name.trim()}
               className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">
