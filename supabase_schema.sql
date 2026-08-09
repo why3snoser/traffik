@@ -46,8 +46,23 @@ create table if not exists profile (
   settings jsonb default '{"rubToUsd": 90, "usdToUah": 43.70}'
 );
 
+-- Активность: сколько времени проведено на сайте, по дням и устройствам.
+-- Ключ (day, device): каждое устройство владеет только своими строками, поэтому
+-- запись идёт обычным upsert'ом, и ПК с телефоном не затирают друг друга даже
+-- когда открыты одновременно.
+create table if not exists usage_days (
+  day date not null,
+  device text not null,                 -- 'desktop' | 'mobile' | 'tablet'
+  hours jsonb not null default '[]',    -- 24 числа: мс активности в каждом часу
+  total_ms numeric not null default 0,
+  visits integer not null default 0,
+  updated_at timestamptz default now(),
+  primary key (day, device)
+);
+
 -- Отключить RLS (личное приложение)
 alter table workers disable row level security;
 alter table anketas disable row level security;
 alter table profits disable row level security;
 alter table profile disable row level security;
+alter table usage_days disable row level security;

@@ -13,6 +13,8 @@ import {
   RingChart, Ring, RingCenter,
 } from '@/components/charts'
 import type { HeatmapColumn } from '@/components/charts/heatmap'
+import { ScreenTimeCard } from '@/components/ScreenTimeCard'
+import { startOf, localDayKey } from '@/lib/dates'
 
 // Vertical blue gradient for the monthly bars (hoisted into the chart <defs>)
 function MonthBarGradient() {
@@ -139,8 +141,8 @@ export default function Stats() {
   }
 
   // Daily goal ring — today earned vs a manageable daily target
-  const nowDay = new Date().toISOString().slice(0, 10)
-  const todayRub = profits.filter(p => p.createdAt.startsWith(nowDay)).reduce((s, p) => s + p.myShare, 0)
+  const todayStart = startOf('day').getTime()
+  const todayRub = profits.filter(p => new Date(p.createdAt).getTime() >= todayStart).reduce((s, p) => s + p.myShare, 0)
   const todayUsd = rubToUsd(todayRub, r2u)
   const dailyTarget = Math.max(5, totalRub > 0 ? totalRub / 30 : 10)
   const dailyTargetUsd = rubToUsd(dailyTarget, r2u)
@@ -217,11 +219,12 @@ export default function Stats() {
 
   // Streak
   const streak = useMemo(() => {
-    const daySet = new Set(profits.map(p => p.createdAt.slice(0, 10)))
+    // Local day keys, matching Workers.tsx — see src/lib/dates.ts.
+    const daySet = new Set(profits.map(p => localDayKey(new Date(p.createdAt))))
     const d = new Date(); d.setHours(0, 0, 0, 0)
-    if (!daySet.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+    if (!daySet.has(localDayKey(d))) d.setDate(d.getDate() - 1)
     let count = 0
-    while (daySet.has(d.toISOString().slice(0, 10))) { count++; d.setDate(d.getDate() - 1) }
+    while (daySet.has(localDayKey(d))) { count++; d.setDate(d.getDate() - 1) }
     return count
   }, [profits])
 
@@ -436,6 +439,10 @@ export default function Stats() {
           <span className="text-[9px] text-text-muted">{dailyData[dailyData.length - 1]?.label}</span>
         </div>
       </div>
+
+      {/* Time on site — sits next to the heatmap: one answers "when in the day",
+          the other "which days". */}
+      <ScreenTimeCard />
 
       {/* Streak + Heatmap */}
       <div className="glass-light rounded-2xl p-4 mb-5">

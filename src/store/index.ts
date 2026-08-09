@@ -558,6 +558,10 @@ export const useStore = create<AppState>()((set, get) => ({
 
   // ── Profits ──────────────────────────────────────────────────────────
   addProfit: async (workerId, amount, type, note, anketaId) => {
+    /* A negative amount permanently decrements the worker total, the profile
+       total and the derived level. Guarded here as well as in the form, because
+       this is a shared mutation point any future caller can reach. */
+    if (!(amount > 0)) return
     const myShare = calcMyShare(amount, type)
     const entry: ProfitEntry = {
       id: uid(), workerId, anketaId, amount, type, myShare, note,

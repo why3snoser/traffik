@@ -14,13 +14,28 @@ import ProfitForm from '@/pages/ProfitForm'
 import Profile from '@/pages/Profile'
 import Stats from '@/pages/Stats'
 import { useStore } from '@/store'
+import { startUsageTracking } from '@/lib/usage'
+
+/* Module scope, not a literal in the JSX below. `baseColor` sits in the
+   LiquidChrome effect's dep list, and App re-renders on every store write — an
+   inline `[0.10, 0.09, 0.16]` is a new array identity each time, so the effect
+   tore down the WebGL context (`loseContext()`) and recompiled both shaders on
+   every profit, every route change, every ticket auto-dismiss. Typed `number[]`
+   rather than `as const`: the prop is `number[]`, and a readonly tuple is not
+   assignable to it. */
+const BACKDROP_BASE_COLOR: number[] = [0.10, 0.09, 0.16]
 
 export default function App() {
-  const { initialized, initialize, openedGoalId } = useStore()
+  /* Selectors, not a bare `useStore()`. Subscribing to the whole store re-rendered
+     App — and with it the WebGL backdrop and every route — on any state change. */
+  const initialized = useStore(s => s.initialized)
+  const initialize = useStore(s => s.initialize)
+  const openedGoalId = useStore(s => s.openedGoalId)
   const location = useLocation()
 
   useEffect(() => {
     initialize()
+    startUsageTracking()
   }, [])
 
   if (!initialized) {
@@ -41,7 +56,7 @@ export default function App() {
       {/* Ambient backdrop (WebGL) */}
       <div id="app-backdrop">
         <LiquidChrome
-          baseColor={[0.10, 0.09, 0.16]}
+          baseColor={BACKDROP_BASE_COLOR}
           speed={0.3}
           amplitude={0.35}
           frequencyX={3}
@@ -60,7 +75,6 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Workers />} />
               <Route path="/workers/:id" element={<WorkerDetail />} />
-              <Route path="/workers/:id/edit" element={<Workers />} />
               <Route path="/workers/:workerId/anketas/new" element={<AnketaForm />} />
               <Route path="/workers/:id/profit/new" element={<ProfitForm />} />
               <Route path="/anketas/:id" element={<AnketaDetail />} />

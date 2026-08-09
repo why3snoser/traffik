@@ -1,11 +1,12 @@
-﻿import { useMemo, useState } from 'react'
+﻿import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, X, TrendingUp, Flame, Pencil } from 'lucide-react'
+import { Plus, TrendingUp, Flame, Pencil } from 'lucide-react'
 import { useStore } from '@/store'
+import { BottomSheet } from '@/components/BottomSheet'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useT } from '@/i18n'
-
-const WORKER_EMOJIS = ['👤', '👩', '🧑', '👑', '🔥', '⚡', '💫', '🎯', '💎', '🦁']
+import { WORKER_EMOJIS } from '@/lib/emoji'
+import { startOf, localDayKey } from '@/lib/dates'
 
 export default function Workers() {
   const { workers, addWorker, setWorkerAvatar, profile, profits, workerTime, workerBaseline } = useStore()
@@ -19,26 +20,43 @@ export default function Workers() {
   const [editAvatarUrl, setEditAvatarUrl] = useState('')
   const { rubToUsd: rub2usd, usdToUah: usd2uah } = profile.settings
 
+  /* `addWorker` optimistically sets local state and *then* awaits a Supabase
+     insert, so on a slow phone the sheet stays open for seconds with the button
+     still enabled. The ref is what actually blocks re-entry — it flips in the
+     same tick, before React has re-rendered — and covers the Enter-key path too.
+     The state exists only to drive the disabled styling. */
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
+
   const handleAdd = async () => {
-    if (!name.trim()) return
-    const w = await addWorker(name.trim(), emoji)
-    if (avatarUrl.trim()) await setWorkerAvatar(w.id, avatarUrl.trim())
-    setName(''); setEmoji('👤'); setAvatarUrl(''); setShowAdd(false)
-    navigate(`/workers/${w.id}`)
+    if (!name.trim() || savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    try {
+      const w = await addWorker(name.trim(), emoji)
+      if (avatarUrl.trim()) await setWorkerAvatar(w.id, avatarUrl.trim())
+      setName(''); setEmoji('👤'); setAvatarUrl(''); setShowAdd(false)
+      navigate(`/workers/${w.id}`)
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   const totalRub = workers.reduce((s, w) => s + w.totalProfit, 0)
   const totalUsd = rubToUsd(totalRub, rub2usd)
   const totalUah = usdToUah(totalUsd, usd2uah)
 
-  // Streak: consecutive days with any profit ending today (or yesterday)
+  // Streak: consecutive days with any profit ending today (or yesterday).
+  // Keyed on the *local* day — `toISOString()` shifts to UTC, which named the
+  // previous day east of Greenwich and dropped a day off the count.
   const streak = useMemo(() => {
-    const daySet = new Set(profits.map(p => p.createdAt.slice(0, 10)))
+    const daySet = new Set(profits.map(p => localDayKey(new Date(p.createdAt))))
     const d = new Date()
     d.setHours(0, 0, 0, 0)
-    if (!daySet.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1)
+    if (!daySet.has(localDayKey(d))) d.setDate(d.getDate() - 1)
     let count = 0
-    while (daySet.has(d.toISOString().slice(0, 10))) {
+    while (daySet.has(localDayKey(d))) {
       count++
       d.setDate(d.getDate() - 1)
     }
@@ -46,7 +64,8 @@ export default function Workers() {
   }, [profits])
 
   // Today + aggregate session pace
-  const todayRub = profits.filter(p => p.createdAt.startsWith(new Date().toISOString().slice(0, 10))).reduce((s, p) => s + p.myShare, 0)
+  const todayStart = startOf('day').getTime()
+  const todayRub = profits.filter(p => new Date(p.createdAt).getTime() >= todayStart).reduce((s, p) => s + p.myShare, 0)
   const sessionTotalMs = Object.values(workerTime).reduce((s, x) => s + x, 0)
   const sessionEarnRub = workers.reduce((s, w) => {
     const base = workerBaseline[w.id]
@@ -182,7 +201,10 @@ export default function Workers() {
                       {worker.totalProfit > 0 && <div className="absolute top-2 left-2 neon-dot neon-pulse" />}
                     </div>
                   ) : (
-                    <div className="p-4 pb-0 flex items-start justify-between">
+                    /* `pr-11` (44px) clears the 40px-wide edit button box above.
+                       Without it the "has revenue" dot landed at 16px from the
+                       right — entirely underneath that opaque button. */
+                    <div className="p-4 pb-0 pr-11 flex items-start justify-between">
                       <div className="text-3xl">{worker.emoji}</div>
                       {worker.totalProfit > 0 && <div className="neon-dot neon-pulse" />}
                     </div>
@@ -205,67 +227,62 @@ export default function Workers() {
         </div>
       )}
 
-      {/* Edit avatar modal */}
-      {editAvatarId && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" onClick={() => setEditAvatarId(null)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white">{t('avatar_title')}</h3>
-              <button onClick={() => setEditAvatarId(null)} className="text-text-muted hover:text-text"><X size={18} /></button>
-            </div>
-            {editAvatarUrl && (
-              <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4">
-                <img src={editAvatarUrl} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
-              </div>
-            )}
-            <input type="url" value={editAvatarUrl} onChange={e => setEditAvatarUrl(e.target.value)}
-              placeholder={t('avatar_url_placeholder')}
-              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
-            <button
-              onClick={async () => { await setWorkerAvatar(editAvatarId, editAvatarUrl.trim()); setEditAvatarId(null) }}
-              className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">
-              {t('save')}
-            </button>
+      {/* Edit avatar sheet */}
+      <BottomSheet
+        open={editAvatarId !== null}
+        onClose={() => setEditAvatarId(null)}
+        title={t('avatar_title')}
+        maxWidth="md"
+        centerOnDesktop
+        footer={
+          <button
+            onClick={async () => { if (editAvatarId) await setWorkerAvatar(editAvatarId, editAvatarUrl.trim()); setEditAvatarId(null) }}
+            className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">
+            {t('save')}
+          </button>
+        }
+      >
+        {editAvatarUrl && (
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4">
+            <img src={editAvatarUrl} alt="" className="w-full h-full object-cover" style={{ filter: 'brightness(0.8) saturate(0.6)' }} />
           </div>
-        </div>
-      )}
+        )}
+        <input type="url" value={editAvatarUrl} onChange={e => setEditAvatarUrl(e.target.value)}
+          placeholder={t('avatar_url_placeholder')}
+          className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors text-sm" />
+      </BottomSheet>
 
-      {/* Add worker modal */}
-      {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" onClick={() => setShowAdd(false)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          <div className="relative w-full max-w-md sheet rounded-t-3xl md:rounded-3xl p-6 pb-10 md:pb-6 animate-pop" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5 md:hidden" />
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-white">{t('workers_new')}</h3>
-              <button onClick={() => setShowAdd(false)} className="text-text-muted hover:text-text">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {WORKER_EMOJIS.map(e => (
-                <button key={e} onClick={() => setEmoji(e)}
-                  className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${emoji === e ? 'btn-gradient scale-110 shadow-glow-sm' : 'glass-light hover:border-accent/30'}`}>
-                  {e}
-                </button>
-              ))}
-            </div>
-            <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAdd()}
-              placeholder={t('workers_name_placeholder')}
-              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-3" />
-            <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)}
-              placeholder={t('avatar_optional_placeholder')}
-              className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-4 text-sm" />
-            <button onClick={handleAdd} disabled={!name.trim()}
-              className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">
-              {t('workers_create')}
+      {/* Add worker sheet */}
+      <BottomSheet
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        title={t('workers_new')}
+        maxWidth="md"
+        centerOnDesktop
+        footer={
+          <button onClick={handleAdd} disabled={!name.trim() || saving}
+            className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">
+            {saving ? '…' : t('workers_create')}
+          </button>
+        }
+      >
+        {/* Grid, not wrap — ten 40px pills overflow a 360px sheet. */}
+        <div className="grid grid-cols-5 gap-2 mb-4">
+          {WORKER_EMOJIS.map(e => (
+            <button key={e} onClick={() => setEmoji(e)}
+              className={`h-11 rounded-xl text-xl flex items-center justify-center transition-all ${emoji === e ? 'btn-gradient scale-105 shadow-glow-sm' : 'glass-light hover:border-accent/30'}`}>
+              {e}
             </button>
-          </div>
+          ))}
         </div>
-      )}
+        <input autoFocus type="text" value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder={t('workers_name_placeholder')}
+          className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors mb-3" />
+        <input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)}
+          placeholder={t('avatar_optional_placeholder')}
+          className="w-full glass-light rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent/50 transition-colors text-sm" />
+      </BottomSheet>
     </div>
   )
 }

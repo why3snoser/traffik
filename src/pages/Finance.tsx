@@ -6,13 +6,7 @@ import { rubToUsd, usdToUah, fmtUsd, fmtUah } from '@/types'
 import { useNavigate } from 'react-router-dom'
 import { INTL_LOCALE, useLang, useT } from '@/i18n'
 import { TransactionList } from '@/components/TransactionList'
-
-function startOf(unit: 'day' | 'week' | 'month') {
-  const d = new Date()
-  if (unit === 'day') { d.setHours(0,0,0,0); return d }
-  if (unit === 'week') { const day = d.getDay(); d.setDate(d.getDate() - (day === 0 ? 6 : day - 1)); d.setHours(0,0,0,0); return d }
-  d.setDate(1); d.setHours(0,0,0,0); return d
-}
+import { startOf } from '@/lib/dates'
 
 const containerVariants = {
   hidden: { opacity: 0 },

@@ -47,7 +47,16 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(git *)",
+      "PowerShell(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(grep -vP \"^[^:]+:[0-9]+:\\\\s*\\(//|\\\\*|/\\\\*\\)\")",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(npx tsc *)",
+      "Bash(grep -n \"'Earned'\\\\|'Deals'\\\\|'Members'\\\\|'Today'\\\\|This month\\\\|Last month\\\\|Monthly earnings\\\\|Daily earnings\\\\|deals total\\\\|profiles\\\\`\\\\|/ea\\\\|useT\" src/pages/Stats.tsx)",
+      "Bash(grep -vP \"^\\\\S+:\\\\d+:\\\\s*\\(//|\\\\*|/\\\\*\\)\")",
+      "Bash(grep -vP \":\\\\d+:\\\\s*\\(//|\\\\*\\)\")"
     ]
   }
 }

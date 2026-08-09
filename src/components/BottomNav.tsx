@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { Users, DollarSign, BarChart2, User } from 'lucide-react'
 import { useT } from '@/i18n'
 
@@ -13,15 +13,20 @@ export default function BottomNav() {
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 safe-bottom flex justify-center pointer-events-none">
-      {/* Floating Liquid Glass capsule — Telegram/iOS 26 feel */}
+    /* No `safe-bottom` here on purpose. The wrapper used to add
+       `padding-bottom: env(safe-area-inset-bottom)` *and* the capsule added
+       `margin-bottom: max(10px, env(safe-area-inset-bottom))`, so on a notched
+       phone the home-indicator inset was counted twice and the bar floated
+       ~70px off the bottom edge. The capsule owns the inset now. */
+    <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
+      {/* Floating Liquid Glass capsule — Telegram/iOS 26 feel, riding low */}
       <nav
         className="pointer-events-auto"
         style={{
-          marginBottom: 'max(10px, env(safe-area-inset-bottom))',
-          width: 'min(92%, 400px)',
-          padding: '6px',
-          borderRadius: 26,
+          marginBottom: 'max(3px, env(safe-area-inset-bottom, 0px))',
+          width: 'min(94%, 430px)',
+          padding: '4px',
+          borderRadius: 24,
           background: 'linear-gradient(180deg, rgba(139,125,204,0.18) 0%, rgba(38,34,54,0.32) 100%)',
           backdropFilter: 'blur(34px) saturate(190%)',
           WebkitBackdropFilter: 'blur(34px) saturate(190%)',
@@ -37,7 +42,7 @@ export default function BottomNav() {
               to={to}
               end={exact}
               className={({ isActive }) =>
-                `flex-1 flex flex-col items-center gap-1 py-2 rounded-2xl transition-all duration-300 ${isActive ? '' : 'text-text-muted hover:text-text'}`
+                `flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1.5 rounded-2xl transition-all duration-300 ${isActive ? '' : 'text-text-muted hover:text-text'}`
               }
             >
               {({ isActive }) => (
@@ -47,7 +52,7 @@ export default function BottomNav() {
                     style={isActive ? { transform: 'translateY(-1px)' } : {}}
                   >
                     <Icon
-                      size={22}
+                      size={21}
                       strokeWidth={isActive ? 2.6 : 1.9}
                       style={{
                         color: isActive ? '#A596E8' : undefined,
@@ -66,8 +71,10 @@ export default function BottomNav() {
                       />
                     )}
                   </span>
+                  {/* Labels are translated, so a long one (e.g. "Statistiken")
+                      must clip rather than force the capsule wider than the phone. */}
                   <span
-                    className="text-[10px] font-semibold leading-none transition-colors duration-300"
+                    className="max-w-full truncate px-0.5 text-[10px] font-semibold leading-none transition-colors duration-300"
                     style={{ color: isActive ? '#CBC4F0' : undefined }}
                   >
                     {label}

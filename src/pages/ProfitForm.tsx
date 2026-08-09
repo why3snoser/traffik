@@ -28,7 +28,11 @@ export default function ProfitForm() {
   const myShareUah = usdToUah(myShareUsd, u2ua)
 
   const handleSave = () => {
-    if (!amountNum || !workerId) return
+    /* `!amountNum` only rejects exactly 0 — `-5000` is truthy and sailed through,
+       and `calcMyShare` is a plain multiply, so a stray leading minus subtracted
+       from the worker total *and* recomputed the profile level downward.
+       `!(x > 0)` rather than `x <= 0` so NaN is caught too. */
+    if (!(amountNum > 0) || !workerId) return
     addProfit(workerId, amountNum, type, note || undefined, anketaId || undefined)
     navigate(`/workers/${workerId}`)
   }
@@ -128,7 +132,7 @@ export default function ProfitForm() {
             className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
         </div>
 
-        <button onClick={handleSave} disabled={!amountNum}
+        <button onClick={handleSave} disabled={!(amountNum > 0)}
           className="w-full bg-accent rounded-2xl py-4 text-white font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform shadow-glow">
           {amountNum > 0 ? t('profit_save')(fmtUsd(myShareUsd)) : t('profit_enter')}
         </button>

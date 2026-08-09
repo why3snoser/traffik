@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, RotateCw, Download, X, Trash2 } from 'lucide-react'
 import { useT } from '@/i18n'
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/bodyScrollLock'
 import { downloadDataUrl, bakeRotation } from '@/lib/media'
 
 interface PhotoLightboxProps {
@@ -35,12 +37,43 @@ export default function PhotoLightbox({ photos, index, onClose, onDelete }: Phot
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 animate-fade-in" onClick={onClose}>
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3">
+  /* The page behind a full-screen overlay must not scroll. The lock is the
+     shared refcounted one, so this composes if a lightbox opens over a sheet.
+     Empty deps on purpose: the component mounts and unmounts with the overlay,
+     and re-running this per render would restore the scroll position mid-view. */
+  useEffect(() => {
+    lockBodyScroll()
+    return unlockBodyScroll
+  }, [])
+
+  /* Escape gets the user out — on desktop the X was otherwise the only exit. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      else if (e.key === 'ArrowLeft') prev()
+      else if (e.key === 'ArrowRight') next()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
+  /* Rendered into <body>: any ancestor with a live `transform` (a card hover, a
+     mid-flight entrance animation) would otherwise become the containing block
+     and re-anchor this `fixed` overlay to that element instead of the viewport. */
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex flex-col bg-black/95 animate-fade-in"
+      onClick={onClose}
+    >
+      {/* Top bar. The inset is applied with `max()` and an `env()` fallback
+          rather than the `.safe-top` class — that class *replaces* padding-top,
+          so on a phone with no notch it would zero out the `py-3`. */}
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))' }}
+      >
         <span className="text-sm text-text-muted">{current + 1} / {photos.length}</span>
-        <button onClick={onClose} className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-text">
+        <button onClick={onClose} className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-text">
           <X size={18} />
         </button>
       </div>
@@ -56,7 +89,11 @@ export default function PhotoLightbox({ photos, index, onClose, onDelete }: Phot
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-3 px-4 py-5" onClick={e => e.stopPropagation()}>
+      <div
+        className="flex flex-wrap items-center justify-center gap-3 px-4 py-5"
+        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0px))' }}
+        onClick={e => e.stopPropagation()}
+      >
         {photos.length > 1 && (
           <button onClick={prev} className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-text-muted hover:text-text">
             <ChevronLeft size={20} />
@@ -89,6 +126,7 @@ export default function PhotoLightbox({ photos, index, onClose, onDelete }: Phot
           </button>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

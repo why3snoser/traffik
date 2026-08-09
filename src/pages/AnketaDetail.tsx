@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, X, Monitor, Gift, ArrowRight, Copy, Mail, Link2, Plus, Import, ImagePlus, Video, Play, Download, Loader2, Trash2 as Trash } from 'lucide-react'
+import { ArrowLeft, Edit3, Trash2, Phone, Key, Tag, Calendar, Wifi, WifiOff, ClipboardList, Monitor, Gift, ArrowRight, Copy, Mail, Link2, Plus, Import, ImagePlus, Video, Play, Download, Loader2, Trash2 as Trash } from 'lucide-react'
 import { useStore } from '@/store'
 import { AppleIdEntry } from '@/types'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useT } from '@/i18n'
 import PhotoLightbox from '@/components/PhotoLightbox'
+import { BottomSheet } from '@/components/BottomSheet'
 import { compressImage, compressVideo, downloadDataUrl } from '@/lib/media'
 
 export default function AnketaDetail() {
@@ -560,47 +561,38 @@ export default function AnketaDetail() {
         </div>
       </div>
 
-      {/* VK Import Modal */}
-      {showVkImport && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowVkImport(false)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
-          <div
-            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-pop border-t border-border"
-            onClick={e => e.stopPropagation()}
+      {/* VK Import sheet */}
+      <BottomSheet
+        open={showVkImport}
+        onClose={() => setShowVkImport(false)}
+        title={t('vk_attach_title')}
+        footer={
+          <button
+            onClick={handleVkAssign}
+            disabled={!vkRaw.trim()}
+            className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow"
           >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-text">{t('vk_attach_title')}</h3>
-              <button onClick={() => setShowVkImport(false)} className="text-text-muted">
-                <X size={18} />
-              </button>
-            </div>
-            <p className="text-text-muted text-sm mb-4">
-              {t('vk_format_hint')} <span className="font-mono text-xs bg-bg px-1.5 py-0.5 rounded">ID:password:token:useragent</span> — one per line
-            </p>
-            <textarea
-              autoFocus
-              value={vkRaw}
-              onChange={e => setVkRaw(e.target.value)}
-              placeholder={`66639968974:Sjn6OKVGkuNK2F:...\n66835193214:9iZwO4bbAPfq6U:...`}
-              rows={6}
-              className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text text-xs placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none font-mono mb-4"
-            />
-            {vkMsg && (
-              <div className="bg-success/10 border border-success/20 rounded-xl px-4 py-2.5 mb-3 text-success text-sm text-center">
-                {vkMsg}
-              </div>
-            )}
-            <button
-              onClick={handleVkAssign}
-              disabled={!vkRaw.trim()}
-              className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold disabled:opacity-40"
-            >
-              {t('vk_assign_random')}
-            </button>
+            {t('vk_assign_random')}
+          </button>
+        }
+      >
+        <p className="text-text-muted text-sm mb-4 break-anywhere">
+          {t('vk_format_hint')} <span className="font-mono text-xs bg-bg px-1.5 py-0.5 rounded">ID:password:token:useragent</span> — one per line
+        </p>
+        <textarea
+          autoFocus
+          value={vkRaw}
+          onChange={e => setVkRaw(e.target.value)}
+          placeholder={`66639968974:Sjn6OKVGkuNK2F:...\n66835193214:9iZwO4bbAPfq6U:...`}
+          rows={6}
+          className="w-full glass-light rounded-2xl px-4 py-3 text-text text-xs placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none font-mono"
+        />
+        {vkMsg && (
+          <div className="bg-success/10 border border-success/20 rounded-xl px-4 py-2.5 mt-3 text-success text-sm text-center">
+            {vkMsg}
           </div>
-        </div>
-      )}
+        )}
+      </BottomSheet>
 
       {/* Photo lightbox */}
       {photoViewer !== null && anketa.photos[photoViewer] && (
@@ -612,124 +604,117 @@ export default function AnketaDetail() {
         />
       )}
 
-      {/* Premium Apple ID Selection Modal */}
-      {showPremiumModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
-          <div
-            className="relative w-full max-w-lg bg-surface rounded-t-3xl p-6 pb-10 animate-pop border-t border-border flex flex-col max-h-[90vh]"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-bold text-text">{t('subscription_accounts')}</h3>
-              <button onClick={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }} className="text-text-muted">
-                <X size={18} />
-              </button>
-            </div>
-            <p className="text-text-muted text-xs mb-3">Tap an email/password to copy. In-use ones are greyed out.</p>
+      {/* Premium Apple ID selection sheet */}
+      <BottomSheet
+        open={showPremiumModal}
+        onClose={() => { setShowPremiumModal(false); setSelectedCityIdForPremium(null) }}
+        title={t('subscription_accounts')}
+      >
+        <p className="text-text-muted text-xs mb-3">Tap an email/password to copy. In-use ones are greyed out.</p>
 
-            {/* Add / import accounts */}
+        {/* Add / import accounts */}
+        <button
+          onClick={() => setPremAddOpen(o => !o)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl mb-3 text-xs font-semibold bg-accent/15 border border-accent/30 text-accent-light"
+        >
+          <Plus size={13} />
+          {premAddOpen ? 'Hide' : 'Add / import accounts'}
+        </button>
+        {premAddOpen && (
+          <div className="mb-3 space-y-2">
+            <textarea
+              autoFocus
+              value={premImportText}
+              onChange={e => setPremImportText(e.target.value)}
+              placeholder={'Paste list:\nEmail: ...\nPassword: ...\nMail password: ...\nGet code link: https://...'}
+              rows={4}
+              className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
+            />
+            {premImportMsg && <p className="text-[11px] text-success px-1">{premImportMsg}</p>}
             <button
-              onClick={() => setPremAddOpen(o => !o)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl mb-3 text-xs font-semibold bg-accent/15 border border-accent/30 text-accent-light"
+              onClick={handleImportPremium}
+              disabled={!premImportText.trim()}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent text-white disabled:opacity-40"
             >
-              <Plus size={13} />
-              {premAddOpen ? 'Hide' : 'Add / import accounts'}
+              <Import size={13} />
+              Import to list
             </button>
-            {premAddOpen && (
-              <div className="mb-3 space-y-2">
-                <textarea
-                  autoFocus
-                  value={premImportText}
-                  onChange={e => setPremImportText(e.target.value)}
-                  placeholder={'Paste list:\nEmail: ...\nPassword: ...\nMail password: ...\nGet code link: https://...'}
-                  rows={4}
-                  className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
-                />
-                {premImportMsg && <p className="text-[11px] text-success px-1">{premImportMsg}</p>}
-                <button
-                  onClick={handleImportPremium}
-                  disabled={!premImportText.trim()}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent text-white disabled:opacity-40"
-                >
-                  <Import size={13} />
-                  Import to list
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
-              {(profile.appleIds ?? []).length === 0 ? (
-                <p className="text-text-muted text-sm text-center py-4">The list is empty. Add accounts above.</p>
-              ) : (
-                (profile.appleIds ?? []).map(appleId => {
-                  const occupied = occupiedAppleEmails.has(appleId.email)
-                  return (
-                    <div
-                      key={appleId.email}
-                      className={`rounded-2xl p-3 border transition-colors ${occupied ? 'bg-black/20 border-border opacity-60' : 'bg-card border-border'}`}
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0 ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
-                            {occupied ? 'In use' : 'Available'}
-                          </span>
-                          <span className="text-xs font-mono text-text truncate">{appleId.email}</span>
-                        </div>
-                        <button
-                          onClick={() => handleInstallPremium(appleId)}
-                          disabled={occupied}
-                          className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-opacity ${occupied ? 'opacity-40' : 'bg-accent text-white'}`}
-                        >
-                          <ArrowRight size={12} />
-                          Connect
-                        </button>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1.5">
-                        <button
-                          onClick={() => copy(appleId.email, `a-${appleId.email}`)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text"
-                        >
-                          <Copy size={11} /> {appleId.email}
-                          {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
-                        </button>
-                        <button
-                          onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
-                        >
-                          <Key size={11} /> {appleId.password}
-                          {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
-                        </button>
-                        {appleId.mailPassword && (
-                          <button
-                            onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
-                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted"
-                          >
-                            <Mail size={11} /> {appleId.mailPassword}
-                            {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
-                          </button>
-                        )}
-                        {appleId.smsLink && (
-                          <a
-                            href={appleId.smsLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
-                          >
-                            <Link2 size={11} /> Get code
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
           </div>
+        )}
+
+        {/* No nested scroller — the sheet itself scrolls. A scroll box inside a
+            draggable sheet swallows the touch gesture and traps the finger. */}
+        <div className="flex flex-col gap-2">
+          {(profile.appleIds ?? []).length === 0 ? (
+            <p className="text-text-muted text-sm text-center py-4">The list is empty. Add accounts above.</p>
+          ) : (
+            (profile.appleIds ?? []).map(appleId => {
+              const occupied = occupiedAppleEmails.has(appleId.email)
+              return (
+                <div
+                  key={appleId.email}
+                  className={`rounded-2xl p-3 border transition-colors ${occupied ? 'bg-black/20 border-border opacity-60' : 'bg-card border-border'}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded flex-shrink-0 ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
+                        {occupied ? 'In use' : 'Available'}
+                      </span>
+                      <span className="text-xs font-mono text-text truncate">{appleId.email}</span>
+                    </div>
+                    <button
+                      onClick={() => handleInstallPremium(appleId)}
+                      disabled={occupied}
+                      className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-opacity ${occupied ? 'opacity-40' : 'bg-accent text-white'}`}
+                    >
+                      <ArrowRight size={12} />
+                      Connect
+                    </button>
+                  </div>
+
+                  {/* `max-w-full` + `break-anywhere`: a long email must wrap inside
+                      the pill rather than push the card past the phone's width. */}
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => copy(appleId.email, `a-${appleId.email}`)}
+                      className="flex max-w-full items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text text-left break-anywhere"
+                    >
+                      <Copy size={11} className="flex-shrink-0" /> {appleId.email}
+                      {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
+                      className="flex max-w-full items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted text-left break-anywhere"
+                    >
+                      <Key size={11} className="flex-shrink-0" /> {appleId.password}
+                      {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
+                    </button>
+                    {appleId.mailPassword && (
+                      <button
+                        onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
+                        className="flex max-w-full items-center gap-1 px-2 py-1 rounded-lg bg-bg border border-border text-[10px] font-mono text-text-muted text-left break-anywhere"
+                      >
+                        <Mail size={11} className="flex-shrink-0" /> {appleId.mailPassword}
+                        {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
+                      </button>
+                    )}
+                    {appleId.smsLink && (
+                      <a
+                        href={appleId.smsLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
+                      >
+                        <Link2 size={11} /> Get code
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )
+            })
+          )}
         </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }

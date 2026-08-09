@@ -12,6 +12,7 @@ import { useStore } from '@/store'
 import { rubToUsd, fmtUsd } from '@/types'
 import { useT } from '@/i18n'
 import { GOAL_FRAME_PHOTO_SHOWCASE, GOAL_FRAME_SHOWCASE, goalPhotoStyle, resolveGoalImage } from '@/lib/goalImage'
+import { lockBodyScroll, unlockBodyScroll } from '@/lib/bodyScrollLock'
 
 function hexToRgba(hex: string, alpha: number): string {
   const h = hex.replace('#', '')
@@ -444,16 +445,18 @@ export default function GoalView({ goalId }: { goalId: string }) {
   const close = () => setClosing(true)
 
   // Fullscreen overlay: Escape closes it and the page behind it stays put.
+  // Uses the shared refcounted lock — a second mechanism writing
+  // `document.body.style.overflow` directly would fight that counter, and
+  // `overflow: hidden` alone does not stop iOS Safari rubber-banding anyway.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setClosing(true)
     }
     window.addEventListener('keydown', onKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    lockBodyScroll()
     return () => {
       window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prevOverflow
+      unlockBodyScroll()
     }
   }, [])
 
@@ -546,7 +549,7 @@ export default function GoalView({ goalId }: { goalId: string }) {
         animate={{ opacity: 1, x: 0 }}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.95 }}
-        style={{ top: 'max(1.5rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
+        style={{ top: 'max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.5rem))' }}
         className="absolute right-5 md:right-6 z-50 w-11 h-11 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-zinc-300 hover:bg-white/[0.12] hover:text-white hover:border-white/20 transition-colors"
       >
         <X size={18} />
@@ -558,7 +561,7 @@ export default function GoalView({ goalId }: { goalId: string }) {
       <main
         className="absolute inset-0 z-10 overflow-y-auto overscroll-contain flex px-5 md:px-6 pt-24 md:pt-16"
         style={{
-          paddingBottom: `calc(env(safe-area-inset-bottom) + ${variants.length > 0 ? '13rem' : '9.5rem'})`,
+          paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + ${variants.length > 0 ? '13rem' : '9.5rem'})`,
         }}
       >
         <motion.div
@@ -587,7 +590,7 @@ export default function GoalView({ goalId }: { goalId: string }) {
 
       <div
         className="absolute inset-x-0 bottom-0 z-50 pointer-events-none flex flex-col items-center gap-3"
-        style={{ paddingBottom: `calc(env(safe-area-inset-bottom) + 2rem)` }}
+        style={{ paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + 2rem)` }}
       >
         {variants.length > 0 && (
           <Switcher

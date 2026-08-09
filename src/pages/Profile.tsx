@@ -4,6 +4,7 @@ import { useStore } from '@/store'
 import { CreditCard } from '@/components/CreditCard'
 import { GoalShowcaseCard } from '@/components/GoalShowcaseCard'
 import { LanguageSelector } from '@/components/LanguageSelector'
+import { BottomSheet } from '@/components/BottomSheet'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
 
@@ -131,6 +132,11 @@ export default function Profile() {
   return (
     <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
       <Confetti active={showConfetti} />
+      {/* Language pill — pinned to the top-right corner and sticky, so switching
+          language never means digging through the settings sheet. */}
+      <div className="sticky top-2 z-40 flex justify-end mb-2">
+        <LanguageSelector />
+      </div>
       {/* Profile card */}
       <div className="card-gradient rounded-3xl p-5 mb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
@@ -201,208 +207,206 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Add goal modal */}
-      {showAddGoal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowAddGoal(false)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          {/* Bottom-anchored, so anything past the viewport height runs off the
-              top edge out of reach — the sheet scrolls instead. */}
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop max-h-[88dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-white mb-5">{t('new_goal')}</h3>
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-2 flex-wrap">
-                {GOAL_EMOJIS.map(e => (
-                  <button key={e} onClick={() => setGoalEmoji(e)} className={`w-10 h-10 rounded-xl text-xl flex items-center justify-center transition-all ${goalEmoji === e ? 'bg-accent-glow border border-accent/40 scale-110' : 'bg-card border border-border'}`}>{e}</button>
-                ))}
+      {/* Add goal sheet */}
+      <BottomSheet
+        open={showAddGoal}
+        onClose={() => setShowAddGoal(false)}
+        title={t('new_goal')}
+        centerOnDesktop
+        footer={
+          <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">{t('goal_add_btn')}</button>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          {/* Grid, not wrap — ten 40px pills plus gaps overflow a 360px sheet
+              and reflow into a ragged second row. */}
+          <div className="grid grid-cols-5 gap-2">
+            {GOAL_EMOJIS.map(e => (
+              <button key={e} onClick={() => setGoalEmoji(e)} className={`h-11 rounded-xl text-xl flex items-center justify-center transition-all ${goalEmoji === e ? 'bg-accent-glow border border-accent/40 scale-105' : 'bg-card border border-border'}`}>{e}</button>
+            ))}
+          </div>
+          <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder={t('goal_name_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
+          <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder={t('goal_desc_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+          <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder={t('goal_image_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
+          {goalImageUrl.trim() && (
+            <div>
+              <p className="text-xs text-text-muted mb-2">{t('goal_photo_focus')}</p>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  'left top',    'center top',    'right top',
+                  'left center', 'center center', 'right center',
+                  'left bottom', 'center bottom', 'right bottom',
+                ].map(val => {
+                  const icons: Record<string, string> = {
+                    'left top': '↖', 'center top': '↑', 'right top': '↗',
+                    'left center': '←', 'center center': '·', 'right center': '→',
+                    'left bottom': '↙', 'center bottom': '↓', 'right bottom': '↘',
+                  }
+                  return (
+                    <button key={val} onClick={() => setGoalImagePos(val)}
+                      className={`py-2.5 rounded-xl text-base font-bold transition-all ${goalImagePos === val ? 'btn-gradient' : 'glass-light text-text-muted hover:text-text'}`}>
+                      {icons[val]}
+                    </button>
+                  )
+                })}
               </div>
-              <input type="text" value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder={t('goal_name_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent" />
-              <input type="text" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder={t('goal_desc_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
-              <input type="url" value={goalImageUrl} onChange={e => setGoalImageUrl(e.target.value)} placeholder={t('goal_image_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent text-sm" />
-              {goalImageUrl.trim() && (
-                <div>
-                  <p className="text-xs text-text-muted mb-2">{t('goal_photo_focus')}</p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      'left top',    'center top',    'right top',
-                      'left center', 'center center', 'right center',
-                      'left bottom', 'center bottom', 'right bottom',
-                    ].map(val => {
-                      const icons: Record<string, string> = {
-                        'left top': '↖', 'center top': '↑', 'right top': '↗',
-                        'left center': '←', 'center center': '·', 'right center': '→',
-                        'left bottom': '↙', 'center bottom': '↓', 'right bottom': '↘',
-                      }
-                      return (
-                        <button key={val} onClick={() => setGoalImagePos(val)}
-                          className={`py-2 rounded-xl text-base font-bold transition-all ${goalImagePos === val ? 'btn-gradient' : 'glass-light text-text-muted hover:text-text'}`}>
-                          {icons[val]}
-                        </button>
-                      )
-                    })}
-                  </div>
+            </div>
+          )}
+          <div className="relative">
+            <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder={t('goal_amount_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {GOAL_COLORS.map(c => (
+              <button key={c} onClick={() => setGoalColor(c)} className={`w-9 h-9 rounded-full transition-all ${goalColor === c ? 'scale-110 ring-2 ring-white/40' : ''}`} style={{ backgroundColor: c }} />
+            ))}
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* Settings sheet */}
+      <BottomSheet
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        title={t('settings_title')}
+        footer={
+          <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">{t('settings_save')}</button>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs text-text-muted mb-2 block">{t('settings_rub_usd')}</label>
+            <input type="number" inputMode="decimal" value={rubRate} onChange={e => setRubRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
+          </div>
+          <div>
+            <label className="text-xs text-text-muted mb-2 block">{t('settings_usd_uah')}</label>
+            <input type="number" inputMode="decimal" value={uahRate} onChange={e => setUahRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
+          </div>
+
+          {/* Apple ID Management */}
+          <div>
+            <label className="text-xs text-text-muted mb-2 block">{t('apple_title')}</label>
+            {/* No inner scroll box: a nested scroller inside a draggable sheet
+                traps the touch gesture. The sheet itself is the one scroller. */}
+            <div className="bg-card border border-border rounded-2xl p-3 mb-3">
+              {(profile.appleIds ?? []).length === 0 ? (
+                <p className="text-xs text-text-muted text-center py-2">{t('apple_empty')}</p>
+              ) : (
+                <div className="space-y-2">
+                  {(profile.appleIds ?? []).map(appleId => {
+                    const occupied = occupiedEmails.has(appleId.email)
+                    return (
+                      <div key={appleId.email} className={`rounded-xl p-2 ${occupied ? 'bg-black/20 opacity-60' : 'bg-bg'}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
+                                {occupied ? t('apple_busy') : t('apple_free')}
+                              </span>
+                              <span className="text-[10px] text-text-muted truncate">{occupied ? t('apple_bound_city') : t('apple_available')}</span>
+                            </div>
+                            <p className="text-xs font-mono text-text mt-1 truncate" title={appleId.email}>{appleId.email}</p>
+                          </div>
+                          <button
+                            onClick={() => removeAppleId(appleId.email)}
+                            aria-label="Remove"
+                            className="flex-shrink-0 w-9 h-9 -mr-1 rounded-lg flex items-center justify-center text-text-muted hover:text-danger transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+
+                        {/* Copy / open actions */}
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          <button
+                            onClick={() => copy(appleId.email, `a-${appleId.email}`)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                          >
+                            <Copy size={11} /> Email
+                            {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
+                          </button>
+                          <button
+                            onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                          >
+                            <Key size={11} /> {t('apple_password')}
+                            {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
+                          </button>
+                          {appleId.mailPassword && (
+                            <button
+                              onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
+                            >
+                              <Mail size={11} /> {t('apple_mail')}
+                              {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
+                            </button>
+                          )}
+                          {appleId.smsLink && (
+                            <a
+                              href={appleId.smsLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
+                            >
+                              <Link2 size={11} /> {t('apple_code')}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
-              <div className="relative">
-                <input type="number" inputMode="decimal" value={goalAmount} onChange={e => setGoalAmount(e.target.value)} placeholder={t('goal_amount_placeholder')} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text placeholder:text-text-muted focus:outline-none focus:border-accent pr-8" />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">$</span>
-              </div>
-              <div className="flex gap-2">
-                {GOAL_COLORS.map(c => (
-                  <button key={c} onClick={() => setGoalColor(c)} className={`w-8 h-8 rounded-full transition-all ${goalColor === c ? 'scale-125 ring-2 ring-white/30' : ''}`} style={{ backgroundColor: c }} />
-                ))}
-              </div>
-              <button onClick={handleAddGoal} disabled={!goalTitle.trim() || !goalAmount} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold disabled:opacity-40 shadow-glow">{t('goal_add_btn')}</button>
+            </div>
+
+            {/* Import list of accounts */}
+            <div className="space-y-2 mb-3">
+              <textarea
+                value={appleImportText}
+                onChange={e => setAppleImportText(e.target.value)}
+                placeholder={t('apple_import_placeholder')}
+                rows={3}
+                className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
+              />
+              {appleImportMsg && <p className="text-[11px] text-success px-1">{appleImportMsg}</p>}
+              <button
+                onClick={handleImportAppleIds}
+                disabled={!appleImportText.trim()}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
+              >
+                <Import size={12} />
+                {t('apple_import_btn')}
+              </button>
+            </div>
+
+            {/* Add new Apple ID manually */}
+            <div className="space-y-2">
+              <input
+                type="email"
+                value={newAppleEmail}
+                onChange={e => setNewAppleEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full bg-card border border-border rounded-2xl px-3 py-2.5 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+              />
+              <input
+                type="password"
+                value={newApplePassword}
+                onChange={e => setNewApplePassword(e.target.value)}
+                placeholder={t('apple_password')}
+                className="w-full bg-card border border-border rounded-2xl px-3 py-2.5 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
+              />
+              <button
+                onClick={handleAddAppleId}
+                disabled={!newAppleEmail.trim() || !newApplePassword.trim()}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
+              >
+                <Plus size={12} />
+                {t('apple_add_btn')}
+              </button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Settings modal */}
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setShowSettings(false)}>
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" />
-          <div className="relative w-full max-w-lg sheet rounded-t-3xl p-6 pb-10 animate-pop max-h-[88dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-white/10 rounded-full mx-auto mb-5" />
-            <h3 className="text-lg font-bold text-white mb-5">{t('settings_title')}</h3>
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="text-xs text-text-muted mb-2 block">{t('settings_rub_usd')}</label>
-                <input type="number" value={rubRate} onChange={e => setRubRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="text-xs text-text-muted mb-2 block">{t('settings_usd_uah')}</label>
-                <input type="number" value={uahRate} onChange={e => setUahRate(e.target.value)} className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-text focus:outline-none focus:border-accent" />
-              </div>
-              <div>
-                <label className="text-xs text-text-muted mb-2 block">{t('settings_language')}</label>
-                <LanguageSelector />
-              </div>
-
-              {/* Apple ID Management */}
-              <div>
-                <label className="text-xs text-text-muted mb-2 block">{t('apple_title')}</label>
-                <div className="bg-card border border-border rounded-2xl p-3 mb-3 max-h-56 overflow-y-auto">
-                  {(profile.appleIds ?? []).length === 0 ? (
-                    <p className="text-xs text-text-muted text-center py-2">{t('apple_empty')}</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {(profile.appleIds ?? []).map(appleId => {
-                        const occupied = occupiedEmails.has(appleId.email)
-                        return (
-                          <div key={appleId.email} className={`rounded-xl p-2 ${occupied ? 'bg-black/20 opacity-60' : 'bg-bg'}`}>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${occupied ? 'bg-white/10 text-text-muted' : 'bg-accent/15 text-accent-light'}`}>
-                                    {occupied ? t('apple_busy') : t('apple_free')}
-                                  </span>
-                                  <span className="text-[10px] text-text-muted">{occupied ? t('apple_bound_city') : t('apple_available')}</span>
-                                </div>
-                                <p className="text-xs font-mono text-text mt-1 truncate" title={appleId.email}>{appleId.email}</p>
-                              </div>
-                              <button
-                                onClick={() => removeAppleId(appleId.email)}
-                                className="flex-shrink-0 text-text-muted hover:text-danger transition-colors"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-
-                            {/* Copy / open actions */}
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                              <button
-                                onClick={() => copy(appleId.email, `a-${appleId.email}`)}
-                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
-                              >
-                                <Copy size={11} /> Email
-                                {copied === `a-${appleId.email}` && <span className="text-success">✓</span>}
-                              </button>
-                              <button
-                                onClick={() => copy(appleId.password, `ap-${appleId.email}`)}
-                                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
-                              >
-                                <Key size={11} /> {t('apple_password')}
-                                {copied === `ap-${appleId.email}` && <span className="text-success">✓</span>}
-                              </button>
-                              {appleId.mailPassword && (
-                                <button
-                                  onClick={() => copy(appleId.mailPassword!, `amp-${appleId.email}`)}
-                                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-card border border-border text-[10px] font-medium text-text-muted hover:text-text"
-                                >
-                                  <Mail size={11} /> {t('apple_mail')}
-                                  {copied === `amp-${appleId.email}` && <span className="text-success">✓</span>}
-                                </button>
-                              )}
-                              {appleId.smsLink && (
-                                <a
-                                  href={appleId.smsLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20 text-[10px] font-medium text-accent-light"
-                                >
-                                  <Link2 size={11} /> {t('apple_code')}
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Import list of accounts */}
-                <div className="space-y-2 mb-3">
-                  <textarea
-                    value={appleImportText}
-                    onChange={e => setAppleImportText(e.target.value)}
-                    placeholder={t('apple_import_placeholder')}
-                    rows={3}
-                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent resize-none font-mono"
-                  />
-                  {appleImportMsg && <p className="text-[11px] text-success px-1">{appleImportMsg}</p>}
-                  <button
-                    onClick={handleImportAppleIds}
-                    disabled={!appleImportText.trim()}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
-                  >
-                    <Import size={12} />
-                    {t('apple_import_btn')}
-                  </button>
-                </div>
-
-                {/* Add new Apple ID manually */}
-                <div className="space-y-2">
-                  <input
-                    type="email"
-                    value={newAppleEmail}
-                    onChange={e => setNewAppleEmail(e.target.value)}
-                    placeholder="Email"
-                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-                  />
-                  <input
-                    type="password"
-                    value={newApplePassword}
-                    onChange={e => setNewApplePassword(e.target.value)}
-                    placeholder={t('apple_password')}
-                    className="w-full bg-card border border-border rounded-2xl px-3 py-2 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-accent"
-                  />
-                  <button
-                    onClick={handleAddAppleId}
-                    disabled={!newAppleEmail.trim() || !newApplePassword.trim()}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-2xl text-xs font-semibold bg-accent/20 border border-accent/40 text-accent-light disabled:opacity-40 transition-all"
-                  >
-                    <Plus size={12} />
-                    {t('apple_add_btn')}
-                  </button>
-                </div>
-              </div>
-              <button onClick={handleSaveSettings} className="w-full btn-gradient rounded-2xl py-3.5 font-semibold shadow-glow">{t('settings_save')}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      </BottomSheet>
     </div>
   )
 }

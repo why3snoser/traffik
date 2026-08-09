@@ -6,12 +6,9 @@ import { LANGUAGES, useLang, type Lang } from '@/i18n'
 import { useStore } from '@/store'
 
 /**
- * Language picker for the settings sheet.
- *
- * The dropdown opens *upward* (`bottom-full`): the settings sheet is anchored to
- * the bottom of the viewport, so a downward menu would open off-screen on a phone.
- * The sheet itself scrolls, though, so opening also centres the button in it —
- * otherwise the upward menu is clipped whenever the button sits near the top edge.
+ * Language picker — a compact pill that lives in the top-right corner of the
+ * profile page and opens its menu down-and-left, so the list never runs off the
+ * right edge of the screen it is pinned to.
  */
 export function LanguageSelector() {
   const lang = useLang()
@@ -23,7 +20,6 @@ export function LanguageSelector() {
 
   useEffect(() => {
     if (!open) return
-    ref.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
     const onDown = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
@@ -50,12 +46,17 @@ export function LanguageSelector() {
         onClick={() => setOpen(o => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="w-full flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-text hover:border-accent/40 transition-colors"
+        className={cn(
+          'flex items-center gap-1.5 rounded-full border border-border bg-card/70 backdrop-blur-md',
+          'py-1.5 pl-2.5 pr-2 text-xs font-semibold text-text transition-colors',
+          'hover:border-accent/40',
+          open && 'border-accent/40'
+        )}
       >
-        <span className="text-base leading-none">{selected.flag}</span>
-        <span className="flex-1 text-left font-medium">{selected.label}</span>
+        <span className="text-sm leading-none">{selected.flag}</span>
+        <span className="leading-none tracking-wide">{selected.short}</span>
         <ChevronDown
-          size={16}
+          size={13}
           className={cn('text-text-muted transition-transform', open && 'rotate-180')}
         />
       </button>
@@ -64,11 +65,11 @@ export function LanguageSelector() {
         {open && (
           <motion.div
             role="listbox"
-            initial={{ opacity: 0, y: 6, scale: 0.98 }}
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-full left-0 right-0 mb-2 z-50 overflow-hidden rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.75)]"
+            className="absolute right-0 top-full mt-2 w-44 z-50 overflow-hidden rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.75)]"
           >
             {LANGUAGES.map(l => {
               const active = l.code === lang
@@ -80,15 +81,15 @@ export function LanguageSelector() {
                   aria-selected={active}
                   onClick={() => pick(l.code)}
                   className={cn(
-                    'flex w-full items-center gap-2 px-4 py-3 text-left text-sm transition-colors',
+                    'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors',
                     active
                       ? 'bg-accent/15 font-semibold text-accent-light'
                       : 'text-text hover:bg-white/5'
                   )}
                 >
                   <span className="text-base leading-none">{l.flag}</span>
-                  <span className="flex-1">{l.label}</span>
-                  {active && <Check size={15} />}
+                  <span className="flex-1 truncate">{l.label}</span>
+                  {active && <Check size={15} className="shrink-0" />}
                 </button>
               )
             })}

@@ -2,11 +2,11 @@ import { useStore } from '@/store'
 
 export type Lang = 'en' | 'uk' | 'ru'
 
-/** Ordered for the picker; the flag doubles as the collapsed-state label. */
-export const LANGUAGES: { code: Lang; label: string; flag: string }[] = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'uk', label: 'Українська', flag: '🇺🇦' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+/** Ordered for the picker; `short` is what the collapsed pill shows. */
+export const LANGUAGES: { code: Lang; label: string; short: string; flag: string }[] = [
+  { code: 'en', label: 'English', short: 'EN', flag: '🇬🇧' },
+  { code: 'uk', label: 'Українська', short: 'UK', flag: '🇺🇦' },
+  { code: 'ru', label: 'Русский', short: 'RU', flag: '🇷🇺' },
 ]
 
 const T = {
@@ -205,6 +205,16 @@ const T = {
     stats_daily_target: (amt: string) => `target ${amt}/day`,
     per_hour: (amt: string) => `${amt}/h`,
     range_days: (n: number) => `${n} d`,
+    range_today: 'Today',
+    // Time on site
+    screen_time_title: 'Time on site',
+    screen_time_empty: 'Nothing tracked yet — the count starts now',
+    screen_time_peak: (h: number) => `peak ${String(h).padStart(2, '0')}:00`,
+    screen_time_visits: (n: number) => `${n} ${n === 1 ? 'visit' : 'visits'}`,
+    screen_time_now: 'now',
+    device_desktop: 'Desktop',
+    device_mobile: 'Phone',
+    device_tablet: 'Tablet',
     days_count: (n: number) => `${n} ${n === 1 ? 'day' : 'days'}`,
     no_data: 'no data',
     heat_less: 'Less',
@@ -420,6 +430,16 @@ const T = {
     stats_daily_target: (amt: string) => `ціль ${amt}/день`,
     per_hour: (amt: string) => `${amt}/год`,
     range_days: (n: number) => `${n} д`,
+    range_today: 'Сьогодні',
+    // Час на сайті
+    screen_time_title: 'Час на сайті',
+    screen_time_empty: 'Поки нічого не записано — відлік починається зараз',
+    screen_time_peak: (h: number) => `пік ${String(h).padStart(2, '0')}:00`,
+    screen_time_visits: (n: number) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'візит' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'візити' : 'візитів'}`,
+    screen_time_now: 'зараз',
+    device_desktop: 'ПК',
+    device_mobile: 'Телефон',
+    device_tablet: 'Планшет',
     days_count: (n: number) => `${n} ${n === 1 ? 'день' : n < 5 ? 'дні' : 'днів'}`,
     no_data: 'немає даних',
     heat_less: 'Менше',
@@ -631,6 +651,16 @@ const T = {
     stats_daily_target: (amt: string) => `цель ${amt}/день`,
     per_hour: (amt: string) => `${amt}/час`,
     range_days: (n: number) => `${n} д`,
+    range_today: 'Сегодня',
+    // Время на сайте
+    screen_time_title: 'Время на сайте',
+    screen_time_empty: 'Пока ничего не записано — отсчёт начинается сейчас',
+    screen_time_peak: (h: number) => `пик ${String(h).padStart(2, '0')}:00`,
+    screen_time_visits: (n: number) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? 'визит' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'визита' : 'визитов'}`,
+    screen_time_now: 'сейчас',
+    device_desktop: 'ПК',
+    device_mobile: 'Телефон',
+    device_tablet: 'Планшет',
     days_count: (n: number) => `${n} ${n === 1 ? 'день' : n < 5 ? 'дня' : 'дней'}`,
     no_data: 'нет данных',
     heat_less: 'Меньше',

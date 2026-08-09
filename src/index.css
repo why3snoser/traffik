@@ -86,18 +86,31 @@ body {
 }
 .scroll-row::-webkit-scrollbar { display: none; }
 
-/* ── Animations ──────────────────────────────────────────────────── */
+/* ── Animations ──────────────────────────────────────────────────────
+   Every entrance animation below ends on the element's *natural* state, so
+   they all use `backwards` — never `both`/`forwards`.
+
+   This is load-bearing, not a style choice. `forwards` retains the final
+   keyframe, and a retained `transform` (even `translateY(0)`) makes the
+   element a containing block for its `position: fixed` descendants. With
+   `both` on `.animate-page-in`, every modal inside <main> anchored to the
+   bottom of the *page* instead of the viewport — which is exactly how the
+   settings sheet ended up off-screen and unreachable.
+
+   If you add an entrance animation here, end it on the natural state and
+   fill `backwards`. If you truly need `forwards`, the last keyframe must
+   say `transform: none`. */
 @keyframes pageEnter {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-page-in { animation: pageEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-page-in { animation: pageEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(100%); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-slide-up { animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-slide-up { animation: slideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 /* Snappy "pop" for modal sheets — scale + lift with a springy overshoot */
 @keyframes popUp {
@@ -105,7 +118,7 @@ body {
   55%  { opacity: 1; transform: translateY(-5px) scale(1.015); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-.animate-pop { animation: popUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-pop { animation: popUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -154,14 +167,15 @@ button.glass-light:hover {
   background: rgba(30,45,72,0.45) !important;
 }
 
-/* List item stagger entrance */
+/* List item stagger entrance.
+   `backwards` fill holds the `from` keyframe through the delay, so the base
+   rule must NOT also pin `opacity: 0` — that would survive the animation. */
 @keyframes itemIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .stagger > * {
-  opacity: 0;
-  animation: itemIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: itemIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 .stagger > *:nth-child(1)  { animation-delay: 0ms; }
 .stagger > *:nth-child(2)  { animation-delay: 55ms; }
@@ -179,7 +193,7 @@ button.glass-light:hover {
   to   { opacity: 1; transform: translateX(0); }
 }
 .slide-in-left {
-  animation: slideInLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slideInLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 /* Neon scan line (decorative, top of sidebar) */
@@ -195,7 +209,7 @@ button.glass-light:hover {
   from { opacity: 0; transform: scale(0.88) translateY(4px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.num-pop { animation: numPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.num-pop { animation: numPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
 
 /* Glow border pulse on focus/active nav */
 @keyframes borderGlow {
@@ -216,7 +230,7 @@ button.glass-light:hover {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.fade-up { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 /* ── Goal cards (Profile) — hover-driven animations ───────────── */
 @keyframes goalRingSpin {
@@ -391,16 +405,27 @@ button.glass-light:hover {
      never zooms back out. Every input here is text-xs/text-sm, so pin them. */
   input, select, textarea { font-size: 16px; }
 
-  /* Bottom sheets are anchored to the bottom edge, so anything taller than
-     the screen used to run off the top with no way to reach it. */
-  .sheet {
-    max-height: 88dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
-  }
-
   /* Comfortable thumb targets — 44px is the iOS minimum. */
   nav a, .tap-target { min-height: 44px; }
+}
+
+/* Long unbroken strings — emails, VK tokens, URLs — would otherwise push a
+   card wider than the phone and open a horizontal scroll on the whole page. */
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Respect the OS "reduce motion" switch: keep layout identical, drop the
+   movement. Entrance animations collapse to an instant final frame rather
+   than being disabled outright, which would leave `backwards`-filled
+   elements stuck on their `from` keyframe (invisible). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
