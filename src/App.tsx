@@ -23,7 +23,7 @@ import { startUsageTracking } from '@/lib/usage'
    every profit, every route change, every ticket auto-dismiss. Typed `number[]`
    rather than `as const`: the prop is `number[]`, and a readonly tuple is not
    assignable to it. */
-const BACKDROP_BASE_COLOR: number[] = [0.10, 0.09, 0.16]
+const BACKDROP_BASE_COLOR: number[] = [0.07, 0.065, 0.11]
 
 export default function App() {
   /* Selectors, not a bare `useStore()`. Subscribing to the whole store re-rendered
@@ -57,20 +57,24 @@ export default function App() {
       <div id="app-backdrop">
         <LiquidChrome
           baseColor={BACKDROP_BASE_COLOR}
-          speed={0.3}
-          amplitude={0.35}
+          speed={0.25}
+          amplitude={0.3}
           frequencyX={3}
           frequencyY={3}
           interactive
         />
-        {/* Readability scrim — dims the backdrop so text stays readable, light still glows behind glass */}
+        {/* Readability scrim — the backdrop is only a faint ambient sheen now;
+            cards are near-solid, the workspace reads flat and calm. */}
         <div className="absolute inset-0"
-          style={{ background: 'radial-gradient(130% 95% at 50% 8%, rgba(13,13,17,0.42) 0%, rgba(13,13,17,0.70) 100%)' }} />
+          style={{ background: 'radial-gradient(130% 95% at 50% 8%, rgba(10,10,13,0.72) 0%, rgba(10,10,13,0.88) 100%)' }} />
       </div>
       <Sidebar />
-      {/* Main content — offset by sidebar on desktop */}
+      {/* Main content — offset by sidebar on desktop. Pages own their max
+          width now (wide dashboards for the top-level tabs, narrow columns
+          for forms), so the shell no longer constrains everyone to a single
+          mobile-ish column. */}
       <div className="flex-1 md:ml-56 min-w-0">
-        <div className="max-w-lg mx-auto md:max-w-2xl md:mx-0 relative">
+        <div className="relative">
           <main key={location.pathname} className="animate-page-in">
             <Routes>
               <Route path="/" element={<Workers />} />

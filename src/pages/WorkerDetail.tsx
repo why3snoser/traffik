@@ -61,10 +61,10 @@ export default function WorkerDetail() {
   }, [myProfits, locale])
 
   return (
-    <div className="pb-28">
-      <div className="px-4 pt-6 mb-5">
+    <div className="pb-28 md:pb-8 w-full max-w-3xl mx-auto md:px-8">
+      <div className="px-4 md:px-0 pt-6 mb-5">
         <div className="flex items-center gap-3 mb-5">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1" />
@@ -75,7 +75,7 @@ export default function WorkerDetail() {
               setEditAvatar(profile.workerAvatars?.[worker.id] ?? '')
               setEditOpen(true)
             }}
-            className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+            className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <Edit3 size={16} />
           </button>
           <button onClick={handleDelete} className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger">
@@ -91,7 +91,7 @@ export default function WorkerDetail() {
         <div className="flex items-center gap-4 mb-5">
           <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-card border border-border flex items-center justify-center text-3xl">{worker.emoji}</div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-text break-words">{worker.name}</h1>
+            <h1 className="text-2xl font-bold text-text break-words tracking-tight">{worker.name}</h1>
             <p className="text-text-muted text-sm">{t('worker_anketas')(myAnketas.length)}</p>
           </div>
         </div>
@@ -102,10 +102,10 @@ export default function WorkerDetail() {
             { label: t('stat_month'), rub: stats.month },
             { label: t('stat_total'), rub: stats.total },
           ].map(({ label, rub }) => (
-            <div key={label} className="bg-card border border-border rounded-xl p-3">
-              <p className="text-text-muted text-[10px] mb-1">{label}</p>
-              <p className="text-sm font-bold text-text">{fmtUsd(rubToUsd(rub, r2u))}</p>
-              <p className="text-[10px] text-text-muted">{fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}</p>
+            <div key={label} className="glass-light rounded-xl p-3">
+              <p className="text-text-muted text-[10px] uppercase tracking-widest mb-1">{label}</p>
+              <p className="text-sm font-bold text-text tabular-nums">{fmtUsd(rubToUsd(rub, r2u))}</p>
+              <p className="text-[10px] text-text-muted tabular-nums">{fmtUah(usdToUah(rubToUsd(rub, r2u), u2ua))}</p>
             </div>
           ))}
         </div>
@@ -114,22 +114,22 @@ export default function WorkerDetail() {
         <WorkerTimer workerId={id!} />
 
         <button onClick={() => navigate(`/workers/${id}/profit/new`)}
-          className="w-full bg-accent rounded-2xl py-3.5 text-white font-semibold flex items-center justify-center gap-2 mb-1 active:scale-[0.98] transition-transform shadow-glow">
+          className="w-full btn-gradient rounded-2xl py-3.5 font-semibold flex items-center justify-center gap-2 mb-1 active:scale-[0.98] transition-transform">
           <TrendingUp size={18} />
           {t('add_profit_btn')}
         </button>
       </div>
 
-      <div className="flex gap-1 px-4 mb-4">
+      <div className="flex gap-1 px-4 md:px-0 mb-4 p-1 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
         {(['anketas', 'profits'] as const).map(tab_key => (
           <button key={tab_key} onClick={() => setTab(tab_key)}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === tab_key ? 'bg-accent text-white' : 'bg-card text-text-muted'}`}>
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${tab === tab_key ? 'btn-gradient' : 'text-text-muted hover:text-text'}`}>
             {tab_key === 'anketas' ? t('tab_profiles')(myAnketas.length) : t('tab_profits')(myProfits.length)}
           </button>
         ))}
       </div>
 
-      <div className="px-4">
+      <div className="px-4 md:px-0">
         {tab === 'anketas' && (
           <>
             <button onClick={() => navigate(`/workers/${id}/anketas/new`)}
@@ -143,10 +143,10 @@ export default function WorkerDetail() {
                 <p className="text-text-muted text-sm">{t('no_profiles')}</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 stagger">
                 {myAnketas.map(anketa => (
                   <button key={anketa.id} onClick={() => navigate(`/anketas/${anketa.id}`)}
-                    className="bg-card border border-border rounded-2xl p-4 text-left active:scale-[0.98] transition-transform flex items-center gap-3">
+                    className="glass-light rounded-2xl p-4 text-left active:scale-[0.98] transition-transform flex items-center gap-3 neon-hover">
                     <div className="w-10 h-10 rounded-xl bg-accent-glow border border-accent/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-base font-bold gradient-text">{anketa.name.charAt(0)}</span>
                     </div>
@@ -178,7 +178,7 @@ export default function WorkerDetail() {
                   <div className="flex items-center gap-2 mb-2 px-1">
                     <span className="text-xs text-text-muted font-medium">{date}</span>
                     <div className="flex-1 h-px bg-border" />
-                    <span className="text-xs text-success font-medium">
+                    <span className="text-xs text-success font-medium tabular-nums">
                       +{fmtUsd(rubToUsd(entries.reduce((s, e) => s + e.myShare, 0), r2u))}
                     </span>
                   </div>

@@ -25,7 +25,7 @@ interface GoalShowcaseCardProps {
 export function GoalShowcaseCard({ goal, totalUsd, fmtUsd, onDelete, onOpen }: GoalShowcaseCardProps) {
   const t = useT()
   const pct = Math.min(100, (totalUsd / goal.targetAmount) * 100)
-  const color = goal.color ?? '#8B7DCC'
+  const color = goal.color ?? '#C09FE6'
   const image = resolveGoalImage(goal)
   const isPhoto = goal.imageFit === 'cover' && !!goal.imageUrl
 

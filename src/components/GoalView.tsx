@@ -498,7 +498,7 @@ export default function GoalView({ goalId }: { goalId: string }) {
     imagePosition: activeVariant ? activeVariant.imagePosition : current.imagePosition,
     imageFit: activeVariant?.imageFit ?? current.imageFit,
     imageScale: activeVariant ? undefined : current.imageScale,
-    color: activeVariant?.color ?? current.color ?? '#8B7DCC',
+    color: activeVariant?.color ?? current.color ?? '#C09FE6',
     stats: {
       connectionStatus: reached ? t('goal_status_reached') : t('goal_status_active'),
       batteryLevel: pct,

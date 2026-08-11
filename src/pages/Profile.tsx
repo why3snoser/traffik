@@ -8,7 +8,7 @@ import { BottomSheet } from '@/components/BottomSheet'
 import { rubToUsd, usdToUah, fmtUsd, fmtUah, getLevelInfo } from '@/types'
 import { useT } from '@/i18n'
 
-const CONFETTI_COLORS = ['#8B7DCC', '#A596E8', '#E8C06A', '#FF5B6E', '#ffffff', '#C3BCEA']
+const CONFETTI_COLORS = ['#C09FE6', '#DCC2F2', '#E5C878', '#F0647A', '#ffffff', '#EADCF7']
 
 function Confetti({ active }: { active: boolean }) {
   const particles = useRef(
@@ -130,13 +130,15 @@ export default function Profile() {
   }
 
   return (
-    <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8">
+    <div className="px-4 pt-6 pb-28 md:pb-8 md:px-8 w-full max-w-5xl mx-auto">
       <Confetti active={showConfetti} />
       {/* Language pill — pinned to the top-right corner and sticky, so switching
           language never means digging through the settings sheet. */}
       <div className="sticky top-2 z-40 flex justify-end mb-2">
         <LanguageSelector />
       </div>
+      <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+      <div>
       {/* Profile card */}
       <div className="card-gradient rounded-3xl p-5 mb-6 relative overflow-hidden">
         <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/10" />
@@ -162,7 +164,7 @@ export default function Profile() {
           <span>{levelInfo.neededXp.toLocaleString()} ₴ {t('level_to_next')(levelInfo.level + 1)}</span>
         </div>
         <div className="h-1.5 bg-black/30 rounded-full overflow-hidden mb-4 relative">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#8B7DCC', boxShadow: '0 0 8px rgba(139,125,204,0.6)' }} />
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${levelInfo.progress * 100}%`, background: '#C09FE6', boxShadow: '0 0 8px rgba(192,159,230,0.6)' }} />
         </div>
 
       </div>
@@ -170,6 +172,8 @@ export default function Profile() {
       {/* Balance Card */}
       <CreditCard balancePrimary={fmtUsd(totalUsd)} balanceSecondary={fmtUah(totalUah)} />
 
+      </div>
+      <div>
       {/* Goals */}
       <div className="flex items-center justify-between mb-4 px-1">
         <h3 className="text-base font-bold text-text flex items-center gap-2">
@@ -206,6 +210,9 @@ export default function Profile() {
           ))}
         </div>
       )}
+
+      </div>
+      </div>
 
       {/* Add goal sheet */}
       <BottomSheet

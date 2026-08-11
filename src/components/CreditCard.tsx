@@ -100,7 +100,7 @@ export function CreditCard({
   const faceClass =
     'absolute inset-0 rounded-[24px] overflow-hidden border border-white/10'
   const faceShadow =
-    'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3), 0 24px 60px -22px rgba(0,0,0,0.8), 0 0 44px rgba(139,125,204,0.16), 0 8px 24px rgba(0,0,0,0.45)'
+    'inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3), 0 24px 60px -22px rgba(0,0,0,0.8), 0 0 44px rgba(192,159,230,0.16), 0 8px 24px rgba(0,0,0,0.45)'
   const hiddenBack = { backfaceVisibility: 'hidden' as const, WebkitBackfaceVisibility: 'hidden' as const }
 
   return (
@@ -121,7 +121,7 @@ export function CreditCard({
           />
           <div
             className="absolute -bottom-2 -left-2 w-36 h-36 rounded-full blur-3xl opacity-50"
-            style={{ background: 'radial-gradient(circle, rgba(139,125,204,0.40) 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, rgba(192,159,230,0.40) 0%, transparent 70%)' }}
           />
         </div>
 
@@ -161,7 +161,7 @@ export function CreditCard({
                   // and the page backdrop, just richer, so the card is the
                   // brightest thing on the page without being another palette.
                   background:
-                    'linear-gradient(145deg, #302A44 0%, #241F35 26%, #3E3661 52%, #5A4E92 78%, #8B7DCC 100%)',
+                    'linear-gradient(145deg, #302A44 0%, #241F35 26%, #3E3661 52%, #5A4E92 78%, #C09FE6 100%)',
                   boxShadow: faceShadow,
                 }}
               >
@@ -173,21 +173,21 @@ export function CreditCard({
                   className="absolute inset-y-0 w-1/2 pointer-events-none"
                   style={{
                     background:
-                      'linear-gradient(105deg, transparent 0%, rgba(216,210,245,0.13) 50%, transparent 100%)',
+                      'linear-gradient(105deg, transparent 0%, rgba(230,214,246,0.13) 50%, transparent 100%)',
                   }}
                 />
                 {/* Embossed guilloche arcs, the way a real card catches light */}
                 <div
                   className="absolute -right-16 -top-20 w-64 h-64 rounded-full pointer-events-none"
-                  style={{ border: '1px solid rgba(216,210,245,0.13)' }}
+                  style={{ border: '1px solid rgba(230,214,246,0.13)' }}
                 />
                 <div
                   className="absolute -right-8 -bottom-28 w-72 h-72 rounded-full pointer-events-none"
-                  style={{ border: '1px solid rgba(216,210,245,0.08)' }}
+                  style={{ border: '1px solid rgba(230,214,246,0.08)' }}
                 />
                 <div
                   className="absolute inset-0 pointer-events-none"
-                  style={{ background: 'radial-gradient(120% 90% at 15% 0%, rgba(216,210,245,0.14) 0%, transparent 55%)' }}
+                  style={{ background: 'radial-gradient(120% 90% at 15% 0%, rgba(230,214,246,0.14) 0%, transparent 55%)' }}
                 />
 
                 <div className="relative h-full flex flex-col justify-between p-5 md:p-6 text-white">

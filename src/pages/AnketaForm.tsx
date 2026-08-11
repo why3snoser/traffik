@@ -57,13 +57,13 @@ export default function AnketaForm() {
   }
 
   return (
-    <div className="pb-32">
+    <div className="pb-32 md:pb-8 w-full max-w-lg mx-auto md:px-0">
       <div className="px-4 pt-6 mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <ArrowLeft size={18} />
           </button>
-          <h1 className="text-xl font-bold text-text flex-1">
+          <h1 className="text-xl font-bold text-text flex-1 tracking-tight">
             {existing ? t('form_edit_profile') : t('form_new_profile')}
           </h1>
         </div>
@@ -112,15 +112,15 @@ export default function AnketaForm() {
                     .map(name => ({ id: uid(), city: name, status: 'active' as const }))
                   if (newCities.length) { setCities([...cities.filter(c => c.city), ...newCities]); setCityBulk(''); setShowCityBulk(false) }
                 }}
-                className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
-                <Plus size={16} className="text-white" />
+                className="absolute right-3 bottom-3 w-9 h-9 rounded-xl btn-gradient flex items-center justify-center">
+                <Plus size={16} style={{ color: '#241533' }} />
               </button>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {cities.map((city, i) => (
                 <div key={city.id} className="flex items-center gap-2">
-                  <span className="text-text-muted text-sm w-5 text-center flex-shrink-0">{i + 1}</span>
+                  <span className="text-text-muted text-sm w-5 text-center flex-shrink-0 tabular-nums">{i + 1}</span>
                   <input type="text" value={city.city} onChange={e => updateCity(city.id, e.target.value)}
                     placeholder={t('form_city_placeholder')}
                     className="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors" />
@@ -153,8 +153,8 @@ export default function AnketaForm() {
                 if (lines.length) setBirthDates([...birthDates, ...lines])
                 setDateInput('')
               }}
-              className="absolute right-3 bottom-3 w-9 h-9 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-              <Plus size={16} className="text-white" />
+              className="absolute right-3 bottom-3 w-9 h-9 rounded-xl btn-gradient flex items-center justify-center flex-shrink-0">
+              <Plus size={16} style={{ color: '#241533' }} />
             </button>
           </div>
           {birthDates.length > 0 && (
@@ -178,7 +178,7 @@ export default function AnketaForm() {
         </div>
 
         <button onClick={handleSave} disabled={!name.trim()}
-          className="w-full bg-accent rounded-2xl py-4 text-white font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform shadow-glow">
+          className="w-full btn-gradient rounded-2xl py-4 font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform">
           {existing ? t('form_save') : t('form_create')}
         </button>
       </div>

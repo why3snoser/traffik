@@ -131,9 +131,9 @@ export function ScreenTimeCard() {
                       height: `${height * 100}%`,
                       minHeight: ms > 0 ? 3 : 0,
                       background: strong
-                        ? 'linear-gradient(180deg,#A596E8,#8B7DCC)'
+                        ? 'linear-gradient(180deg,#DCC2F2,#C09FE6)'
                         : 'rgba(255,255,255,0.12)',
-                      boxShadow: isNow ? '0 0 10px rgba(139,125,204,0.55)' : undefined,
+                      boxShadow: isNow ? '0 0 10px rgba(192,159,230,0.55)' : undefined,
                     }}
                   />
                 )

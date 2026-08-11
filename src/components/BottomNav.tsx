@@ -19,63 +19,57 @@ export default function BottomNav() {
        phone the home-indicator inset was counted twice and the bar floated
        ~70px off the bottom edge. The capsule owns the inset now. */
     <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
-      {/* Floating Liquid Glass capsule — Telegram/iOS 26 feel, riding low */}
       <nav
         className="pointer-events-auto"
         style={{
-          marginBottom: 'max(3px, env(safe-area-inset-bottom, 0px))',
-          width: 'min(94%, 430px)',
-          padding: '4px',
-          borderRadius: 24,
-          background: 'linear-gradient(180deg, rgba(139,125,204,0.18) 0%, rgba(38,34,54,0.32) 100%)',
-          backdropFilter: 'blur(34px) saturate(190%)',
-          WebkitBackdropFilter: 'blur(34px) saturate(190%)',
-          border: '1px solid rgba(216,210,245,0.22)',
-          borderTopColor: 'rgba(216,210,245,0.45)',
-          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.18), 0 18px 44px rgba(0,0,0,0.55)',
+          marginBottom: 'max(8px, env(safe-area-inset-bottom, 0px))',
+          width: 'min(94%, 400px)',
+          padding: '5px',
+          borderRadius: 26,
+          background: 'rgba(18,17,22,0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
         }}
       >
-        <div className="flex items-center justify-around">
+        <div className="flex items-center gap-1">
           {navItems.map(({ to, icon: Icon, label, exact }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
               className={({ isActive }) =>
-                `flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1.5 rounded-2xl transition-all duration-300 ${isActive ? '' : 'text-text-muted hover:text-text'}`
+                `relative flex-1 min-w-0 flex flex-col items-center justify-center gap-1 rounded-[21px] py-2 transition-colors duration-300 ${
+                  isActive ? '' : 'text-text-muted hover:text-text'
+                }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    className="relative flex items-center justify-center h-6 transition-transform duration-300"
-                    style={isActive ? { transform: 'translateY(-1px)' } : {}}
-                  >
-                    <Icon
-                      size={21}
-                      strokeWidth={isActive ? 2.6 : 1.9}
+                  {/* The active pill sits behind the whole item (icon + label),
+                      not just the icon — one calm rounded highlight instead of
+                      a floating chip. Negative z-index paints it above the nav
+                      background but below the item content. */}
+                  {isActive && (
+                    <span
+                      className="absolute inset-0 -z-10 rounded-[21px]"
                       style={{
-                        color: isActive ? '#A596E8' : undefined,
-                        filter: isActive ? 'drop-shadow(0 0 6px rgba(139,125,204,0.6))' : undefined,
-                        transition: 'color 0.3s',
+                        background: 'rgba(192,159,230,0.13)',
+                        border: '1px solid rgba(192,159,230,0.20)',
                       }}
                     />
-                    {isActive && (
-                      <span
-                        className="absolute -inset-x-3 -inset-y-1.5 -z-10 rounded-2xl"
-                        style={{
-                          background: 'linear-gradient(180deg, rgba(139,125,204,0.22), rgba(139,125,204,0.08))',
-                          border: '1px solid rgba(216,210,245,0.24)',
-                          boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.12)',
-                        }}
-                      />
-                    )}
-                  </span>
+                  )}
+                  <Icon
+                    size={20}
+                    strokeWidth={isActive ? 2.4 : 1.9}
+                    style={{ color: isActive ? '#DCC2F2' : undefined, transition: 'color 0.3s' }}
+                  />
                   {/* Labels are translated, so a long one (e.g. "Statistiken")
                       must clip rather than force the capsule wider than the phone. */}
                   <span
-                    className="max-w-full truncate px-0.5 text-[10px] font-semibold leading-none transition-colors duration-300"
-                    style={{ color: isActive ? '#CBC4F0' : undefined }}
+                    className="max-w-full truncate px-1 text-[10px] font-semibold leading-none"
+                    style={{ color: isActive ? '#E6D6F6' : undefined }}
                   >
                     {label}
                   </span>

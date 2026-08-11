@@ -64,15 +64,15 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
       className={`rounded-2xl p-4 mb-4 border transition-all ${running ? 'border-accent/40' : 'border-border'}`}
       style={{
         background: running
-          ? 'linear-gradient(160deg, rgba(139,125,204,0.16) 0%, rgba(26,24,34,0.55) 100%)'
+          ? 'linear-gradient(160deg, rgba(192,159,230,0.16) 0%, rgba(26,24,34,0.55) 100%)'
           : 'rgba(10,18,34,0.6)',
-        boxShadow: running ? '0 0 24px rgba(139,125,204,0.2)' : 'none',
+        boxShadow: running ? '0 0 24px rgba(192,159,230,0.2)' : 'none',
       }}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <TimerIcon size={14} style={{ color: running ? '#A596E8' : undefined }} className={running ? 'animate-pulse' : ''} />
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: running ? '#A596E8' : 'rgba(164,164,179,0.6)' }}>
+          <TimerIcon size={14} style={{ color: running ? '#DCC2F2' : undefined }} className={running ? 'animate-pulse' : ''} />
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: running ? '#DCC2F2' : 'rgba(164,164,179,0.6)' }}>
             {running ? t('timer_running') : t('timer_idle')}
           </span>
         </div>
@@ -103,13 +103,13 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
             <span className="text-[11px] text-text-muted">
               {earningsUsd > 0 ? (
                 <>
-                  <span className="font-bold" style={{ color: '#8B7DCC' }}>+{fmtUsd(earningsUsd)}</span> {t('timer_for')(fmtDur(totalMs))}
+                  <span className="font-bold" style={{ color: '#C09FE6' }}>+{fmtUsd(earningsUsd)}</span> {t('timer_for')(fmtDur(totalMs))}
                 </>
               ) : (
                 <>{t('timer_no_ops')(fmtDur(totalMs))}</>
               )}
               {rate > 0 && (
-                <span className="font-bold ml-1.5" style={{ color: '#8B7DCC' }}>{t('per_hour')(fmtUsd(rate))}</span>
+                <span className="font-bold ml-1.5" style={{ color: '#C09FE6' }}>{t('per_hour')(fmtUsd(rate))}</span>
               )}
             </span>
             <button
@@ -130,7 +130,7 @@ export default function WorkerTimer({ workerId }: { workerId: string }) {
       )}
 
       {justStopped && !running && (
-        <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#A596E8' }}>
+        <p className="text-[11px] font-semibold mt-2 animate-fade-in" style={{ color: '#DCC2F2' }}>
           {t('timer_saved')}
         </p>
       )}

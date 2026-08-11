@@ -46,14 +46,14 @@ export default function ProfitForm() {
   }
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 md:pb-8 w-full max-w-lg mx-auto md:px-0">
       <div className="px-4 pt-6 mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-text">{t('add_profit_btn')}</h1>
+            <h1 className="text-xl font-bold text-text tracking-tight">{t('add_profit_btn')}</h1>
             {worker && <p className="text-text-muted text-sm">{worker.emoji} {worker.name}</p>}
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function ProfitForm() {
           <div className="relative">
             <input autoFocus type="number" inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)}
               placeholder="0"
-              className="w-full bg-card border border-border rounded-2xl px-4 py-4 text-2xl font-bold text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors pr-12" />
+              className="w-full bg-card border border-border rounded-2xl px-4 py-4 text-2xl font-bold text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors pr-12 tabular-nums" />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted font-medium">₽</span>
           </div>
         </div>
@@ -75,9 +75,9 @@ export default function ProfitForm() {
           <div className="flex flex-col gap-2">
             {TYPES.map(tp => (
               <button key={tp} onClick={() => setType(tp)}
-                className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all ${type === tp ? 'bg-accent-glow border-accent/40 text-text' : 'bg-card border-border text-text-muted'}`}>
+                className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all ${type === tp ? 'bg-accent-glow border-accent/40 text-text' : 'bg-card border-border text-text-muted hover:border-white/15'}`}>
                 <span className="text-sm font-medium">{TYPE_LABELS[tp]}</span>
-                <span className={`text-sm font-bold ${type === tp ? 'text-accent-light' : ''}`}>
+                <span className={`text-sm font-bold tabular-nums ${type === tp ? 'text-accent-light' : ''}`}>
                   {PROFIT_PERCENTS[tp] * 100}%
                 </span>
               </button>
@@ -86,26 +86,26 @@ export default function ProfitForm() {
         </div>
 
         {amountNum > 0 && (
-          <div className="bg-gradient-to-r from-success/10 to-accent/10 border border-success/20 rounded-2xl p-4">
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(192,159,230,0.07)', border: '1px solid rgba(192,159,230,0.2)' }}>
             <div className="flex items-center gap-2 mb-3">
-              <Calculator size={16} className="text-success" />
+              <Calculator size={16} className="text-accent-light" />
               <span className="text-sm font-semibold text-text">{t('profit_my_share')}</span>
             </div>
             <div className="flex flex-col gap-1.5 text-sm">
               <div className="flex justify-between text-text-muted">
                 <span>{t('profit_sum_short')}</span>
-                <span>{amountNum.toLocaleString('en-US')} ₽</span>
+                <span className="tabular-nums">{amountNum.toLocaleString('en-US')} ₽</span>
               </div>
               <div className="flex justify-between text-text-muted">
                 <span>× {PROFIT_PERCENTS[type] * 100}% ÷ 2</span>
-                <span>{myShareRub.toLocaleString('en-US', { maximumFractionDigits: 0 })} ₽</span>
+                <span className="tabular-nums">{myShareRub.toLocaleString('en-US', { maximumFractionDigits: 0 })} ₽</span>
               </div>
               <div className="h-px bg-white/10 my-1" />
               <div className="flex justify-between">
                 <span className="text-text font-semibold">{t('profit_total')}</span>
                 <div className="text-right">
-                  <span className="text-success font-bold text-lg">{fmtUsd(myShareUsd)}</span>
-                  <p className="text-text-muted text-xs">{fmtUah(myShareUah)}</p>
+                  <span className="text-accent-light font-bold text-lg tabular-nums">{fmtUsd(myShareUsd)}</span>
+                  <p className="text-text-muted text-xs tabular-nums">{fmtUah(myShareUah)}</p>
                 </div>
               </div>
             </div>
@@ -133,7 +133,7 @@ export default function ProfitForm() {
         </div>
 
         <button onClick={handleSave} disabled={!(amountNum > 0)}
-          className="w-full bg-accent rounded-2xl py-4 text-white font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform shadow-glow">
+          className="w-full btn-gradient rounded-2xl py-4 font-semibold text-base disabled:opacity-40 active:scale-[0.98] transition-transform">
           {amountNum > 0 ? t('profit_save')(fmtUsd(myShareUsd)) : t('profit_enter')}
         </button>
       </div>

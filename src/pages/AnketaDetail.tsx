@@ -135,15 +135,15 @@ export default function AnketaDetail() {
   }, [anketas])
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 md:pb-8 w-full max-w-3xl mx-auto md:px-8">
       {/* Header */}
-      <div className="px-4 pt-6 mb-5">
+      <div className="px-4 md:px-0 pt-6 mb-5">
         <div className="flex items-center gap-3 mb-5">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1" />
-          <button onClick={() => navigate(`/anketas/${id}/edit`)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted">
+          <button onClick={() => navigate(`/anketas/${id}/edit`)} className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-white/15">
             <Edit3 size={16} />
           </button>
           <button onClick={handleDelete} className="w-9 h-9 rounded-xl bg-danger/10 border border-danger/20 flex items-center justify-center text-danger">
@@ -185,7 +185,7 @@ export default function AnketaDetail() {
         </div>
       </div>
 
-      <div className="px-4 flex flex-col gap-4">
+      <div className="px-4 md:px-0 flex flex-col gap-4">
         {/* VK assign button */}
         <button
           onClick={() => setShowVkImport(true)}

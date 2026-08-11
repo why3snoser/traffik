@@ -54,7 +54,7 @@ function Barcode({ value }: { value: string }) {
 }
 
 function DashedLine() {
-  return <div className="w-full border-t-2 border-dashed" style={{ borderColor: 'rgba(216,210,245,0.12)' }} />
+  return <div className="w-full border-t-2 border-dashed" style={{ borderColor: 'rgba(230,214,246,0.12)' }} />
 }
 
 export function PaymentTicket() {
@@ -96,8 +96,8 @@ export function PaymentTicket() {
               className="relative rounded-3xl px-5 py-6 sm:px-6 sm:py-7 overflow-hidden"
               style={{
                 background: 'linear-gradient(160deg, #221F2E 0%, #1A1822 55%, #191622 100%)',
-                border: '1px solid rgba(216,210,245,0.12)',
-                boxShadow: '0 30px 70px -24px rgba(0,0,0,0.85), 0 0 48px rgba(139,125,204,0.16)',
+                border: '1px solid rgba(230,214,246,0.12)',
+                boxShadow: '0 30px 70px -24px rgba(0,0,0,0.85), 0 0 48px rgba(192,159,230,0.16)',
               }}
             >
               {/* Ticket notches — punched out in the page background colour. */}
@@ -105,8 +105,8 @@ export function PaymentTicket() {
               <div className="absolute -right-4 top-[47%] w-8 h-8 rounded-full bg-bg" />
 
               <div className="flex flex-col items-center gap-2.5 sm:gap-3 mb-5 sm:mb-6">
-                <div className="p-2.5 sm:p-3 rounded-full" style={{ background: 'rgba(139,125,204,0.14)' }}>
-                  <CheckCircle2 className="w-7 h-7 sm:w-[30px] sm:h-[30px]" style={{ color: '#A596E8' }} />
+                <div className="p-2.5 sm:p-3 rounded-full" style={{ background: 'rgba(192,159,230,0.14)' }}>
+                  <CheckCircle2 className="w-7 h-7 sm:w-[30px] sm:h-[30px]" style={{ color: '#DCC2F2' }} />
                 </div>
                 <div className="text-center">
                   <h3 className="text-base sm:text-lg font-bold text-text">{t('ticket_thanks')}</h3>
@@ -125,7 +125,7 @@ export function PaymentTicket() {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mb-1">{t('ticket_amount')}</p>
-                  <p className="text-base font-bold" style={{ color: '#A596E8' }}>{fmtUsd(ticket.amountUsd)}</p>
+                  <p className="text-base font-bold" style={{ color: '#DCC2F2' }}>{fmtUsd(ticket.amountUsd)}</p>
                   <p className="text-[11px] text-text-muted">{fmtUah(ticket.amountUah)}</p>
                 </div>
                 <div className="col-span-2">

@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,30 +7,30 @@
 /* bklit chart CSS variables — dark palette to match the app */
 :root {
   --chart-background: transparent;
-  --chart-foreground: rgba(244, 244, 247, 0.92);
-  --chart-foreground-muted: rgba(164, 164, 179, 0.62);
-  --chart-label: rgba(164, 164, 179, 0.5);
-  --chart-line-primary: #8B7DCC;
-  --chart-line-secondary: rgba(255, 255, 255, 0.25);
-  --chart-crosshair: #A596E8;
-  --chart-indicator-color: #8B7DCC;
+  --chart-foreground: rgba(242, 241, 245, 0.92);
+  --chart-foreground-muted: rgba(162, 160, 173, 0.62);
+  --chart-label: rgba(162, 160, 173, 0.5);
+  --chart-line-primary: #D9B6EE;
+  --chart-line-secondary: rgba(255, 255, 255, 0.22);
+  --chart-crosshair: #E5CCF6;
+  --chart-indicator-color: #D9B6EE;
   --chart-indicator-secondary-color: rgba(255, 255, 255, 0.3);
-  --chart-grid: rgba(255, 255, 255, 0.08);
-  --chart-tooltip-background: rgba(13,13,17, 0.98);
-  --chart-marker-background: rgba(22, 33, 58, 0.9);
-  --chart-marker-border: rgba(216,210,245, 0.3);
-  --chart-marker-foreground: rgba(238, 243, 255, 0.9);
-  --chart-marker-badge-background: #8B7DCC;
-  --chart-marker-badge-foreground: #ffffff;
-  --chart-segment-background: rgba(255, 255, 255, 0.06);
-  --chart-segment-line: rgba(255, 255, 255, 0.25);
-  --chart-brush-border: rgba(139,125,204, 0.5);
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-tooltip-background: rgba(12,12,15, 0.98);
+  --chart-marker-background: rgba(24, 22, 30, 0.95);
+  --chart-marker-border: rgba(220,194,242, 0.28);
+  --chart-marker-foreground: rgba(242, 241, 245, 0.92);
+  --chart-marker-badge-background: #C09FE6;
+  --chart-marker-badge-foreground: #221433;
+  --chart-segment-background: rgba(255, 255, 255, 0.05);
+  --chart-segment-line: rgba(255, 255, 255, 0.22);
+  --chart-brush-border: rgba(192,159,230, 0.5);
   --chart-scale-01: rgba(255, 255, 255, 0.05);
-  --chart-scale-02: rgba(139,125,204, 0.22);
-  --chart-scale-03: rgba(139,125,204, 0.45);
-  --chart-scale-04: rgba(139,125,204, 0.7);
-  --chart-scale-05: #A596E8;
-  --chart-scale-pattern-color: rgba(216,210,245, 0.85);
+  --chart-scale-02: rgba(192,159,230, 0.22);
+  --chart-scale-03: rgba(192,159,230, 0.45);
+  --chart-scale-04: rgba(192,159,230, 0.7);
+  --chart-scale-05: #DCC2F2;
+  --chart-scale-pattern-color: rgba(230,214,246, 0.85);
 }
 
 * {
@@ -42,8 +42,8 @@
 html, body { height: 100%; }
 
 body {
-  background-color: #0D0D11;
-  color: #F4F4F7;
+  background-color: #0A0A0D;
+  color: #F2F1F5;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -56,19 +56,20 @@ body {
    scroll on a phone. `clip` (not `hidden`) keeps `position: sticky` working. */
 #root { overflow-x: clip; }
 
-/* Apple-esque ambient backdrop — soft dark graphite with calm violet light, no neon */
+/* Ambient backdrop — near-black graphite; the WebGL layer under it only adds
+   a faint moving sheen. Flat and calm, no neon. */
 #app-backdrop {
   position: fixed;
   inset: 0;
   z-index: -2;
   overflow: hidden;
   pointer-events: none;
-  background: linear-gradient(165deg, #101018 0%, #0D0D11 42%, #14111B 100%);
+  background: linear-gradient(165deg, #0C0C10 0%, #0A0A0D 45%, #0E0C13 100%);
 }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(139,125,204,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(192,159,230,0.25); border-radius: 4px; }
 
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .safe-top { padding-top: env(safe-area-inset-top); }
@@ -101,10 +102,10 @@ body {
    fill `backwards`. If you truly need `forwards`, the last keyframe must
    say `transform: none`. */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-page-in { animation: pageEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.animate-page-in { animation: pageEnter 0.2s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(100%); }
@@ -114,11 +115,11 @@ body {
 
 /* Snappy "pop" for modal sheets — scale + lift with a springy overshoot */
 @keyframes popUp {
-  0%   { opacity: 0; transform: translateY(28px) scale(0.9); }
-  55%  { opacity: 1; transform: translateY(-5px) scale(1.015); }
+  0%   { opacity: 0; transform: translateY(24px) scale(0.94); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.006); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-.animate-pop { animation: popUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.animate-pop { animation: popUp 0.34s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -141,10 +142,10 @@ body {
 }
 
 @keyframes neonPulse {
-  0%, 100% { box-shadow: 0 0 6px rgba(139,125,204,0.6), 0 0 14px rgba(139,125,204,0.3); }
-  50%       { box-shadow: 0 0 10px rgba(139,125,204,0.9), 0 0 24px rgba(139,125,204,0.5); }
+  0%, 100% { box-shadow: 0 0 4px rgba(192,159,230,0.5), 0 0 10px rgba(192,159,230,0.22); }
+  50%       { box-shadow: 0 0 7px rgba(192,159,230,0.75), 0 0 16px rgba(192,159,230,0.35); }
 }
-.neon-pulse { animation: neonPulse 2s ease-in-out infinite; }
+.neon-pulse { animation: neonPulse 2.4s ease-in-out infinite; }
 
 @keyframes shimmer {
   0%   { background-position: -200% center; }
@@ -156,36 +157,36 @@ button, a {
   transition: opacity 0.18s ease, transform 0.18s ease, background-color 0.18s ease,
               box-shadow 0.2s ease, border-color 0.2s ease;
 }
-button:active { transform: scale(0.96) !important; }
+button:active { transform: scale(0.97) !important; }
 
 /* ── Hover lift for interactive cards ───────────────────────── */
 button.glass-light:hover {
-  transform: translateY(-2px);
-  border-color: rgba(139,125,204,0.3) !important;
-  border-top-color: rgba(216,210,245,0.5) !important;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.14), 0 8px 28px rgba(139,125,204,0.12), 0 4px 12px rgba(0,0,0,0.5);
-  background: rgba(30,45,72,0.45) !important;
+  transform: translateY(-1px);
+  border-color: rgba(192,159,230,0.28) !important;
+  border-top-color: rgba(255,255,255,0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 6px 20px rgba(0,0,0,0.45);
+  background: rgba(26,25,32,0.92) !important;
 }
 
 /* List item stagger entrance.
    `backwards` fill holds the `from` keyframe through the delay, so the base
    rule must NOT also pin `opacity: 0` — that would survive the animation. */
 @keyframes itemIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .stagger > * {
-  animation: itemIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: itemIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 .stagger > *:nth-child(1)  { animation-delay: 0ms; }
-.stagger > *:nth-child(2)  { animation-delay: 55ms; }
-.stagger > *:nth-child(3)  { animation-delay: 110ms; }
-.stagger > *:nth-child(4)  { animation-delay: 165ms; }
-.stagger > *:nth-child(5)  { animation-delay: 220ms; }
-.stagger > *:nth-child(6)  { animation-delay: 275ms; }
-.stagger > *:nth-child(7)  { animation-delay: 330ms; }
-.stagger > *:nth-child(8)  { animation-delay: 385ms; }
-.stagger > *:nth-child(n+9){ animation-delay: 440ms; }
+.stagger > *:nth-child(2)  { animation-delay: 45ms; }
+.stagger > *:nth-child(3)  { animation-delay: 90ms; }
+.stagger > *:nth-child(4)  { animation-delay: 135ms; }
+.stagger > *:nth-child(5)  { animation-delay: 180ms; }
+.stagger > *:nth-child(6)  { animation-delay: 225ms; }
+.stagger > *:nth-child(7)  { animation-delay: 270ms; }
+.stagger > *:nth-child(8)  { animation-delay: 315ms; }
+.stagger > *:nth-child(n+9){ animation-delay: 360ms; }
 
 /* Row slide-in from left (Finance entries) */
 @keyframes slideInLeft {
@@ -206,15 +207,15 @@ button.glass-light:hover {
 
 /* Number appear */
 @keyframes numPop {
-  from { opacity: 0; transform: scale(0.88) translateY(4px); }
+  from { opacity: 0; transform: scale(0.92) translateY(3px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-.num-pop { animation: numPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
+.num-pop { animation: numPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards; }
 
-/* Glow border pulse on focus/active nav */
+/* Border pulse on focus/active nav — kept subtle */
 @keyframes borderGlow {
-  0%, 100% { box-shadow: 0 0 12px rgba(139,125,204,0.25); }
-  50%       { box-shadow: 0 0 22px rgba(139,125,204,0.5), 0 0 40px rgba(139,125,204,0.15); }
+  0%, 100% { box-shadow: 0 0 8px rgba(192,159,230,0.16); }
+  50%       { box-shadow: 0 0 16px rgba(192,159,230,0.3); }
 }
 .glow-active { animation: borderGlow 2.5s ease-in-out infinite; }
 
@@ -227,10 +228,10 @@ button.glass-light:hover {
 
 /* Fade up for sections */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+.fade-up { animation: fadeUp 0.36s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 
 /* ── Goal cards (Profile) — hover-driven animations ───────────── */
 @keyframes goalRingSpin {
@@ -264,44 +265,48 @@ button.glass-light:hover {
 
   /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #8B7DCC 0%, #A596E8 100%);
+    background: linear-gradient(135deg, #C09FE6 0%, #E5CCF6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* ── Apple Liquid Glass — frosted, translucent, specular top edge ── */
+  /* ── Premium card surfaces — near-solid, flat, precise 1px edges ──
+     Class names are kept from the previous glass system (used across every
+     page), but the look is now a dense app panel: almost-opaque dark surface,
+     hairline border with a slightly lighter top edge, soft shadow. The
+     ambient backdrop reads only faintly through them. */
   .glass {
-    background: linear-gradient(180deg, rgba(139,125,204,0.18) 0%, rgba(38,34,54,0.22) 40%, rgba(28,26,40,0.20) 100%);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
-    border: 1px solid rgba(216,210,245,0.12);
-    border-top-color: rgba(224,219,245,0.30);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.10), inset 0 -1px 0 rgba(255,255,255,0.04), 0 16px 40px rgba(0,0,0,0.45);
+    background: linear-gradient(180deg, rgba(25,24,31,0.92) 0%, rgba(19,18,24,0.94) 100%);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-top-color: rgba(255,255,255,0.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 28px rgba(0,0,0,0.4);
   }
 
-  /* Glass light — card surface with softer specular highlight */
+  /* Card surface — the workhorse panel */
   .glass-light {
-    background: linear-gradient(180deg, rgba(139,125,204,0.10) 0%, rgba(38,34,54,0.18) 45%, rgba(28,26,40,0.16) 100%);
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid rgba(216,210,245,0.10);
-    border-top-color: rgba(224,219,245,0.24);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.03), 0 14px 36px rgba(0,0,0,0.4);
+    background: linear-gradient(180deg, rgba(23,22,29,0.90) 0%, rgba(18,17,23,0.92) 100%);
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-top-color: rgba(255,255,255,0.10);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 22px rgba(0,0,0,0.35);
     position: relative;
   }
 
   /* Opaque modal sheet — nearly solid, so content stays readable over the ambient backdrop */
   .sheet {
-    background: linear-gradient(180deg, rgba(26,24,34,0.98) 0%, rgba(16,15,21,0.99) 100%);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    border: 1px solid rgba(216,210,245,0.12);
-    border-top-color: rgba(224,219,245,0.28);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.09), 0 24px 70px rgba(0,0,0,0.6);
+    background: linear-gradient(180deg, rgba(22,21,28,0.99) 0%, rgba(14,14,18,1) 100%);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(255,255,255,0.14);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.6);
   }
 
-  /* Liquid Glass "blob" highlight — the soft glossy reflection */
+  /* Subtle top sheen on cards — barely-there, keeps surfaces from looking dead */
   .glass-light::before,
   .glass::before {
     content: '';
@@ -310,66 +315,66 @@ button.glass-light:hover {
     border-radius: inherit;
     pointer-events: none;
     background:
-      radial-gradient(120% 60% at 50% -12%, rgba(255,255,255,0.07) 0%, transparent 55%),
-      linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 18%);
+      radial-gradient(110% 50% at 50% -10%, rgba(255,255,255,0.04) 0%, transparent 55%);
     opacity: 0.9;
   }
 
-  /* Apple-style accent button — calm lavender, subtle depth, no aggressive glow */
+  /* Primary action — pale accent fill with dark ink, like a pressed-glass key.
+     Dark text on the light fill is what makes it read as premium. */
   .btn-gradient {
-    background: linear-gradient(180deg, #9A8CE0 0%, #8B7DCC 100%);
-    color: #fff !important;
+    background: linear-gradient(180deg, #E4CBF5 0%, #CBA6EB 100%);
+    color: #241533 !important;
     font-weight: 700;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.30), 0 6px 20px rgba(60,40,110,0.35), 0 2px 8px rgba(0,0,0,0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 4px 14px rgba(120,80,170,0.28), 0 1px 4px rgba(0,0,0,0.3);
   }
   .btn-gradient:hover {
-    background: linear-gradient(180deg, #A596E8 0%, #9A8CE0 100%);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.34), 0 8px 24px rgba(60,40,110,0.40), 0 2px 10px rgba(0,0,0,0.35);
+    background: linear-gradient(180deg, #EDD9F9 0%, #D5B4EF 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 6px 18px rgba(120,80,170,0.34), 0 1px 5px rgba(0,0,0,0.3);
   }
 
-  /* Profile header card — premium violet-tinted glass */
+  /* Profile header card — violet-tinted premium panel */
   .card-gradient {
-    background: linear-gradient(160deg, rgba(139,125,204,0.18) 0%, rgba(45,40,64,0.22) 45%, rgba(30,27,44,0.26) 100%);
-    backdrop-filter: blur(26px) saturate(160%);
-    -webkit-backdrop-filter: blur(26px) saturate(160%);
-    border: 1px solid rgba(216,210,245,0.16);
-    border-top-color: rgba(224,219,245,0.36);
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.12), 0 0 60px rgba(90,80,150,0.12), 0 10px 36px rgba(0,0,0,0.55);
+    background: linear-gradient(160deg, rgba(192,159,230,0.13) 0%, rgba(35,31,44,0.92) 45%, rgba(22,20,28,0.94) 100%);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(230,214,246,0.22);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 32px rgba(0,0,0,0.5);
   }
 
   /* Soft accent border */
   .glow-border {
-    border: 1px solid rgba(139,125,204,0.3);
-    box-shadow: 0 0 16px rgba(139,125,204,0.10), inset 0 0 16px rgba(139,125,204,0.03);
+    border: 1px solid rgba(192,159,230,0.28);
+    box-shadow: 0 0 12px rgba(192,159,230,0.08), inset 0 0 12px rgba(192,159,230,0.02);
   }
 
-  /* Neon indicator dot */
+  /* Accent indicator dot */
   .neon-dot {
-    width: 7px; height: 7px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: #8B7DCC;
-    box-shadow: 0 0 6px #8B7DCC, 0 0 14px rgba(139,125,204,0.5);
+    background: #D9B6EE;
+    box-shadow: 0 0 5px rgba(217,182,238,0.8), 0 0 10px rgba(192,159,230,0.4);
     flex-shrink: 0;
   }
 
   /* Left accent bar for list items */
   .neon-left-bar {
-    border-left: 2px solid rgba(139,125,204,0.35);
+    border-left: 2px solid rgba(192,159,230,0.35);
     padding-left: 12px;
   }
 
-  /* Neon inset highlight on hover */
+  /* Accent inset highlight on hover */
   .neon-hover:hover {
-    background: rgba(139,125,204,0.08) !important;
-    border-color: rgba(139,125,204,0.3) !important;
-    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 0 20px rgba(139,125,204,0.1);
+    background: rgba(192,159,230,0.07) !important;
+    border-color: rgba(192,159,230,0.26) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
   }
 
   /* Stat badge — positive */
   .badge-up {
-    background: rgba(139,125,204,0.14);
-    color: #A596E8;
-    border: 1px solid rgba(139,125,204,0.25);
+    background: rgba(192,159,230,0.12);
+    color: #DCC2F2;
+    border: 1px solid rgba(192,159,230,0.22);
     font-size: 11px;
     font-weight: 600;
     padding: 2px 7px;
@@ -378,9 +383,9 @@ button.glass-light:hover {
 
   /* Stat badge — negative */
   .badge-down {
-    background: rgba(255,91,110,0.12);
-    color: #FF7A88;
-    border: 1px solid rgba(255,91,110,0.25);
+    background: rgba(240,100,122,0.10);
+    color: #F58B9A;
+    border: 1px solid rgba(240,100,122,0.22);
     font-size: 11px;
     font-weight: 600;
     padding: 2px 7px;
@@ -388,15 +393,15 @@ button.glass-light:hover {
   }
 }
 
-/* ── Mobile-first refinements: softer radii, more air, calmer feel ── */
+/* ── Mobile refinements ─────────────────────────────────────────── */
 @media (max-width: 767px) {
-  /* Bigger, more premium card radii (20–28px) */
-  .rounded-2xl { border-radius: 20px; }
-  .rounded-3xl { border-radius: 26px; }
+  /* Slightly softer card radii on touch, without ballooning them */
+  .rounded-2xl { border-radius: 18px; }
+  .rounded-3xl { border-radius: 22px; }
 
-  /* Slightly more breathing room on the page edges */
-  .px-4 { padding-left: 18px; padding-right: 18px; }
-  .pt-6 { padding-top: 28px; }
+  /* Breathing room on the page edges */
+  .px-4 { padding-left: 16px; padding-right: 16px; }
+  .pt-6 { padding-top: 24px; }
 
   /* Softer press feedback instead of the snap */
   button:active { transform: scale(0.975) !important; }
