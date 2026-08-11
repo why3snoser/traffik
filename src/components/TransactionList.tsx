@@ -116,7 +116,7 @@ export function TransactionList({
   const groups = useMemo<DayGroup[]>(() => {
     const now = new Date()
     const dayLabel = (d: Date) => {
-      if (d.toDateString() === now.toDateString()) return t('today_label')
+      if (d.toDateString() === now.toDateString()) return t('today_label') as string
       const opts: Intl.DateTimeFormatOptions =
         d.getFullYear() === now.getFullYear()
           ? { day: 'numeric', month: 'long' }
