@@ -175,10 +175,10 @@ const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
   {
     email: 'zulicetiq10@gmail.com',
     password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
+    smsLink: 'https://sms-555.com/cacgaicdacdbdi6tvnli4bkbzr0g2max',
   },
   {
-    email: 'WilburIreland8850@outlook.com',
+    email: 'SiaEwan7987@outlook.com',
     password: 'Aa1237879',
     smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
   },
