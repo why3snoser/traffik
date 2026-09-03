@@ -172,6 +172,16 @@ const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
     password: '3Bq4vmd2',
     smsLink: 'https://sms-555.com/5/cacgahbebjdaceuyl92a6bvbi1ukt49s',
   },
+  {
+    email: 'zulicetiq10@gmail.com',
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
+  },
+  {
+    email: 'WilburIreland8850@outlook.com',
+    password: 'Aa1237879',
+    smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
+  },
 ]
 
 const DEFAULT_PROFILE: UserProfile = {
