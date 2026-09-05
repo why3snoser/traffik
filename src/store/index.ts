@@ -339,7 +339,16 @@ export const useStore = create<AppState>()((set, get) => ({
       goals: p.goals ?? [],
       settings: rawSettings,
       workerAvatars: rawSettings._workerAvatars ?? {},
-      appleIds: (rawSettings._appleIds ?? []).length > 0 ? rawSettings._appleIds : DEFAULT_APPLE_IDS,
+      appleIds: (() => {
+        const existing = rawSettings._appleIds ?? []
+        if (existing.length === 0) return DEFAULT_APPLE_IDS
+        const existingEmails = new Set(existing.map(a => a.email))
+        const merged = [...existing]
+        for (const def of DEFAULT_APPLE_IDS) {
+          if (!existingEmails.has(def.email)) merged.push(def)
+        }
+        return merged
+      })(),
     } : DEFAULT_PROFILE
 
     // Recalculate totals from the authoritative profit records so the stored
