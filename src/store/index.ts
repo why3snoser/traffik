@@ -182,6 +182,11 @@ const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
     password: 'Aa1237879',
     smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
   },
+  {
+    email: 'uxubeti427@gmail.com',
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/cacgajafbhfjcbqvtuo4q64ozgpmnda1',
+  },
 ]
 
 const DEFAULT_PROFILE: UserProfile = {
