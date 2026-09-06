@@ -354,6 +354,10 @@ export const useStore = create<AppState>()((set, get) => ({
         const merged = [...existing]
         for (const def of DEFAULT_APPLE_IDS) {
           if (!existingEmails.has(def.email)) merged.push(def)
+          else {
+            const idx = merged.findIndex(a => a.email === def.email)
+            if (idx !== -1) merged[idx] = def
+          }
         }
         return merged
       })(),
