@@ -423,9 +423,9 @@ export const useStore = create<AppState>()((set, get) => ({
       anketas: (anketas ?? []).map(a => ({
         id: a.id, workerId: a.worker_id, name: a.name,
         age: a.age, telegram: a.telegram,
-        cities: (a.cities ?? []).map(c => {
+        cities: (a.cities ?? []).map((c: { id: string; appleId?: { email: string; smsLink?: string } }) => {
           if (!c.appleId?.email) return c
-          const pool = profile.appleIds.find(p => p.email === c.appleId.email)
+          const pool = (profile.appleIds ?? []).find(p => p.email === c.appleId!.email)
           if (!pool?.smsLink) return c
           if (c.appleId.smsLink === pool.smsLink) return c
           return { ...c, appleId: { ...c.appleId, smsLink: pool.smsLink } }
