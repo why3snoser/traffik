@@ -158,7 +158,10 @@ function withDefaultArtwork(goal: Goal, def: Goal): Goal {
 }
 
 const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
-  { email: 'vimijadumobi39@gmail.com', password: '3Bq4vmd2' },
+  { email: 'vimijadumobi39@gmail.com', 
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/cacgajbcaeabbbdrrrqkq0itiaaszjnd',
+  },
   {
     email: 'axewawizu139@gmail.com',
     password: '3Bq4vmd2',
