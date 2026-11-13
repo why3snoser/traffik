@@ -159,27 +159,27 @@ function withDefaultArtwork(goal: Goal, def: Goal): Goal {
 
 const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
   { email: 'cvasqhall2h4@icloud.com', 
-    password: 'N47%gHkaX#wi',
-    smsLink: 'https://sms-555.com/cacgajbfcabefdcw7agcdygqi4jffsnz',
+    password: 'Aa1237879',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehf2c7wvhozd11uzcdui',
   },
   { email: 'vimijadumobi39@gmail.com', 
     password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/cacgajbcaeabbbdrrrqkq0itiaaszjnd',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehniin7vukwdq3dhke88',
   },
   {
     email: 'axewawizu139@gmail.com',
     password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/cacgajagbgaidindgcm5xbki3cfsz1q3',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehyiwvybr66sk7ykik2p',
   },
   {
     email: 'tometucahan033@gmail.com',
     password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/cacgajaecdabac3h9rkwbcrlu9sd8sob',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehd6zri53l5dhj1tgyy3',
   },
   {
     email: 'erironivu13@gmail.com',
     password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/5/cacgahbebidjfjn2k4qjhjts3fmrb0at',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehyl55j92fyxyzt1jkf7',
   },
   { email: 'whysnoser@gmail.com', password: 'Weryte321' },
   {
@@ -189,18 +189,18 @@ const DEFAULT_APPLE_IDS: AppleIdEntry[] = [
   },
   {
     email: 'zulicetiq10@gmail.com',
-    password: '3Bq4vmd2',
+    password: 'Aa1237879',
     smsLink: 'https://sms-555.com/cacgaicdacdbdi6tvnli4bkbzr0g2max',
   },
   {
     email: 'SiaEwan7987@outlook.com',
-    password: 'Aa1237879',
-    smsLink: 'https://sms-555.com/cacgajadcaahddo6w7f7yjtprvio9i3e',
+    password: '3Bq4vmd2',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaehccrkrx9q6cpk2975mp',
   },
   {
     email: 'uxubeti427@gmail.com',
-    password: '3Bq4vmd2',
-    smsLink: 'https://sms-555.com/cacgajafbhfjcbqvtuo4q64ozgpmnda1',
+    password: 'N47%gHkaX#wi',
+    smsLink: 'https://sms-555.com/cacgbbbeadeaeh80b4tkh6s7flugv1il',
   },
 ]
 
